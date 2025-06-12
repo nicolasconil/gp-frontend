@@ -1,0 +1,81 @@
+import axios from "axios";
+import { getCsrfToken } from "./csrf.api.js";
+
+const api = axios.create({
+    baseURL: '/',
+    withCredentials: true
+});
+
+// usuarios
+export const getUserProfile = () => api.get('/me');
+
+export const updateUserProfile = async (userData) => {
+    const csrfToken = await getCsrfToken();
+    return api.put('/me', userData, {
+        headers: {
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const deleteAccount = async () => {
+    const csrfToken = await getCsrfToken();    
+    return api.delete('/me', {
+        headers: {
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const getUserOrders = () => api.get('/me/orders');
+export const exportUserData = (format) => api.get(`/me/exports?format=${format}`);
+
+// órdenes
+export const getMyOrders = (access_token) => {
+    return api.get('/orders/my-orders', {
+        headers: {
+            'Authorization': `Bearer ${access_token}`, 
+        },
+    });
+};
+
+export const getOrderById = (id, access_token) => {
+    return api.get(`/orders/${id}`, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+        },
+    });
+};
+
+export const cancelOrder = async (id, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.patch(`/orders/${id}/cancel`, {}, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const updateOrderPayment = async (id, paymentInfo, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.patch(`/orders/${id}/payment`, paymentInfo, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const updateOrderFields = async (id, updateData, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.patch(`/orders/${id}`, updateData, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+// envíos
+export const getShippingByOrderId = (orderId) => api.get(`/shipping/${orderId}`);
