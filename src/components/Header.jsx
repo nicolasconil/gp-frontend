@@ -271,7 +271,7 @@ const Header = () => {
                   sx={{
                     position: 'absolute',
                     bottom: -4,
-                    left: 4,
+                    left: 3,
                     width: '100%',
                     height: '4px',
                     backgroundColor: 'black',
@@ -281,7 +281,7 @@ const Header = () => {
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: 12,
+                    top: 2,
                     right: -4,
                     width: '4px',
                     height: '103%',
@@ -366,7 +366,7 @@ const Header = () => {
                         content: '""',
                         position: 'absolute',
                         bottom: '-5px',
-                        left: '0.5%',
+                        left: '1%',
                         width: '100%',
                         height: '5px',
                         backgroundColor: '#000',
@@ -378,7 +378,7 @@ const Header = () => {
                         top: 2,
                         right: '-5px',
                         width: '5px',
-                        height: '106%',
+                        height: '105%',
                         backgroundColor: '#000',
                         borderRadius: '3px'
                       },

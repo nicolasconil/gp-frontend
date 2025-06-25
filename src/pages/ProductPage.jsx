@@ -1,6 +1,7 @@
 import { Grid, Box, Typography, Button, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Feed from '../components/Feed.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const products = [
   { _id: '1', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg' },
@@ -17,6 +18,7 @@ const products = [
 const ProductPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
 
   const limit = isMobile ? 4 : 8;
   const visibleProducts = products.slice(0, limit);
@@ -46,6 +48,7 @@ const ProductPage = () => {
             zIndex: 2,
             position: 'relative',
             mt: { xs: 5, md: 10 },
+            mb: { xs: 5, md: 10 },
             cursor: 'pointer',
             '&:hover': {
               transform: 'scale(1.1)', 
@@ -70,13 +73,13 @@ const ProductPage = () => {
       <Grid container spacing={3} justifyContent="center" sx={{ px: { xs: 2, sm: 4 }, margin: '0 auto' }}>
         {visibleProducts.map((product) => (
           <Grid item key={product._id} xs={12} sm={6} md={3}>
-            <Feed product={product} />
+            <Feed product={product} onClick={() => navigate(`/producto/${product._id}`, { state: { product } } )} />
           </Grid>
         ))}
       </Grid>
 
       {showSeeAll && (
-        <Box mt={20}>
+        <Box mt={7}>
           <Typography
             component="a"
             href='#'

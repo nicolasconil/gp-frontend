@@ -1,8 +1,10 @@
 import { Box, useMediaQuery } from "@mui/material";
+import ProductPage from "./ProductPage.jsx";
 
 const HomePage = () => {
   const isMobile = useMediaQuery("(max-width: 900px)");
   return (
+    <>
     <Box
       sx={{
         position: "relative",
@@ -32,7 +34,7 @@ const HomePage = () => {
       )}
       {isMobile && (
         <img
-          src="/gp.svg" 
+          src="/gp.svg"
           alt="GP Footwear"
           style={{
             position: "absolute",
@@ -40,12 +42,14 @@ const HomePage = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            objectFit: "contain", 
+            objectFit: "contain",
             transform: 'translateY(-50%)'
           }}
         />
       )}
     </Box>
+    <ProductPage />
+    </>
   );
 };
 
