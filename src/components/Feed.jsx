@@ -21,8 +21,9 @@ const Feed = ({ product }) => {
   return (
     <Card
       sx={{
-        border: '2px solid white',
-        marginTop: '100px',
+        border: '3px solid #f9f9f9',
+        borderRadius: '10px',
+        marginTop: { xs: 5, md: 10 },
         position: 'relative',
         overflow: 'hidden',
         height: '100%',
@@ -32,7 +33,7 @@ const Feed = ({ product }) => {
         width: 350,
         maxWidth: '100%',
         mx: 'auto',
-        backgroundColor: 'white',
+        backgroundColor: 'transparent',
         '&:hover': {
           transform: 'translateY(-4px)',
         },
@@ -105,6 +106,7 @@ const Feed = ({ product }) => {
               mx: 'auto',
               borderRadius: '4px',
               maxWidth: '100%',
+              marginTop: '-10px'
             }}
           >
             <Typography
@@ -119,13 +121,11 @@ const Feed = ({ product }) => {
                 textTransform: 'uppercase',
                 textAlign: 'center',
                 lineHeight: 1.2,
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
                 cursor: 'pointer',
                 '&:hover': {
-                  color: 'primary.main',
+                  color: '#444',
                 },
               }}
             >
@@ -170,6 +170,7 @@ const Feed = ({ product }) => {
             position: 'relative',
             borderRadius: '4px',
             mx: 'auto',
+            marginTop: '-10px'
           }}
         >
           <Typography sx={{ fontWeight: 600, fontSize: 18 }}>
@@ -229,7 +230,7 @@ const Feed = ({ product }) => {
               py: 1.2,
               borderRadius: 0,
               '&:hover': {
-                backgroundColor: '#333',
+                backgroundColor: '#222',
                 transform: 'scale(1.03)',
               },
             }}

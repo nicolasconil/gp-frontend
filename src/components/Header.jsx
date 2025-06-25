@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, use } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,6 +8,9 @@ import {
   InputBase,
   ClickAwayListener,
   useMediaQuery,
+  Card,
+  CardMedia,
+  CardContent
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBagOutlined";
@@ -16,11 +19,11 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const isMobile = useMediaQuery('(max-width:900px)');
+  const isMobile = useMediaQuery('(max-width:1024px)');
   const isXs = useMediaQuery('(max-width:600px)');
   const inputRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
- 
+  
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 0);
@@ -33,7 +36,11 @@ const Header = () => {
     { _id: '1', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg' },
     { _id: '2', name: 'Vans Speed LS', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg' },
     { _id: '3', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg' },
-    { _id: '5', name: 'Vans Hylane', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537450_800.jpg' },
+    { _id: '4', name: 'Vans Hylane', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537450_800.jpg' },
+    { _id: '5', name: 'Vans Slip-On', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/9/24/10017940_800.jpg' },
+    { _id: '6', name: 'Vans Upland', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/3/7/10629462_800.jpg' },
+    { _id: '7', name: 'Vans Old Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/24/10528620_800.jpg' },
+    { _id: '8', name: 'Vans SK8-Low', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537065_800.jpg' },
   ];
 
   const filteredResults = products.filter((product) =>
@@ -47,7 +54,7 @@ const Header = () => {
       return (
         <Box
           sx={{
-            width: '100%',
+            width: '110%',
             maxWidth: '600px',
             mt: 2,
             maxHeight: '70vh',
@@ -58,68 +65,236 @@ const Header = () => {
             backgroundColor: 'white',
             zIndex: 10,
             pb: 2,
+            px: 1,
+            boxSizing: 'border-box',
+            borderBottom: '1px solid #ccc',
+            '&::-webkit-scrollbar': {
+              width: 2,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'white',
+            },
           }}
         >
-          {filteredResults.map(product => (
-            <Box
+          {filteredResults.map((product) => (
+            <Card
               key={product._id}
-              sx={{ textAlign: 'center', cursor: 'pointer', '&:hover': { opacity: 0.85 }, px: 1 }}
+              sx={{
+                border: '2px solid white',
+                overflow: 'hidden',
+                backgroundColor: 'white',
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+              }}
             >
-              <img src={product.imageUrl} alt={product.name} style={{ width: '100%', borderRadius: 8 }} />
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 'bold', mt: 1, color: 'black' }}>
-                {product.name}
-              </Typography>
-            </Box>
+              <CardMedia
+                component="img"
+                src={product.imageUrl}
+                alt={product.name}
+                sx={{
+                  height: 160,
+                  objectFit: 'contain',
+                  width: '100%',
+                  transition: 'transform 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              />
+              <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    border: '2px solid black',
+                    px: 1.5,
+                    py: 1,
+                    position: 'relative',
+                    borderRadius: '4px',
+                    width: '100%',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: '"Archivo Black", sans-serif',
+                      fontSize: '0.9rem',
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      textAlign: 'center',
+                      lineHeight: 1.2,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        color: 'primary.main',
+                      },
+                    }}
+                  >
+                    {product.name}
+                  </Typography>
+
+                  {/* Línea horizontal inferior */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                  {/* Línea vertical derecha */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: '103%',
+                      backgroundColor: 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                </Box>
+              </CardContent>
+            </Card>
           ))}
         </Box>
+
       );
     }
 
+    // Desktop version actualizada
     return (
       <Box
         sx={{
           position: 'fixed',
-          top: scrolled ? '81px' : '90px',
+          top: scrolled ? '81px' : '89px',
           left: 0,
+          width: '100%',
           backgroundColor: 'white',
+          py: 3,
+          px: { xs: 2, sm: 4, md: 6 },
+          zIndex: 1200,
+          overflowY: 'hidden',
+          overflowX: 'auto',
           display: 'flex',
           gap: 3,
-          py: 3,
-          px: 5,
-          zIndex: 1200,
-          overflowX: 'auto',
-          whiteSpace: 'nowrap',
+          minHeight: '250px',
+          boxSizing: 'border-box',
           scrollbarWidth: 'thin',
           '&::-webkit-scrollbar': { height: 6 },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: 3 },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'black', borderRadius: 3 },
         }}
       >
         {filteredResults.map(product => (
-          <Box
+          <Card
             key={product._id}
             sx={{
-              flex: '0 0 auto',
+              border: '2px solid white',
+              position: 'relative',
+              overflow: 'hidden',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'transform 0.3s ease',
               width: 220,
-              textAlign: 'center',
-              cursor: 'pointer',
-              '&:hover': { opacity: 0.85 },
+              minWidth: 220,
+              backgroundColor: 'white',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+              },
             }}
           >
-            <img src={product.imageUrl} alt={product.name} style={{ width: '100%', borderRadius: 8 }} />
-            <Typography
+            <CardMedia
+              component="img"
+              src={product.imageUrl}
+              alt={product.name}
               sx={{
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                mt: 1,
-                color: 'black',
-                whiteSpace: 'normal',
+                width: '100%',
+                height: 180,
+                objectFit: 'contain',
+                transition: 'transform 0.4s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            />
+            <CardContent
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+                py: 2,
               }}
             >
-              {product.name}
-            </Typography>
-          </Box>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  border: '2px solid black',
+                  px: 1.5,
+                  py: 1,
+                  position: 'relative',
+                  borderRadius: '4px',
+                  width: '100%',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: '"Archivo Black", sans-serif',
+                    fontSize: '0.9rem',
+                    letterSpacing: '-1px',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  {product.name}
+                </Typography>
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -4,
+                    left: 4,
+                    width: '100%',
+                    height: '4px',
+                    backgroundColor: 'black',
+                    borderRadius: '2px',
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 12,
+                    right: -4,
+                    width: '4px',
+                    height: '103%',
+                    backgroundColor: 'black',
+                    borderRadius: '2px',
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
         ))}
       </Box>
+
     );
   };
 
@@ -127,8 +302,9 @@ const Header = () => {
     <>
       <AppBar position="sticky" elevation={0} sx={{ backgroundColor: 'white', color: 'black', borderBottom: '1px solid #eee' }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, md: 4 }, py: { xs: 0.5, md: 1 } }}>
-
           <Box
+            component="a"
+            href="/"
             sx={{
               position: 'absolute',
               left: '50%',
@@ -140,7 +316,7 @@ const Header = () => {
               '&:after': {
                 content: '""',
                 position: 'absolute',
-                bottom: '-2px', // Espaciado debajo de la barra
+                bottom: '-2px',
                 left: '10%',
                 width: '92%',
                 height: '3px',
@@ -150,12 +326,11 @@ const Header = () => {
                 content: '""',
                 position: 'absolute',
                 top: 4,
-                right: '-2px', // Espaciado a la derecha de la barra
+                right: '-2px',
                 width: '3px',
                 height: '95%',
                 backgroundColor: '#000',
               },
-
             }}
           >
             <img
@@ -229,8 +404,9 @@ const Header = () => {
               </ClickAwayListener>
             )}
 
-            <IconButton sx={{ color: 'black' }}><AccountIcon /></IconButton>
-            <IconButton sx={{ color: 'black' }}><ShoppingBagIcon /></IconButton>
+            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}><AccountIcon /></IconButton>
+            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}><ShoppingBagIcon /></IconButton>
+
           </Box>
         </Toolbar>
       </AppBar>
@@ -249,16 +425,16 @@ const Header = () => {
                 border: '2.5px solid black',
                 borderRadius: '3px',
                 position: 'relative',
-                transition: 'none', // Eliminamos la transición
+                transition: 'none',
                 '&:focus-within': {
                   borderColor: '#111',
-                  boxShadow: 'none', // Eliminamos el efecto de sombra
+                  boxShadow: 'none',
                 },
                 '&:after': {
                   content: '""',
                   position: 'absolute',
-                  bottom: '-5px', // Espaciado debajo de la barra
-                  left: '0.5%',
+                  bottom: '-5px',
+                  left: '0.67%',
                   width: '100%',
                   height: '5px',
                   backgroundColor: '#000',
@@ -268,7 +444,7 @@ const Header = () => {
                   content: '""',
                   position: 'absolute',
                   top: 2,
-                  right: '-5px', // Espaciado a la derecha de la barra
+                  right: '-5px',
                   width: '5px',
                   height: '106%',
                   backgroundColor: '#000',
