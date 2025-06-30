@@ -200,7 +200,7 @@ const Footer = () => {
           {isBelow1550 ? (
             <Box
               component="img"
-              src="./logo1.svg"
+              src="../public/logo1.svg"
               alt="GP Footwear"
               sx={{
                 width: '100%',

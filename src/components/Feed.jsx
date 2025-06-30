@@ -213,7 +213,7 @@ const Feed = ({ product, onClick }) => {
               position: 'relative',
               border: '2px solid black',
               borderRadius: '4px',
-              overflow: 'hidden',
+
               mx: 'auto',
               width: '100%',
             }}
@@ -233,12 +233,36 @@ const Feed = ({ product, onClick }) => {
                 borderRadius: 0,
                 '&:hover': {
                   backgroundColor: '#222',
-                  transform: 'scale(1.03)',
-                },
+                  
+                }
               }}
             >
               Agregar
             </Button>
+
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -7,
+                left: 5,
+                width: '100%',
+                height: '6px',
+                backgroundColor: 'black',
+                borderRadius: '2px'
+              }}
+            />
+
+            <Box 
+              sx={{
+                position: 'absolute',
+                top: 5,
+                right: -6,
+                width: '6px',
+                height: { xs: '102%', md: '103%' },
+                backgroundColor: 'black',
+                borderRadius: '3px'
+              }}
+            />
           </Box>
         </CardContent>
       </Card>

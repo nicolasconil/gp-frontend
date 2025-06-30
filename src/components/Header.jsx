@@ -3,19 +3,20 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  Typography,
   Box,
   InputBase,
   ClickAwayListener,
   useMediaQuery,
   Card,
   CardMedia,
-  CardContent
+  CardContent,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBagOutlined";
-import AccountIcon from "@mui/icons-material/PersonOutlineOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useAuth } from "../context/AuthContext.jsx"; // Asegúrate de que esté importado
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,7 +24,10 @@ const Header = () => {
   const isXs = useMediaQuery('(max-width:600px)');
   const inputRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
-  
+
+  // Lógica para manejar el logout
+  const { logout, isAuthenticated } = useAuth(); // Usar el hook useAuth para obtener la función de logout
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 0);
@@ -165,7 +169,6 @@ const Header = () => {
             </Card>
           ))}
         </Box>
-
       );
     }
 
@@ -294,7 +297,6 @@ const Header = () => {
           </Card>
         ))}
       </Box>
-
     );
   };
 
@@ -357,7 +359,6 @@ const Header = () => {
                       border: '2.5px solid black',
                       borderRadius: '3px',
                       position: 'relative',
-                      transition: 'none',
                       '&:focus-within': {
                         borderColor: '#111',
                         boxShadow: 'none',
@@ -370,7 +371,7 @@ const Header = () => {
                         width: '100%',
                         height: '5px',
                         backgroundColor: '#000',
-                        borderRadius: '3px'
+                        borderRadius: '3px',
                       },
                       '&:before': {
                         content: '""',
@@ -380,7 +381,7 @@ const Header = () => {
                         width: '5px',
                         height: '105%',
                         backgroundColor: '#000',
-                        borderRadius: '3px'
+                        borderRadius: '3px',
                       },
                     }}
                   >
@@ -404,9 +405,18 @@ const Header = () => {
               </ClickAwayListener>
             )}
 
-            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}><AccountIcon /></IconButton>
-            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}><ShoppingBagIcon /></IconButton>
+            {/* Botón de Logout siempre visible */}
+            {isAuthenticated && (
+              <Tooltip title="Cerrar sesión">
+                <IconButton onClick={logout} size="large" sx={{ color: 'black' }}>
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            )}
 
+            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}>
+              <ShoppingBagIcon />
+            </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
@@ -425,7 +435,6 @@ const Header = () => {
                 border: '2.5px solid black',
                 borderRadius: '3px',
                 position: 'relative',
-                transition: 'none',
                 '&:focus-within': {
                   borderColor: '#111',
                   boxShadow: 'none',
@@ -438,7 +447,7 @@ const Header = () => {
                   width: '100%',
                   height: '5px',
                   backgroundColor: '#000',
-                  borderRadius: '3px'
+                  borderRadius: '3px',
                 },
                 '&:before': {
                   content: '""',
@@ -448,7 +457,7 @@ const Header = () => {
                   width: '5px',
                   height: '106%',
                   backgroundColor: '#000',
-                  borderRadius: '3px'
+                  borderRadius: '3px',
                 },
               }}
             >

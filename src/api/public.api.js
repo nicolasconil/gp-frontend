@@ -6,13 +6,25 @@ const api = axios.create({
     withCredentials: true
 });
 
+export default api;
+
+api.interceptors.request.use(async (config) => {
+    const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(
+        config.method?.toLowerCase()
+    );
+    if (needsCsrf) {
+        const csrf =  await getCsrfToken();
+        config.headers['x-csrf-token'] = csrf;
+    }
+    return config;
+});
+
 // autenticación 
-export const createUser = (userData) => api.post('/signup', userData)
-export const login = (credentials) => api.post('/login', credentials)
+export const login = (credentials) => api.post('/auth/login', credentials)
 export const refreshToken = () => api.post('/refresh-token');
-export const verifyEmail = (token) => api.get(`/verify-email?token=${token}`);
 export const requestPasswordReset = (email) => api.post('/forgot-password', email);
 export const resetPassword = (data) => api.post('/reset-password', data);
+export const logout = () => api.post('/auth/logout');
 
 // productos
 export const getAllProducts = () => api.get('/products');

@@ -10,12 +10,27 @@ import {
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { createPaymentPreference } from '../api/public.api.js';
 
 const products = [
-  { _id: '1', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg' },
-  { _id: '2', name: 'Vans Speed LS', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg' },
-  { _id: '3', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg' },
-  { _id: '4', name: 'Vans Hylane', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537450_800.jpg' },
+  {
+    _id: '1',
+    name: 'Vans KNU Skool',
+    imageUrl:
+      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg',
+  },
+  {
+    _id: '2',
+    name: 'Vans Speed LS',
+    imageUrl:
+      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg',
+  },
+  {
+    _id: '3',
+    name: 'Vans KNU Skool',
+    imageUrl:
+      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg',
+  },
 ];
 
 const ProductDetail = () => {
@@ -30,9 +45,39 @@ const ProductDetail = () => {
   const isOutOfStock = product.stock === 0;
   const [selectedSize, setSelectedSize] = useState(null);
 
+  const handleBuyNow = async () => {
+    if (!selectedSize) return;
+
+    try {
+      const orderData = {
+        products: [
+          {
+            productId: product._id,
+            name: product.name,
+            image: product.imageUrl,
+            price: product.price || 99999,
+            quantity: 1,
+            size: selectedSize,
+          },
+        ],
+        total: product.price || 99999,
+        buyer: {
+          name: 'Invitado',
+          email: 'invitado@email.com',
+        },
+      };
+
+      const response = await createPaymentPreference(orderData);
+      const { init_point } = response.data;
+      window.location.href = init_point;
+    } catch (error) {
+      console.error('Error al crear la preferencia de pago:', error);
+      alert('Hubo un error al procesar el pago. Intenta nuevamente.');
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
-      {/* ---------- DETALLE ---------- */}
       <Grid container spacing={6} alignItems="center">
         <Grid item xs={12} md={6}>
           <Box
@@ -45,11 +90,11 @@ const ProductDetail = () => {
               ...(isMobile
                 ? {}
                 : {
-                    '&:hover img': {
-                      transform: 'scale(1.07)',
-                      transition: 'transform 0.3s ease',
-                    },
-                  }),
+                  '&:hover img': {
+                    transform: 'scale(1.07)',
+                    transition: 'transform 0.3s ease',
+                  },
+                }),
             }}
           >
             <img
@@ -67,7 +112,7 @@ const ProductDetail = () => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Box sx={{ position: 'relative', pl: { xs: 0, md: 6 }, pt: 3, pb: 4 }}>
+          <Box sx={{ position: 'relative', pl: { xs: 0, md: 7 }, pt: 3, pb: 4 }}>
             <Typography
               variant="h3"
               sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2 }}
@@ -75,17 +120,17 @@ const ProductDetail = () => {
               {product.name}
             </Typography>
 
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#555', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, color: '#555', mb: 2 }}>
               {product.description || 'Descripción no disponible'}
             </Typography>
 
-            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', mb: 3 }}>
               ${product.price?.toLocaleString('es-AR') || '9.999'}
             </Typography>
 
             <Typography
               variant="caption"
-              sx={{ fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
             >
               Talles:
             </Typography>
@@ -109,6 +154,7 @@ const ProductDetail = () => {
                     onClick={() => !outOfStock && setSelectedSize(size)}
                     variant="outlined"
                     sx={{
+                      fontFamily: '"Archivo Black", sans-serif',
                       fontSize: 12,
                       fontWeight: 600,
                       textTransform: 'uppercase',
@@ -125,12 +171,13 @@ const ProductDetail = () => {
                         backgroundColor: isSelected
                           ? 'black'
                           : outOfStock
-                          ? '#d1d1d1'
-                          : '#f0f0f0',
+                            ? '#d1d1d1'
+                            : '#f0f0f0',
                       },
                     }}
                   >
                     {size}
+                    {/* líneas en cada botón de talle */}
                     <Box
                       sx={{
                         position: 'absolute',
@@ -171,11 +218,9 @@ const ProductDetail = () => {
                   color: 'white',
                   '&:hover': { backgroundColor: '#222' },
                 }}
-                onClick={() => {
-                  console.log(`Producto agregado (talle ${selectedSize})`);
-                }}
+                onClick={handleBuyNow}
               >
-                {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
+                {isOutOfStock ? 'Agotado' : 'Comprar ahora'}
               </Button>
 
               {isOutOfStock && (
@@ -188,58 +233,103 @@ const ProductDetail = () => {
         </Grid>
       </Grid>
 
-      {/* ---------- SUGERENCIAS ---------- */}
-      <Box sx={{ mt: 10 }}>
+      <Box sx={{ borderTop: '1px solid #e0e0e0', width: '100%', mt: 10 }}>
         <Typography
           align="center"
           sx={{
+            cursor: 'default',
             fontFamily: '"Archivo Black", sans-serif',
-            fontSize: { xs: '2rem', md: '3rem' },
+            fontSize: { xs: '1.8rem', sm: '2rem', md: '4rem' },
             textTransform: 'uppercase',
             mb: 5,
-            letterSpacing: '-2px',
+            letterSpacing: { xs: '-3.5px', md: '-8.5px' },
+            textDecoration: 'underline',
+            mt: 10,
+            color: '#e4ebe8',
+            mx: { xs: 0, sm: 0, md: 'auto' },
+            px: { xs: 0, sm: 0},
+            whiteSpace: 'nowrap',
+            transition: 'transform 0.4s ease',
+            '&:hover': {
+              ...(isMobile ? {} : {
+                transform: 'scale(1.2)'
+              })
+            }
           }}
         >
-          Podría gustarte
+          También podría gustarte
         </Typography>
 
-        <Grid container spacing={3}>
-          {products.slice(0, 4).map((item) => (
-            <Grid key={item._id} item xs={12} sm={6} md={3}>
+        <Grid container spacing={12} sx={{ px: 0, justifyContent: 'center', pt: 5 }}>
+          {products.slice(0, 3).map((item) => (
+            <Grid key={item._id} item xs={12} sm={6} md={4}>
               <Box
                 sx={{
-                  overflow: 'hidden',
-                  borderRadius: 2,
                   cursor: 'pointer',
-                  '&:hover img': {
-                    transform: 'scale(1.07)',
-                    transition: 'transform 0.3s ease',
-                  },
+                  position: 'relative',
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform .3s ease',
+                  '&:hover': { transform: 'scale(1.05)' },
                 }}
                 onClick={() =>
-                  navigate(`/producto/${item._id}`, {
-                    state: { product: item },
-                  })
+                  navigate(`/producto/${item._id}`, { state: { product: item } })
                 }
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  style={{
-                    width: '100%',
-                    height: '250px',
-                    objectFit: 'cover',
-                    display: 'block',
-                    transition: 'transform 0.3s ease',
+
+                <Box sx={{ height: '80%', overflow: 'hidden' }}>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    position: 'relative',
+                    border: '3px solid black',
+                    borderRadius: 1,
+                    mx: { xs: 6, sm: 1.5, md: 1.5 },
+                    mb: 1,
+                    px: { xs: 0.5, md: 1 },
+                    py: { xs: 0.2, md: 0.5 },
+                    minHeight: 50,
+                    backgroundColor: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
-                />
+                >
+                  <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' } }}>
+                    {item.name}
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -6,
+                      left: 6,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 3.5,
+                      right: -6,
+                      width: '5px',
+                      height: '100%',
+                      backgroundColor: 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                </Box>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1 }}>
-                {item.name}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#555' }}>
-                $99.999
-              </Typography>
             </Grid>
           ))}
         </Grid>
