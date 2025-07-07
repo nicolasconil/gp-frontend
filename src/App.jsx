@@ -8,6 +8,8 @@ import PanelPage from './pages/PanelPage.jsx';
 import Footer from './components/Footer.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 
+import ProductsPage from './pages/ProductsPage.jsx';
+
 function App() {
   return (
     <>
@@ -17,7 +19,18 @@ function App() {
         <Route path='/' element={<ProductPage />} />
         <Route path='/producto/:id' element={<ProductDetail />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path='/panel' element={<PrivateRoute roles={["administrador", "moderador"]}> <PanelPage /> </PrivateRoute>} />
+
+        <Route 
+          path='/panel' 
+          element={
+            <PrivateRoute roles={["administrador", "moderador"]}> 
+              <PanelPage /> 
+            </PrivateRoute>
+          }
+        >
+          <Route path='products' element={<ProductsPage />} />
+        </Route>
+
       </Routes>
       <Footer />
     </>

@@ -73,7 +73,6 @@ const LoginPage = () => {
         </Alert>
       )}
 
-      {/* Campo Email */}
       <Box sx={{ position: "relative", mb: 4 }}>
         <TextField
           name="email"
@@ -128,7 +127,6 @@ const LoginPage = () => {
         />
       </Box>
 
-      {/* Campo Contraseña con botón de mostrar/ocultar */}
       <Box sx={{ position: "relative", mb: 5 }}>
         <TextField
           name="password"

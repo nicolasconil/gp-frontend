@@ -32,35 +32,47 @@ export const deleteUserById = async (userId, access_token) => {
 // productos
 export const createProduct = async (product, access_token) => {
     const csrfToken = await getCsrfToken();
-    const formData = new FormData();
-    formData.append('name', product.name);
-    formData.append('price', product.price);
-    formData.append('description', product.description);
-    if (product.image) {
-        formData.append('image', product.image);
+    const fd = new FormData();
+
+    for (const [k, v] of Object.entries(product)) {
+        if (v !== undefined && v !== null) {
+            if (k === 'variations') {
+                fd.append('variations', JSON.stringify(v));
+            } else {
+                fd.append(k, v);
+            }
+        }
     }
-    return api.post('/products', formData, {
+
+    for (let [key, value] of fd.entries()) {
+        console.log(`[FormData] ${key}:`, value);
+    }
+
+    return api.post('/products', fd, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
-            'Content-Type': 'multipart/form-data',
             'x-csrf-token': csrfToken,
         },
     });
 };
 
-export const updateProduct = async (productId, product, access_token) => {
+export const updateProduct = async (id, product, access_token) => {
     const csrfToken = await getCsrfToken();
-    const formData = new FormData();
-    formData.append('name', product.name);
-    formData.append('price', product.price);
-    formData.append('description', product.description);
-    if (product.image) {
-        formData.append('image', product.image)
+    const fd = new FormData();
+
+    for (const [k, v] of Object.entries(product)) {
+        if (v !== undefined && v !== null) {
+            if (k === 'variations') {
+                fd.append('variations', JSON.stringify(v));
+            } else {
+                fd.append(k, v);
+            }
+        }
     }
-    return api.put(`/products/${productId}`, formData, {
+
+    return api.put(`/products/${id}`, fd, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
-            'Content-Type': 'multipart/form-data',
             'x-csrf-token': csrfToken,
         },
     });
@@ -148,7 +160,7 @@ export const dispatchOrder = async (id, dispatchData, access_token) => {
 
 export const deleteOrder = async (id, access_token) => {
     const csrfToken = await getCsrfToken();
-    return api.delete(`/orders/${id}`,{
+    return api.delete(`/orders/${id}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
             'x-csrf-token': csrfToken,

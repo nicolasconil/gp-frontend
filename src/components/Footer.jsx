@@ -7,9 +7,65 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useLocation } from 'react-router-dom';
 
 const Footer = () => {
   const isBelow1550 = useMediaQuery('(max-width:1550px)');
+
+  const { pathname } = useLocation();
+  const isAdmin = pathname.startsWith("/panel") || pathname.startsWith("/administrador");
+
+  if (isAdmin) {
+    return (
+      <Box component="footer"
+        sx={{
+          color: '#000',
+          mx: -1,
+          pt: 6,
+          pb: 0,
+          textAlign: 'center',
+          mb: -2,
+        }}>
+        <Box sx={{ width: '100%', px: 0, mb: -10 }}>
+          {isBelow1550 ? (
+            <Box
+              component="img"
+              src="../public/logo1.svg"
+              alt="GP Footwear"
+              sx={{
+                width: '100%',
+                maxWidth: 60,
+                mx: 'auto',
+                mb: 4,
+                opacity: 0.1,
+              }}
+            />
+          ) : (
+            <Box sx={{ overflow: 'hidden' }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Archivo Black", sans-serif',
+                  fontSize: '15.1rem',
+                  letterSpacing: '-35px',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  lineHeight: 1,
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  width: '100%',
+                  ml: '-19.5px',
+                  mb: -4.5,
+                  mt: 7.9,
+                }}
+              >
+                GP&nbsp;FOOTWEAR
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    );
+  };
 
   return (
     <>
