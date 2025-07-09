@@ -21,9 +21,9 @@ api.interceptors.request.use(async (config) => {
 
 // autenticación 
 export const login = (credentials) => api.post('/auth/login', credentials)
-export const refreshToken = () => api.post('/refresh-token');
-export const requestPasswordReset = (email) => api.post('/forgot-password', email);
-export const resetPassword = (data) => api.post('/reset-password', data);
+export const refreshToken = () => api.post('/auth/refresh-token');
+export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
+export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const logout = () => api.post('/auth/logout');
 
 // productos

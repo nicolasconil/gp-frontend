@@ -9,6 +9,7 @@ import Footer from './components/Footer.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 
 import ProductsPage from './pages/ProductsPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           }
         >
           <Route path='products' element={<ProductsPage />} />
+          <Route path='users' element={<UsersPage />} />
         </Route>
 
       </Routes>
