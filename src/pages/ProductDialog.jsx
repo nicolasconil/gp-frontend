@@ -1,17 +1,4 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  MenuItem,
-  Grid,
-  Alert,
-  Typography,
-  Box,
-  IconButton,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Grid, Alert, Typography, Box, IconButton } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useState, useEffect, useCallback } from "react";
 
@@ -23,12 +10,36 @@ const genderOptions = [
 ];
 
 const customInputStyles = {
+  fontFamily: '"Archivo Black", sans-serif',
+  "& label": {
+    color: "black",
+    fontFamily: '"Archivo Black", sans-serif',
+  },
+  "& label.Mui-focused": {
+    color: "black",
+  },
+  "& .MuiInputLabel-outlined": {
+    backgroundColor: "white",
+    padding: "0 4px",
+    transform: "translate(14px, 12px) scale(1)",
+  },
+  "& .MuiInputLabel-outlined.MuiInputLabel-shrink": {
+    transform: "translate(14px, -9px) scale(0.75)",
+  },
   "& .MuiOutlinedInput-root": {
+    borderRadius: "3px",
+    "& fieldset": {
+      borderColor: "black",
+      borderWidth: "2px",
+    },
+    "&:hover fieldset": {
+      borderColor: "black",
+    },
     "&.Mui-focused fieldset": {
       borderColor: "black",
     },
     "& input::placeholder": {
-      color: "black", // Color negro para el placeholder
+      color: "black",
     },
   },
 };
@@ -134,9 +145,10 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
           fontFamily: '"Archivo Black", sans-serif',
           fontSize: 22,
           textAlign: "center",
+          letterSpacing: '-2px',
         }}
       >
-        {title || "Editar producto"} {/* Cambié el título aquí */}
+        {title || "EDITAR PRODUCTO"} 
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 4, py: 3 }}>

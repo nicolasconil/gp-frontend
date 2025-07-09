@@ -157,7 +157,7 @@ const ProductsPage = () => {
           }}
           onClick={() =>
             open({
-              title: "Nuevo producto",
+              title: "NUEVO PRODUCTO",
               initial: {
                 name: "",
                 brand: "",

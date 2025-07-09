@@ -1,31 +1,8 @@
-import {
-    Box,
-    Paper,
-    Typography,
-    IconButton,
-    Tooltip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Button,
-    LinearProgress,
-    InputAdornment,
-} from "@mui/material";
-import {
-    DeleteOutlined,
-    LockResetOutlined,
-    Visibility,
-    VisibilityOff,
-} from "@mui/icons-material";
+import { Box, Paper, Typography, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, LinearProgress, InputAdornment } from "@mui/material";
+import { DeleteOutlined, LockResetOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
-import {
-    getAllUsers,
-    updateUserById,
-    deleteUserById,
-} from "../api/admin.api.js";
+import { getAllUsers, updateUserById, deleteUserById } from "../api/admin.api.js";
 import { resetPassword } from "../api/public.api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { DataGrid } from "@mui/x-data-grid";
@@ -303,7 +280,7 @@ const UsersPage = () => {
                         textTransform: "uppercase",
                         fontWeight: "bold",
                         fontSize: "1.4rem",
-                        borderBottom: "2px solid black",
+                        borderBottom: "1px solid #e0e0e0",
                         letterSpacing: "-2px",
                     }}
                 >
@@ -345,7 +322,7 @@ const UsersPage = () => {
                         px: 3,
                         pb: 2,
                         pt: 1,
-                        borderTop: "2px solid black",
+                        borderTop: "1px solid #e0e0e0",
                     }}
                 >
                     <Button onClick={closePwdDlg} sx={{ fontWeight: "bold", color: "black" }}>
