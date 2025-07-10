@@ -1,22 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Box,
-  InputBase,
-  ClickAwayListener,
-  useMediaQuery,
-  Card,
-  CardMedia,
-  CardContent,
-  Tooltip,
-} from "@mui/material";
+import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBagOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useAuth } from "../context/AuthContext.jsx"; // Asegúrate de que esté importado
+import AdminPanelIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import { useAuth } from "../context/AuthContext.jsx"; 
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,8 +14,7 @@ const Header = () => {
   const inputRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
 
-  // Lógica para manejar el logout
-  const { logout, isAuthenticated } = useAuth(); // Usar el hook useAuth para obtener la función de logout
+  const { logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -139,8 +127,6 @@ const Header = () => {
                   >
                     {product.name}
                   </Typography>
-
-                  {/* Línea horizontal inferior */}
                   <Box
                     sx={{
                       position: 'absolute',
@@ -152,7 +138,6 @@ const Header = () => {
                       borderRadius: '2px',
                     }}
                   />
-                  {/* Línea vertical derecha */}
                   <Box
                     sx={{
                       position: 'absolute',
@@ -172,7 +157,6 @@ const Header = () => {
       );
     }
 
-    // Desktop version actualizada
     return (
       <Box
         sx={{
@@ -405,18 +389,25 @@ const Header = () => {
               </ClickAwayListener>
             )}
 
-            {/* Botón de Logout siempre visible */}
-            {isAuthenticated && (
-              <Tooltip title="Cerrar sesión">
-                <IconButton onClick={logout} size="large" sx={{ color: 'black' }}>
-                  <LogoutIcon />
-                </IconButton>
-              </Tooltip>
-            )}
+            {isAuthenticated ? (
+              <>
+                <Tooltip title="Panel de administración">
+                  <IconButton onClick={() => window.location.href = '/panel'} size="large" sx={{ color: 'black' }}>
+                    <AdminPanelIcon />
+                  </IconButton>
+                </Tooltip>
 
+                <Tooltip title="Cerrar sesión">
+                  <IconButton onClick={logout} size="large" sx={{ color: 'black' }}>
+                    <LogoutIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
             <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}>
               <ShoppingBagIcon />
             </IconButton>
+            )}
           </Box>
         </Toolbar>
       </AppBar>

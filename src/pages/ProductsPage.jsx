@@ -1,28 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import {
-  AddOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  History as HistoryIcon,
-} from "@mui/icons-material";
-import {
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} from "../api/admin.api.js";
+import { AddOutlined, EditOutlined, DeleteOutlined, History as HistoryIcon } from "@mui/icons-material";
+import { createProduct, updateProduct, deleteProduct } from "../api/admin.api.js";
 import { getAllProducts } from "../api/public.api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import ProductDialog from "./ProductDialog.jsx";
 import StockMovementDialog from "./StockMovementDialog.jsx";
-import {
-  Paper,
-  Box,
-  Button,
-  LinearProgress,
-  Typography,
-} from "@mui/material";
+import { Paper, Box, Button, LinearProgress, Typography } from "@mui/material";
 
 const ProductsPage = () => {
   const qc = useQueryClient();

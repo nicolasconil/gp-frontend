@@ -5,7 +5,15 @@ const api = axios.create({
     withCredentials: true
 });
 
+let cachedCsrfToken = null;
+
 export const getCsrfToken = async () => {
+    if (cachedCsrfToken) return cachedCsrfToken;
     const res = await api.get('/csrf-token');
-    return res.data.csrfToken;
+    cachedCsrfToken = res.data.csrfToken;
+    return cachedCsrfToken;
+};
+
+export const resetCsrfToken = () => {
+    cachedCsrfToken = null;
 };

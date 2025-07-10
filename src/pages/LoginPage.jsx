@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  Alert,
-  TextField,
-  IconButton,
-  InputAdornment,
-} from "@mui/material";
+import { Box, Button, Typography, Alert, TextField, IconButton, InputAdornment, CircularProgress } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -20,6 +12,7 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) {
     return rolesToPanel.includes(user?.role)
@@ -33,6 +26,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const loggedUser = await login(form);
@@ -41,7 +35,19 @@ const LoginPage = () => {
         : "/";
       navigate(dest);
     } catch (err) {
-      setError(err?.response?.data?.message || "Error al iniciar sesión");
+      const message = err?.response?.data?.message;
+
+      if (message === "Contraseña incorrecta.") {
+        setError("Contraseña incorrecta");
+      } else if (message === "Usuario no encontrado.") {
+        setError("Usuario no encontrado");
+      } else if (message === "Acceso denegado: rol no autorizado.") {
+        setError("Acceso denegado para este usuario");
+      } else {
+        setError("Error al iniciar sesión");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,17 +57,18 @@ const LoginPage = () => {
       onSubmit={handleSubmit}
       sx={{ width: "90%", maxWidth: 400, mx: "auto", mt: 6 }}
     >
-      <Typography variant="h4"
+      <Typography
+        variant="h4"
         mb={5}
         fontWeight={900}
         sx={{
           fontFamily: '"Archivo Black", sans-serif',
-          letterSpacing: '-4.5px',
-          textTransform: 'uppercase',
-          color: 'black',
-          cursor: 'default',
-          textDecoration: 'underline',
-          fontSize: { xs: '3.05rem', md: '3.25rem' }
+          letterSpacing: "-4.5px",
+          textTransform: "uppercase",
+          color: "black",
+          cursor: "default",
+          textDecoration: "underline",
+          fontSize: { xs: "3.05rem", md: "3.25rem" },
         }}
       >
         INICIAR SESIÓN
@@ -72,7 +79,6 @@ const LoginPage = () => {
           {error}
         </Alert>
       )}
-
       <Box sx={{ position: "relative", mb: 4 }}>
         <TextField
           name="email"
@@ -84,22 +90,22 @@ const LoginPage = () => {
           required
           InputProps={{
             sx: {
-              border: '3px solid black',
+              border: "3px solid black",
               borderRadius: 1,
-              backgroundColor: 'white',
-              height: '45px',
-              '& input': {
-                py: '10px',
-                pr: '40px',
-                pl: '10px',
+              backgroundColor: "white",
+              height: "45px",
+              "& input": {
+                py: "10px",
+                pr: "40px",
+                pl: "10px",
               },
             },
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': { border: '1px solid white' },
-              '&:hover fieldset': { border: '1px solid white' },
-              '&.Mui-focused fieldset': { border: '1px solid white' },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": { border: "1px solid white" },
+              "&:hover fieldset": { border: "1px solid white" },
+              "&.Mui-focused fieldset": { border: "1px solid white" },
             },
           }}
         />
@@ -126,7 +132,6 @@ const LoginPage = () => {
           }}
         />
       </Box>
-
       <Box sx={{ position: "relative", mb: 5 }}>
         <TextField
           name="password"
@@ -143,29 +148,29 @@ const LoginPage = () => {
                 <IconButton
                   onClick={() => setShowPassword((prev) => !prev)}
                   edge="end"
-                  sx={{ color: 'lightgrey' }}
+                  sx={{ color: "lightgrey" }}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             ),
             sx: {
-              border: '3px solid black',
+              border: "3px solid black",
               borderRadius: 1,
-              backgroundColor: 'white',
-              height: '45px',
-              paddingRight: '15px', 
-              '& input': {
-                py: '10px',
-                pl: '10px',
+              backgroundColor: "white",
+              height: "45px",
+              paddingRight: "15px",
+              "& input": {
+                py: "10px",
+                pl: "10px",
               },
             },
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': { border: '1px solid white' },
-              '&:hover fieldset': { border: '1px solid white' },
-              '&.Mui-focused fieldset': { border: '1px solid white' },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": { border: "1px solid white" },
+              "&:hover fieldset": { border: "1px solid white" },
+              "&.Mui-focused fieldset": { border: "1px solid white" },
             },
           }}
         />
@@ -192,22 +197,26 @@ const LoginPage = () => {
           }}
         />
       </Box>
-
       <Button
         variant="contained"
         type="submit"
         fullWidth
+        disabled={loading}
         sx={{
           mt: 1,
-          color: 'white',
-          backgroundColor: 'black',
-          position: 'relative',
-          '&:hover': { backgroundColor: '#333' },
-          border: '2px solid black',
-          borderRadius: '3px'
+          color: "white",
+          backgroundColor: "black",
+          position: "relative",
+          "&:hover": { backgroundColor: "#333" },
+          border: "2px solid black",
+          borderRadius: "3px",
         }}
       >
-        Entrar
+        {loading ? (
+          <CircularProgress size={24} sx={{ color: "white" }} />
+        ) : (
+          "Entrar"
+        )}
         <Box
           sx={{
             position: "absolute",

@@ -1,17 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  login as loginRequest,
-  logout as logoutRequest,
-  refreshToken,
-} from "../api/public.api.js";
+import { login as loginRequest, logout as logoutRequest, refreshToken } from "../api/public.api.js";
 import api from "../api/public.api.js";
 
 const AuthContext = createContext();

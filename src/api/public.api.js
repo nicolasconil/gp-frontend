@@ -8,11 +8,14 @@ const api = axios.create({
 
 export default api;
 
+const EXCLUDED_FROM_CSRF = ['/auth/login', '/auth/refresh-token'];
+
 api.interceptors.request.use(async (config) => {
-    const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(
-        config.method?.toLowerCase()
-    );
-    if (needsCsrf) {
+    const method = config.method?.toLowerCase();
+    const url = config.url;
+    const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(method);
+    const isExcluded = EXCLUDED_FROM_CSRF.some(path => url.includes(path));
+    if (needsCsrf && !isExcluded) {
         const csrf =  await getCsrfToken();
         config.headers['x-csrf-token'] = csrf;
     }

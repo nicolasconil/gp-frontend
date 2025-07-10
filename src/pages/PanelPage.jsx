@@ -1,22 +1,6 @@
-import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Tooltip,
-  Grid,
-  CardActionArea,
-} from "@mui/material";
-import {
-  PeopleAltOutlined,
-  Inventory2Outlined,
-  CategoryOutlined,
-  ViewTimelineOutlined,
-  LocalShippingOutlined,
-  Logout as LogoutIcon,
-} from "@mui/icons-material";
-import { Outlet, useNavigate, useLocation, useNavigate as useRouterNavigate } from "react-router-dom";
+import { Box, AppBar, Toolbar, Typography, IconButton, Tooltip, Grid, CardActionArea } from "@mui/material";
+import { PeopleAltOutlined, Inventory2Outlined, CategoryOutlined, ViewTimelineOutlined, LocalShippingOutlined, Logout as LogoutIcon } from "@mui/icons-material";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Suspense } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -57,7 +41,7 @@ const PanelPage = () => {
                 position: "absolute",
                 bottom: "-2px",
                 left: "10%",
-                width: { xs: "94%", md: "96%" },
+                width: { xs: "94%", md: "95%" },
                 height: "3px",
                 backgroundColor: "#000",
               },
@@ -89,7 +73,7 @@ const PanelPage = () => {
 
       <Box component="main" sx={{ mt: 10, px: 3 }}>
 
-        <Typography variant="h4" fontWeight={900} textAlign="center" mb={4} sx={{ fontFamily: '"Archivo Black", sans-serif', textTransform: 'uppercase', fontSize: '3rem', letterSpacing: '-6.5px', textDecoration: 'underline' }}>
+        <Typography variant="h4" fontWeight={400} textAlign="center" mb={4} sx={{ fontFamily: '"Archivo Black", sans-serif', textTransform: 'uppercase', fontSize: '3rem', letterSpacing: '-6px', textDecoration: 'underline' }}>
           Panel administrativo
         </Typography>
 
@@ -135,7 +119,7 @@ const PanelPage = () => {
               >
                 {icon}
                 <Typography
-                  fontWeight={600}
+                  fontWeight={400}
                   fontSize="1rem"
                   mt={1.4}
                   sx={{ whiteSpace: "nowrap", fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-1px' }}
