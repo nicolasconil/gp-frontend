@@ -1,11 +1,4 @@
-import {
-  Box,
-  Typography,
-  TextField,
-  IconButton,
-  Link,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, Typography, TextField, IconButton, Link, useMediaQuery } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useLocation } from 'react-router-dom';
 

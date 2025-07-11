@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Typography,
-  Grid,
-  useMediaQuery,
-  useTheme,
-  Container,
-} from '@mui/material';
+import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';

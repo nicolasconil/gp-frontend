@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import { 
-    Dialog, DialogTitle, DialogContent, IconButton,
-    Table, TableHead, TableBody, TableRow, TableCell,
-    CircularProgress, Typography
-} from "@mui/material";
+import {  Dialog, DialogTitle, DialogContent, IconButton, Table, TableHead, TableBody, TableRow, TableCell, CircularProgress, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getStockMovementsByProduct } from "../api/admin.api.js";
 import { useAuth } from "../context/AuthContext.jsx";
