@@ -11,6 +11,7 @@ import PrivateRoute from './components/PrivateRoute.jsx';
 import ProductsPage from './pages/ProductsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import CatalogsPage from './pages/CatalogsPage.jsx';
+import OrdersPage from './pages/OrdersPage.jsx';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path='products' element={<ProductsPage />} />
           <Route path='users' element={<UsersPage />} />
           <Route path='catalogs' element={<CatalogsPage />} />
+          <Route path='orders' element={<OrdersPage />} />
         </Route>
 
       </Routes>
