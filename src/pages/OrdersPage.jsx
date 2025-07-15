@@ -57,18 +57,18 @@ const OrdersPage = () => {
         }
     };
 
-    const filteredOrders = orders.filter((o) => {
+    const filteredOrders = Array.isArray(orders) ? orders.filter((o) => {
         const matchStatus = filterStatus ? o.status === filterStatus : true;
         const matchSearch = search ? (o._id.includes(search) || (o.user?.email || "").includes(search)) : true;
         return matchStatus && matchSearch;
-    });
+    }) : [];
 
     const paginatedOrders = filteredOrders.slice((page - 1) * perPage, page * perPage);
 
     const customInputStyles = {
         fontFamily: '"Archivo Black", sans-serif',
         "& label": {
-            color: "gray",
+            color: "light gray",
             fontFamily: '"Archivo Black", sans-serif',
             backgroundColor: "white",
             padding: "0 4px",
@@ -112,35 +112,16 @@ const OrdersPage = () => {
     };
 
     return (
-        <Paper
-            sx={{
-                p: 3,
-                backgroundColor: '#fefefe',
-                border: '3px solid black',
-                borderRadius: 1,
-            }}
-        >
+        <Paper sx={{ p: 3, backgroundColor: '#fefefe', border: '3px solid black', borderRadius: 1 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography
-                    variant="h4"
-                    sx={{
-                        fontFamily: '"Archivo Black", sans-serif',
-                        letterSpacing: '-5px',
-                        textTransform: 'uppercase',
-                        textDecoration: 'underline'
-                    }}
-                >
+                <Typography variant="h4" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-5px', textTransform: 'uppercase', textDecoration: 'underline' }}>
                     Gestión de órdenes
                 </Typography>
             </Box>
             <Box display="flex" gap={2} mb={2}>
                 <FormControl sx={{ minWidth: 200, ...customInputStyles }} size="small">
                     <InputLabel> Filtrar por estado </InputLabel>
-                    <Select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        label="Filtrar por estado"
-                    >
+                    <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="Filtrar por estado">
                         <MenuItem value=""> Todas </MenuItem>
                         <MenuItem value="pendiente"> Pendiente </MenuItem>
                         <MenuItem value="procesando"> Procesando </MenuItem>
@@ -148,79 +129,34 @@ const OrdersPage = () => {
                         <MenuItem value="entregado"> Entregado </MenuItem>
                     </Select>
                 </FormControl>
-                <TextField
-                    size="small"
-                    label="Buscar por ID o email"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    sx={customInputStyles}
-                />
+                <TextField size="small" label="Buscar por ID o email" value={search} onChange={(e) => setSearch(e.target.value)} sx={customInputStyles} />
             </Box>
             {loading ? (
                 <LinearProgress />
             ) : (
                 <Box display="grid" gap={2}>
                     {paginatedOrders.map((order) => (
-                        <Button
-                            key={order._id}
-                            onClick={() => setDialog({ open: true, order })}
-                            variant="outlined"
-                            sx={{
-                                justifyContent: 'space-between',
-                                fontFamily: '"Archivo Black", sans-serif',
-                                textTransform: 'none',
-                            }}
-                        >
+                        <Button key={order._id} onClick={() => setDialog({ open: true, order })} variant="outlined" sx={{ justifyContent: 'space-between', fontFamily: '"Archivo Black", sans-serif', textTransform: 'none' }}>
                             {order._id} - {order.user?.email || 'Invitado'} - {order.status}
+                            {order.shipping?.status && ` - Envío: ${order.shipping.status}`}
                         </Button>
                     ))}
                     {!filteredOrders.length && (
-                        <Box
-                            sx={{
-                                border: '3px solid black',
-                                borderRadius: 1,
-                                p: 2,
-                                backgroundColor: '#fefefe',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}
-                        >
-                        <Typography textAlign="center" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-2px', fontSize: '1.5rem' }}>
-                            No hay órdenes registradas.
-                        </Typography>
+                        <Box sx={{ border: '3px solid black', borderRadius: 1, p: 2, backgroundColor: '#fefefe', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Typography textAlign="center" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-2px', fontSize: '1.5rem' }}>
+                                No hay órdenes registradas.
+                            </Typography>
                         </Box>
                     )}
                     {filteredOrders.length > perPage && (
-                        <Box
-                            sx={{
-                                border: '3px solid black',
-                                borderRadius: 1,
-                                p: 2,
-                                backgroundColor: "#fefefe",
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}
-                        >
-                        <Pagination
-                            count={Math.ceil(filteredOrders.length / perPage)}
-                            page={page}
-                            onChange={(_, value) => setPage(value)}
-                            sx={{ mt: 2, mx: "auto" }}
-                        />
+                        <Box sx={{ border: '3px solid black', borderRadius: 1, p: 2, backgroundColor: "#fefefe", display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Pagination count={Math.ceil(filteredOrders.length / perPage)} page={page} onChange={(_, value) => setPage(value)} sx={{ mt: 2, mx: "auto" }} />
                         </Box>
                     )}
                 </Box>
             )}
             {dialog.open && (
-                <OrderDialog
-                    order={dialog.order}
-                    onClose={() => setDialog({ open: false, order: null })}
-                    onStatusChange={handleStatusChange}
-                    onDelete={handleDeleteOrder}
-                    updating={updatingId === dialog.order._id}
-                />
+                <OrderDialog order={dialog.order} onClose={() => setDialog({ open: false, order: null })} onStatusChange={handleStatusChange} onDelete={handleDeleteOrder} updating={updatingId === dialog.order._id} />
             )}
         </Paper>
     );

@@ -57,13 +57,3 @@ export const createPaymentPreference = async (orderData) => {
         },
     });
 };
-
-// envíos
-export const createShipping = async (shippingData) => {
-    const csrfToken = await getCsrfToken();
-    return api.post('/shipping', shippingData, {
-        headers: {
-            'x-csrf-token': csrfToken,
-        },
-    });
-};

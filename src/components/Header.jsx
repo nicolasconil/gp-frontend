@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBagOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -391,7 +391,7 @@ const Header = () => {
 
             {isAuthenticated ? (
               <>
-                <Tooltip title="Panel de administración">
+                <Tooltip title="Panel administrativo">
                   <IconButton onClick={() => window.location.href = '/panel'} size="large" sx={{ color: 'black' }}>
                     <AdminPanelIcon />
                   </IconButton>

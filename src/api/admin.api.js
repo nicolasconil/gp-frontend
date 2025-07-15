@@ -225,3 +225,15 @@ export const deleteShipping = async (orderId, access_token) => {
         },
     });
 };
+
+export const getOrdersForShipping = async (access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.get('/orders/for-shipping', {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const getShippingByOrderId = (orderId) => api.get(`/shipping/${orderId}`);

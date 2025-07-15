@@ -77,5 +77,3 @@ export const updateOrderFields = async (id, updateData, access_token) => {
     });
 };
 
-// envíos
-export const getShippingByOrderId = (orderId) => api.get(`/shipping/${orderId}`);

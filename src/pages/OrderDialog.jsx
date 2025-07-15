@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Button, MenuItem, Select, CircularProgress } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Button, MenuItem, Select } from "@mui/material";
 import PropTypes from "prop-types";
 
 const OrderDialog = ({ order, onStatusChange, onDelete, updating, onClose }) => {
@@ -19,13 +19,20 @@ const OrderDialog = ({ order, onStatusChange, onDelete, updating, onClose }) => 
             <DialogContent dividers sx={{ px: 4, py: 3 }}>
                 <Typography> Cliente: {order.user?.email || "Invitado"} </Typography>
                 <Typography sx={{ mt: 1 }}> Estado actual: {order.status} </Typography>
+                {order.shipping?.status && (
+                    <Typography sx={{ mt: 1 }}> Estado envío: {order.shipping.status} </Typography>
+                )}
                 <Box mt={2}>
                     <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-1.25px' }}> Productos: </Typography>
-                    {order.products?.map((p) => (
-                        <Box key={p.productId} sx={{ ml: 1}}>
-                            <Typography variant="body2"> {p.name} - {p.quantity} u. - ${p.price} </Typography>
-                        </Box>
-                    ))}
+                    {order.products?.length ? (
+                        order.products.map((p) => (
+                            <Box key={p.productId} sx={{ ml: 1 }}>
+                                <Typography variant="body2"> {p.name} - {p.quantity} u. - ${p.price} </Typography>
+                            </Box>
+                        ))
+                    ) : (
+                        <Typography variant="body2" sx={{ ml: 1 }}>Sin productos.</Typography>
+                    )}
                 </Box>
                 <Box display="flex" gap={1} alignItems="center" mt={2}>
                     <Select
@@ -52,7 +59,7 @@ const OrderDialog = ({ order, onStatusChange, onDelete, updating, onClose }) => 
                             textTransform: 'uppercase'
                         }}
                     >
-                        {updating ? <CircularProgress size={20} /> : "Eliminar"}
+                        {updating ? "Eliminando..." : "Eliminar"}
                     </Button>
                 </Box>
             </DialogContent>

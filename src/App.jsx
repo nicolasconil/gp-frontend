@@ -12,6 +12,7 @@ import ProductsPage from './pages/ProductsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import CatalogsPage from './pages/CatalogsPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
+import ShippingsPage from './pages/ShippingsPage.jsx';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
           <Route path='users' element={<UsersPage />} />
           <Route path='catalogs' element={<CatalogsPage />} />
           <Route path='orders' element={<OrdersPage />} />
+          <Route path='shippings'element={<ShippingsPage />} />
         </Route>
 
       </Routes>
