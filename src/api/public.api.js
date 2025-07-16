@@ -48,7 +48,6 @@ export const createOrder = async (orderData) => {
     });
 };
 
-// pasarela de pagos de mercado pago
 export const createPaymentPreference = async (orderData) => {
     const csrfToken = await getCsrfToken();
     return api.post('/mercadopago/preference', orderData, {
