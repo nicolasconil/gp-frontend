@@ -2,27 +2,26 @@ import { Grid, Box, Typography, Button, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Feed from '../components/Feed.jsx';
 import { useNavigate } from 'react-router-dom';
-
-const products = [
-  { _id: '1', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg' },
-  { _id: '2', name: 'Vans Speed LS', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg' },
-  { _id: '3', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg' },
-  { _id: '4', name: 'Vans Hylane', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537450_800.jpg' },
-  { _id: '5', name: 'Vans Classic Slip-On', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/9/24/10017940_800.jpg' },
-  { _id: '6', name: 'Vans Upland', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/3/7/10629462_800.jpg' },
-  { _id: '7', name: 'Vans Old Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/24/10528620_800.jpg' },
-  { _id: '8', name: 'Vans SK8-Low', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537065_800.jpg' },
-  { _id: '9', name: 'Vans SK8-Hi', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/9/20/10008921_800.jpg' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { getAllProducts } from '../api/public.api.js';
 
 const ProductPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['products'],
+    queryFn: getAllProducts,
+  });
+
+  const products = data?.data || []
   const limit = isMobile ? 4 : 8;
   const visibleProducts = products.slice(0, limit);
   const showSeeAll = products.length > limit;
+
+  if (isLoading) return <Typography> Cargando... </Typography>
+  if (isError) return <Typography> Error cargando los productos. </Typography>
 
   return (
     <Box sx={{ textAlign: 'center', marginTop: { xs: '-350px', sm: '0' }, borderTop: '1px solid #e0e0e0', width: '100%', mt: '150px' }}>
@@ -51,8 +50,8 @@ const ProductPage = () => {
             mb: { xs: 5, md: 10 },
             cursor: 'pointer',
             '&:hover': {
-              transform: 'scale(1.1)', 
-              transition: 'transform 0.3s ease', 
+              transform: 'scale(1.1)',
+              transition: 'transform 0.3s ease',
             },
             '&::after': {
               content: '""',
@@ -67,13 +66,15 @@ const ProductPage = () => {
         >
           SHOP
         </Typography>
-
       </Box>
 
       <Grid container spacing={3} justifyContent="center" sx={{ px: { xs: 2, sm: 4 }, margin: '0 auto' }}>
         {visibleProducts.map((product) => (
-          <Grid item key={product._id} xs={12} sm={6} md={3}>
-            <Feed product={product} onClick={() => navigate(`/producto/${product._id}`, { state: { product } } )} />
+          <Grid key={product._id} item xs={12} sm={6} md={3}>
+            <Feed
+              products={[product]}
+              onClick={() => navigate(`/producto/${product._id}`, { state: { product } })}
+            />
           </Grid>
         ))}
       </Grid>

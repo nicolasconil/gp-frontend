@@ -2,28 +2,10 @@ import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } fro
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { createPaymentPreference } from '../api/public.api.js';
+import { createOrder, createPaymentPreference, getAllProducts } from '../api/public.api.js';
+import { useQuery } from '@tanstack/react-query';
 
-const products = [
-  {
-    _id: '1',
-    name: 'Vans KNU Skool',
-    imageUrl:
-      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg',
-  },
-  {
-    _id: '2',
-    name: 'Vans Speed LS',
-    imageUrl:
-      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg',
-  },
-  {
-    _id: '3',
-    name: 'Vans KNU Skool',
-    imageUrl:
-      'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg',
-  },
-];
+const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const ProductDetail = () => {
   const theme = useTheme();
@@ -32,36 +14,61 @@ const ProductDetail = () => {
   const location = useLocation();
 
   const { product } = location.state ?? { product: {} };
-  const sizeStock = product.sizeStock || {};
-  const sizes = [36, 37, 38, 39, 40, 41, 42, 43, 44];
+  const variations = product.variations || [];
   const isOutOfStock = product.stock === 0;
-  const [selectedSize, setSelectedSize] = useState(null);
+  const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
+  const allColors = [...new Set(variations.map(v => v.color))];
+
+  const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
+  const [selectedVariation, setSelectedVariation] = useState(null);
+
+  const isSizeAvailable = (size) => {
+    return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
+  };
+
+  const getVariationForSize = (size) => {
+    return variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
+  };
+
+  const getImageForColor = () => {
+    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
+    return variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
+  };
+
+  const { data: productsData } = useQuery({
+    queryKey: ['randomProducts'],
+    queryFn: getAllProducts,
+    select: data => {
+      const items = data.data.filter(p => p._id !== product._id);
+      return items.sort(() => 0.5 - Math.random()).slice(0, 3);
+    },
+  });
 
   const handleBuyNow = async () => {
-    if (!selectedSize) return;
-
+    if (!selectedVariation) return;
     try {
       const orderData = {
         products: [
           {
             productId: product._id,
-            name: product.name,
-            image: product.imageUrl,
-            price: product.price || 99999,
+            product: product.name,
+            image: selectedVariation.image || product.image,
+            price: product.price,
             quantity: 1,
-            size: selectedSize,
+            size: selectedVariation.size,
           },
         ],
-        total: product.price || 99999,
+        total: product.price,
         buyer: {
           name: 'Invitado',
           email: 'invitado@email.com',
         },
       };
-
-      const response = await createPaymentPreference(orderData);
-      const { init_point } = response.data;
-      window.location.href = init_point;
+      const orderResponse = await createOrder(orderData);
+      const createdOrder = orderResponse.data;
+      const preferenceResponse = await createPaymentPreference(createdOrder);
+      const preferenceId = preferenceResponse.data.id;
+      window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${preferenceId}`;
     } catch (error) {
       console.error('Error al crear la preferencia de pago:', error);
       alert('Hubo un error al procesar el pago. Intenta nuevamente.');
@@ -70,8 +77,13 @@ const ProductDetail = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
-      <Grid container spacing={6} alignItems="center">
-        <Grid item xs={12} md={6}>
+      <Grid container spacing={6} alignItems="flex-start" justifyContent="center">
+        <Grid xs={12} md={6} sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          maxWidth: { md: 600 },
+          mx: 'auto'
+        }}>
           <Box
             sx={{
               display: 'flex',
@@ -79,6 +91,8 @@ const ProductDetail = () => {
               alignItems: 'center',
               overflow: 'hidden',
               borderRadius: 2,
+              maxWidth: { xs: '90%', md: 500 },
+              minHeight: { md: 600 },
               ...(isMobile
                 ? {}
                 : {
@@ -90,11 +104,15 @@ const ProductDetail = () => {
             }}
           >
             <img
-              src={product.imageUrl}
+              src={
+                getImageForColor().startsWith('/uploads')
+                  ? `${baseURL}${getImageForColor()}`
+                  : getImageForColor()
+              }
               alt={product.name}
               style={{
-                width: isMobile ? '90%' : '100%',
-                height: isMobile ? 'auto' : '600px',
+                width: '100%',
+                height: 'auto',
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'transform 0.3s ease',
@@ -102,12 +120,16 @@ const ProductDetail = () => {
             />
           </Box>
         </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Box sx={{ position: 'relative', pl: { xs: 0, md: 7 }, pt: 3, pb: 4 }}>
+        <Grid xs={12} md={6} sx={{
+          maxWidth: { md: 600 },
+          mx: 'auto',
+          textAlign: { xs: 'left', md: 'left' },
+          pl: { xs: 0, md: 7 }
+        }}>
+          <Box sx={{ pt: { xs: 3, md: 7 }, pb: 4 }}>
             <Typography
               variant="h3"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2 }}
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
             >
               {product.name}
             </Typography>
@@ -117,59 +139,110 @@ const ProductDetail = () => {
             </Typography>
 
             <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', mb: 3 }}>
-              ${product.price?.toLocaleString('es-AR') || '9.999'}
+              ${product.price?.toLocaleString('es-AR')}
             </Typography>
 
             <Typography
               variant="caption"
               sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
             >
-              Talles:
+              Color:
             </Typography>
 
+            <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+              {allColors.map(color => (
+                <Button
+                  key={color}
+                  onClick={() => { selectedColor(color); setSelectedVariation(null); }}
+                  variant={selectedColor === color ? 'contained' : 'outlined'}
+                  sx={{
+                    fontFamily: '"Archivo Black", sans-serif',
+                    fontSize: 13,
+                    fontWeight: 400,
+                    textTransform: 'uppercase',
+                    px: 1,
+                    py: 0.5,
+                    minWidth: 'auto',
+                    borderRadius: 1,
+                    border: '2px solid black',
+                    color: selectedColor === color ? 'white' : 'black',
+                    backgroundColor: selectedColor === color ? 'black' : 'white',
+                    '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' }
+                  }}
+                >
+                  {color}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: 4,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
+                    }}
+                  />
+                </Button>
+              ))}
+            </Box>
+            <Typography
+              variant="caption"
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
+            >
+              Talles:
+            </Typography>
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1r)', md: 'repeat(3, 1fr)' },
                 gap: 1,
                 mb: 3,
+                justifyContent: { xs: 'center', md: 'flex-start' }
               }}
             >
-              {sizes.map((size) => {
-                const outOfStock = sizeStock[size] === 0;
-                const isSelected = selectedSize === size;
-
+              {allSizes.map((size) => {
+                const available = isSizeAvailable(size);
+                const isSelected = selectedVariation && selectedVariation.size === size;
                 return (
                   <Button
                     key={size}
-                    disabled={outOfStock}
-                    onClick={() => !outOfStock && setSelectedSize(size)}
+                    onClick={() => available && setSelectedVariation(getVariationForSize(size))}
                     variant="outlined"
                     sx={{
                       fontFamily: '"Archivo Black", sans-serif',
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       px: 0.5,
                       py: 0.25,
                       minWidth: 'auto',
                       borderRadius: 1,
-                      border: '2px solid black',
+                      border: available ? '2px solid black' : '2px solid #777',
                       position: 'relative',
-                      color: outOfStock ? '#777' : isSelected ? 'white' : 'black',
-                      backgroundColor: isSelected ? 'black' : outOfStock ? '#d1d1d1' : 'transparent',
-                      textDecoration: outOfStock ? 'line-through' : 'none',
+                      color: available ? (isSelected ? 'white' : 'black') : '#777',
+                      backgroundColor: isSelected ? 'black' : available ? 'transparent' : '#f0f0f0',
+                      textDecoration: available ? 'none' : 'line-through',
                       '&:hover': {
                         backgroundColor: isSelected
                           ? 'black'
-                          : outOfStock
-                            ? '#d1d1d1'
-                            : '#f0f0f0',
+                          : available
+                            ? '#f0f0f0'
+                            : '#d1d1d1',
                       },
                     }}
                   >
                     {size}
-                    {/* líneas en cada botón de talle */}
                     <Box
                       sx={{
                         position: 'absolute',
@@ -177,7 +250,7 @@ const ProductDetail = () => {
                         left: 4,
                         width: '100%',
                         height: '4px',
-                        backgroundColor: outOfStock ? '#777' : 'black',
+                        backgroundColor: available ? 'black' : '#777',
                         borderRadius: 4,
                       }}
                     />
@@ -188,7 +261,7 @@ const ProductDetail = () => {
                         right: -4,
                         width: '4px',
                         height: { xs: '102%', md: '103%' },
-                        backgroundColor: outOfStock ? '#777' : 'black',
+                        backgroundColor: available ? 'black' : '#777',
                         borderRadius: 1,
                       }}
                     />
@@ -196,30 +269,71 @@ const ProductDetail = () => {
                 );
               })}
             </Box>
-
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button
                 variant="contained"
-                disabled={isOutOfStock || !selectedSize}
-                startIcon={<AddShoppingCartIcon />}
+                disabled={isOutOfStock || !variations.length}
+                startIcon={isOutOfStock ? '' : <AddShoppingCartIcon />}
                 sx={{
                   textTransform: 'uppercase',
                   fontWeight: 600,
                   fontSize: 16,
-                  backgroundColor: 'black',
-                  color: 'white',
-                  '&:hover': { backgroundColor: '#222' },
+                  color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
+                  backgroundColor: selectedVariation
+                    ? 'black'
+                    : isOutOfStock || !variations.length
+                      ? '#d1d1d1'
+                      : 'white',
+                  border: '3px solid',
+                  borderColor: selectedVariation
+                    ? 'black'
+                    : isOutOfStock || !variations.length
+                      ? '#777'
+                      : 'black',
+                  '&:hover': {
+                    backgroundColor: selectedVariation
+                      ? 'black'
+                      : isOutOfStock || !variations.length
+                        ? '#d1d1d1'
+                        : '#f0f0f0',
+                  },
+                  position: 'relative',
                 }}
                 onClick={handleBuyNow}
               >
                 {isOutOfStock ? 'Agotado' : 'Comprar ahora'}
-              </Button>
 
-              {isOutOfStock && (
-                <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-                  Este producto está agotado
-                </Typography>
-              )}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -5.5,
+                    left: 4,
+                    width: '100%',
+                    height: '4px',
+                    backgroundColor: selectedVariation
+                      ? 'black'
+                      : isOutOfStock || !variations.length
+                        ? '#777'
+                        : 'black',
+                    borderRadius: 4,
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 2,
+                    right: -5.5,
+                    width: '4px',
+                    height: { xs: '108%', md: '109%' },
+                    backgroundColor: selectedVariation
+                      ? 'black'
+                      : isOutOfStock || !variations.length
+                        ? '#777'
+                        : 'black',
+                    borderRadius: 1,
+                  }}
+                />
+              </Button>
             </Box>
           </Box>
         </Grid>
@@ -239,27 +353,27 @@ const ProductDetail = () => {
             mt: 10,
             color: '#e4ebe8',
             mx: { xs: 0, sm: 0, md: 'auto' },
-            px: { xs: 0, sm: 0},
+            px: { xs: 0, sm: 0 },
             whiteSpace: 'nowrap',
             transition: 'transform 0.4s ease',
             '&:hover': {
               ...(isMobile ? {} : {
-                transform: 'scale(1.2)'
-              })
-            }
+                transform: 'scale(1.2)',
+              }),
+            },
           }}
         >
           También podría gustarte
         </Typography>
 
         <Grid container spacing={12} sx={{ px: 0, justifyContent: 'center', pt: 5 }}>
-          {products.slice(0, 3).map((item) => (
+          {productsData?.slice(0, 3).map((item) => (
             <Grid key={item._id} item xs={12} sm={6} md={4}>
               <Box
                 sx={{
                   cursor: 'pointer',
                   position: 'relative',
-                  height: 400,
+                  height: 480,
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'transform .3s ease',
@@ -269,10 +383,13 @@ const ProductDetail = () => {
                   navigate(`/producto/${item._id}`, { state: { product: item } })
                 }
               >
-
-                <Box sx={{ height: '80%', overflow: 'hidden' }}>
+                <Box sx={{ height: '70%', overflow: 'hidden' }}>
                   <img
-                    src={item.imageUrl}
+                    src={
+                      item.image?.startsWith('/uploads')
+                        ? `${baseURL}${item.image}`
+                        : item.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
+                    }
                     alt={item.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
@@ -291,10 +408,10 @@ const ProductDetail = () => {
                     backgroundColor: '#fff',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' } }}>
+                  <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
 

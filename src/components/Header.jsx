@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography, Badge } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBagOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import { useAuth } from "../context/AuthContext.jsx"; 
+import { useAuth } from "../context/AuthContext.jsx";
+import { useCart } from "../context/CartContext.jsx";
+import Cart from "./Cart.jsx";
+import { getAllProducts } from "../api/public.api.js";
+import { useQuery } from "@tanstack/react-query";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +18,10 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const { logout, isAuthenticated } = useAuth();
+  const { getTotal } = useCart();
+  const { totalQuantity } = getTotal();
+
+  const baseURL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,24 +31,18 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const products = [
-    { _id: '1', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/10/2/10042258_800.jpg' },
-    { _id: '2', name: 'Vans Speed LS', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537975_800.jpg' },
-    { _id: '3', name: 'Vans KNU Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537126_800.jpg' },
-    { _id: '4', name: 'Vans Hylane', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537450_800.jpg' },
-    { _id: '5', name: 'Vans Slip-On', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2024/9/24/10017940_800.jpg' },
-    { _id: '6', name: 'Vans Upland', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/3/7/10629462_800.jpg' },
-    { _id: '7', name: 'Vans Old Skool', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/24/10528620_800.jpg' },
-    { _id: '8', name: 'Vans SK8-Low', imageUrl: 'https://mmgrim2.azureedge.net/MediaFiles/Grimoldi/2025/1/28/10537065_800.jpg' },
-  ];
+  const { data: productsData } = useQuery({
+    queryKey: ['products'],
+    queryFn: getAllProducts,
+    select: (data) => data.data,
+  });
 
-  const filteredResults = products.filter((product) =>
+  const filteredResults = productsData?.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
 
   const renderSearchResults = () => {
     if (searchTerm.length <= 0 || filteredResults.length === 0) return null;
-
     if (isMobile) {
       return (
         <Box
@@ -84,7 +85,7 @@ const Header = () => {
             >
               <CardMedia
                 component="img"
-                src={product.imageUrl}
+                src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
                 alt={product.name}
                 sx={{
                   height: 160,
@@ -200,7 +201,7 @@ const Header = () => {
           >
             <CardMedia
               component="img"
-              src={product.imageUrl}
+              src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
               alt={product.name}
               sx={{
                 width: '100%',
@@ -404,9 +405,14 @@ const Header = () => {
                 </Tooltip>
               </>
             ) : (
-            <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}>
-              <ShoppingBagIcon />
-            </IconButton>
+              <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}>
+                <Badge
+                  badgeContent={totalQuantity}
+                  color="default"
+                >
+                  <Cart />
+                </Badge>
+              </IconButton>
             )}
           </Box>
         </Toolbar>
