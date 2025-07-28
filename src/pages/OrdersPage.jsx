@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Typography, LinearProgress, MenuItem, Select, InputLabel, FormControl, TextField, Pagination, Button, Paper } from "@mui/material";
+import { Box, Typography, MenuItem, Select, InputLabel, FormControl, TextField, Pagination, Button, Paper } from "@mui/material";
 import { getAllOrders, updateOrderStatus, deleteOrder } from "../api/admin.api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import OrderDialog from "./OrderDialog.jsx";
@@ -8,11 +8,12 @@ const OrdersPage = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const [updatingId, setUpdatingId] = useState(null);
     const [filterStatus, setFilterStatus] = useState("");
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const perPage = 5;
+    const perPage = 50;
     const [dialog, setDialog] = useState({ open: false, order: null });
 
     useEffect(() => {
@@ -23,10 +24,12 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
+            setError(false);
             const { data } = await getAllOrders(user.access_token);
-            setOrders(data);
+            setOrders(data.orders || []);
         } catch (error) {
             console.error("Error buscando órdenes:", error);
+            setError(true);
         } finally {
             setLoading(false);
         }
@@ -59,7 +62,7 @@ const OrdersPage = () => {
 
     const filteredOrders = Array.isArray(orders) ? orders.filter((o) => {
         const matchStatus = filterStatus ? o.status === filterStatus : true;
-        const matchSearch = search ? (o._id.includes(search) || (o.user?.email || "").includes(search)) : true;
+        const matchSearch = search ? (o._id.includes(search) || (o.guestEmail || "").toLowerCase().includes(search.toLowerCase())) : true;
         return matchStatus && matchSearch;
     }) : [];
 
@@ -111,6 +114,68 @@ const OrdersPage = () => {
         },
     };
 
+    if (loading) {
+        return (
+            <Box sx={{
+                height: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+                flexDirection: 'column'
+            }}>
+                <Box
+                    component='img'
+                    src='/logo1.svg'
+                    alt='Cargando...'
+                    sx={{
+                        width: 120,
+                        height: 'auto',
+                        opacity: 0.5,
+                        animation: 'pulseOpacity 2s infinite ease-in-out',
+                    }}
+                />
+                <Typography variant='h5' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+                    Cargando órdenes...
+                </Typography>
+                <style>
+                    {`
+                        @keyframes pulseOpacity {
+                        0% { opacity: 0.2; }
+                        50% { opacity: 1; }
+                        100% { opacity: 0.2; }
+                        }
+                    `}
+                </style>
+            </Box>
+        )
+    }
+
+    if (error) {
+        return (
+            <Box sx={{
+                height: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+                textAlign: 'center'
+            }}>
+                <Box component='img' src='/logo1.svg' alt='Error' sx={{ width: 120, height: 'auto', opacity: 0.3 }} />
+                <Typography variant='h6' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+                    Error cargando las órdenes.
+                </Typography>
+                <Button
+                    variant='contained'
+                    onClick={() => window.location.reload()}
+                    sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', backgroundColor: 'black', color: 'white' }}
+                >
+                    Reintentar
+                </Button>
+            </Box>
+        );
+    }
+
     return (
         <Paper sx={{ p: 3, backgroundColor: '#fefefe', border: '3px solid black', borderRadius: 1 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -131,14 +196,11 @@ const OrdersPage = () => {
                 </FormControl>
                 <TextField size="small" label="Buscar por ID o email" value={search} onChange={(e) => setSearch(e.target.value)} sx={customInputStyles} />
             </Box>
-            {loading ? (
-                <LinearProgress />
-            ) : (
                 <Box display="grid" gap={2}>
                     {paginatedOrders.map((order) => (
-                        <Button key={order._id} onClick={() => setDialog({ open: true, order })} variant="outlined" sx={{ justifyContent: 'space-between', fontFamily: '"Archivo Black", sans-serif', textTransform: 'none' }}>
-                            {order._id} - {order.user?.email || 'Invitado'} - {order.status}
-                            {order.shipping?.status && ` - Envío: ${order.shipping.status}`}
+                        <Button key={order._id} onClick={() => setDialog({ open: true, order })} variant="outlined" color="inherit" sx={{ justifyContent: 'space-between', fontFamily: '"Archivo Black", sans-serif', textTransform: 'none', color: 'black', border: '2px solid black' }}>
+                           Orden #{order._id} - Cliente: {order.guestName || 'Invitado'} - Email: {order.guestEmail || 'Invitado'} - Envío {order.status}
+                            {order.shipping?.status && ` - Envío: ${order.shipping.status ?? 'No disponible'}`}
                         </Button>
                     ))}
                     {!filteredOrders.length && (
@@ -154,7 +216,6 @@ const OrdersPage = () => {
                         </Box>
                     )}
                 </Box>
-            )}
             {dialog.open && (
                 <OrderDialog order={dialog.order} onClose={() => setDialog({ open: false, order: null })} onStatusChange={handleStatusChange} onDelete={handleDeleteOrder} updating={updatingId === dialog.order._id} />
             )}

@@ -107,6 +107,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
       size: Number(currentSize),
       color: currentColor.trim().toLowerCase(),
       stock: Number(currentStock),
+      product: initial._id,
     };
     setVariations((prev) => [...prev, newVar]);
     setCurrentSize("");
@@ -127,14 +128,17 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
     if (variations.length === 0) {
       setError("Agregá al menos una combinación de talle y color.");
       return;
-    }
+    };
 
     onSubmit({
       ...form,
-      variations,
+      _id: initial._id,
+      variations: variations.map((v) => ({
+        ...v,
+        product: initial._id,
+      })),
       image: file || form.image,
     });
-
     onClose();
   };
 

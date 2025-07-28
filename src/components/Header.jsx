@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography, Badge } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useCart } from "../context/CartContext.jsx";
 import Cart from "./Cart.jsx";
 import { getAllProducts } from "../api/public.api.js";
 import { useQuery } from "@tanstack/react-query";
@@ -18,8 +17,6 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const { logout, isAuthenticated } = useAuth();
-  const { getTotal } = useCart();
-  const { totalQuantity } = getTotal();
 
   const baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -405,14 +402,7 @@ const Header = () => {
                 </Tooltip>
               </>
             ) : (
-              <IconButton sx={{ color: 'black', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'transparent' } }}>
-                <Badge
-                  badgeContent={totalQuantity}
-                  color="default"
-                >
-                  <Cart />
-                </Badge>
-              </IconButton>
+              <Cart />
             )}
           </Box>
         </Toolbar>

@@ -40,12 +40,7 @@ export const getCatalogById = (id) => api.get(`/catalogs/${id}`);
 
 // órdenes 
 export const createOrder = async (orderData) => {
-    const csrfToken = await getCsrfToken();
-    return api.post('/orders', orderData, {
-        headers: {
-            'x-csrf-token': csrfToken,
-        },
-    });
+    return api.post('/orders', orderData);
 };
 
 export const createPaymentPreference = async (orderData) => {

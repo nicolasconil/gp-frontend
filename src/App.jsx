@@ -3,10 +3,12 @@ import Header from './components/Header.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
+import AllProductsPage from './pages/AllProductsPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import PanelPage from './pages/PanelPage.jsx';
 import Footer from './components/Footer.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import Checkout from './components/Checkout.jsx';
 
 import ProductsPage from './pages/ProductsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
@@ -22,7 +24,9 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path='/' element={<ProductPage />} />
         <Route path='/producto/:id' element={<ProductDetail />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path='/productos' element={<AllProductsPage />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/checkout' element={<Checkout />} />
 
         <Route 
           path='/panel' 

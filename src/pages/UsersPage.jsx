@@ -246,32 +246,53 @@ const UsersPage = () => {
                     Gestión de usuarios
                 </Typography>
             </Box>
-
-            <DataGrid
-                autoHeight
-                rows={users}
-                getRowId={(r) => r._id}
-                columns={columns}
-                loading={loading}
-                components={{ LoadingOverlay: LinearProgress }}
-                pageSize={8}
-                sx={{
-                    fontFamily: '"Archivo Black", sans-serif',
-                    border: "3px solid black",
-                    boxShadow: 1,
-                    borderRadius: 1,
-                    "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "white",
-                        fontSize: 16,
-                        borderBottom: "1px solid black",
-                    },
-                    "& .MuiDataGrid-cell": {
-                        fontSize: 15,
-                        borderBottom: "1px solid black",
-                    },
-                }}
-            />
-
+            {!users.length && !loading ? (
+                <Box
+                    sx={{
+                        border: '3px solid black',
+                        borderRadius: 1,
+                        p: 2,
+                        backgroundColor: '#fefefe',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Typography
+                        textAlign="center"
+                        sx={{
+                            fontFamily: '"Archivo Black", sans-serif',
+                            letterSpacing: '-2px',
+                            fontSize: '1.5rem'
+                        }}
+                    >
+                        No hay usuarios registrados.
+                    </Typography>
+                </Box>
+            ) : (
+                <DataGrid
+                    autoHeight
+                    rows={users}
+                    getRowId={(r) => r._id}
+                    columns={columns}
+                    loading={loading}
+                    components={{ LoadingOverlay: LinearProgress }}
+                    pageSize={8}
+                    sx={{
+                        fontFamily: '"Archivo Black", sans-serif',
+                        border: "3px solid black",
+                        boxShadow: 1,
+                        borderRadius: 1,
+                        "& .MuiDataGrid-columnHeaders": {
+                            backgroundColor: "white",
+                            fontSize: 16,
+                        },
+                        "& .MuiDataGrid-cell": {
+                            fontSize: 15,
+                        },
+                    }}
+                />
+            )}
             <Dialog open={openDialog} onClose={closePwdDlg} fullWidth maxWidth="xs">
                 <DialogTitle
                     sx={{
@@ -286,7 +307,6 @@ const UsersPage = () => {
                 >
                     Cambiar contraseña
                 </DialogTitle>
-
                 <DialogContent
                     sx={{
                         display: "flex",
@@ -315,7 +335,6 @@ const UsersPage = () => {
                         error={passwordMismatch && passwordData.confirm.length > 0}
                     />
                 </DialogContent>
-
                 <DialogActions
                     sx={{
                         justifyContent: "space-between",

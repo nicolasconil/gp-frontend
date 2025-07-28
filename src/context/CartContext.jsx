@@ -1,31 +1,51 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 
 const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState([]);
+    const [cartItems, setCartItems] = useState(() => {
+        const savedCart = localStorage.getItem('cartItems');
+        return savedCart ? JSON.parse(savedCart) : [];
+    });
 
-    const addToCart = (product) => {
+    useEffect(() => {
+        if (cartItems.length > 0) {
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        }
+    }, [cartItems]);
+
+    const addToCart = (product, size, color, quantity) => {
+        const variationId = `${product._id}_${size}_${color}`;
+        const cartItem = {
+            id: variationId,
+            productId: product._id,
+            name: product.name,
+            size,
+            color,
+            quantity,
+            price: product.price,
+            image: product.image
+        };
         setCartItems((prevItems) => {
-            const existingProductIndex = prevItems.findIndex(item => item.id === product.id);
+            const existingProductIndex = prevItems.findIndex(item => item.id === variationId);
             if (existingProductIndex > -1) {
                 const updatedCartItems = [...prevItems];
-                updatedCartItems[existingProductIndex].quantity += product.quantity;
+                updatedCartItems[existingProductIndex].quantity += quantity;
                 return updatedCartItems;
             } else {
-                return [...prevItems, product];
+                return [...prevItems, cartItem];
             }
         });
     };
 
-    const removeFromCart = (productId) => {
-        setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+    const removeFromCart = (variationId) => {
+        setCartItems(prevItems => prevItems.filter(item => item.id !== variationId));
     };
 
-    const updateQuantity = (productId, quantity) => {
+    const updateQuantity = (variationId, quantity) => {
         setCartItems((prevItems) => {
             const updatedCartItems = prevItems.map(item => {
-                if (item.id === productId) {
+                if (item.id === variationId) {
                     return { ...item, quantity };
                 }
                 return item;
@@ -35,13 +55,22 @@ const CartProvider = ({ children }) => {
     };
 
     const getTotal = () => {
-        const totaltAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        const totalQuantity = cartItems.reduce((total, item) =>  total + item.quantity, 0);
-        return { totaltAmount, totalQuantity};
+        const totalAmount = cartItems.reduce((total, item) => {
+            const cleanPrice = parseFloat(String(item.price).replace(/\./g, '').replace(/,/g, '.'));
+            const validQuantity = Number(item.quantity) || 0; 
+            return total + (cleanPrice * validQuantity);
+        }, 0);
+
+        const totalQuantity = cartItems.reduce((total, item) => {
+            return total + (Number(item.quantity) || 0); 
+        }, 0);
+
+        return { totalAmount, totalQuantity };
     };
 
     const resetCart = () => {
         setCartItems([]);
+        localStorage.removeItem('cartItems');
     };
 
     return (
