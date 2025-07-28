@@ -1,4 +1,4 @@
-import { Grid, Box, Typography, Button, useMediaQuery } from '@mui/material';
+import { Grid, Box, Typography, useMediaQuery, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Feed from '../components/Feed.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -20,8 +20,100 @@ const ProductPage = () => {
   const visibleProducts = products.slice(0, limit);
   const showSeeAll = products.length > limit;
 
-  if (isLoading) return <Typography> Cargando... </Typography>
-  if (isError) return <Typography> Error cargando los productos. </Typography>
+  if (isLoading) {
+    return (
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        flexDirection: 'column'
+      }}
+      >
+        <Box
+          component='img'
+          src='/logo1.svg'
+          alt='Cargando...'
+          sx={{
+            width: 120,
+            height: 'auto',
+            opacity: 0.5,
+            animation: 'pulseOpacity 2s infinite ease-in-out',
+          }}
+        />
+        <Typography variant='h5' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+          Cargando productos...
+        </Typography>
+        <style>
+          {`
+            @keyframes pulseOpacity {
+            0% { opacity: 0,2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+            }
+          `}
+        </style>
+      </Box>
+    )
+  }
+  if (isError) {
+    return (
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        flexDirection: 'column',
+        textAlign: 'center',
+      }}
+      >
+        <Box
+          component='img'
+          src='/logo1.svg'
+          alt='Error'
+          sx={{
+            width: 120,
+            height: 'auto',
+            opacity: 0.3,
+          }}
+        />
+        <Typography variant='h6' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+          Error cargando los productos.
+        </Typography>
+        <Button
+          variant='contained'
+          onClick={() => window.location.reload()}
+          sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', borderRadius: '4px', backgroundColor: 'black', color: 'white' }}
+        >
+          Reintentar
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -5,
+              left: 6,
+              width: '98%',
+              height: '6px',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 6,
+              right: -5,
+              width: '6px',
+              height: { xs: '95%', md: '97%' },
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+        </Button>
+      </Box>
+    )
+  };
 
   return (
     <Box sx={{ textAlign: 'center', marginTop: { xs: '-350px', sm: '0' }, borderTop: '1px solid #e0e0e0', width: '100%', mt: '150px' }}>
@@ -68,7 +160,7 @@ const ProductPage = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3} justifyContent="center" sx={{ px: { xs: 2, sm: 4 }, margin: '0 auto' }}>
+      <Grid container spacing={3} sx={{ px: { xs: 2, sm: 4 }, margin: '0 auto', justifyContent: { xs: 'center' } }}>
         {visibleProducts.map((product) => (
           <Grid key={product._id} item xs={12} sm={6} md={3}>
             <Feed
@@ -81,9 +173,8 @@ const ProductPage = () => {
 
       {showSeeAll && (
         <Box mt={7}>
-          <Typography
-            component="a"
-            href='#'
+          <Button
+            onClick={() => navigate('/productos')}
             sx={{
               fontFamily: '"Archivo Black", sans-serif',
               fontSize: '1rem',
@@ -94,10 +185,11 @@ const ProductPage = () => {
               '&:hover': {
                 opacity: 0.85,
               },
+              textDecoration: 'underline'
             }}
           >
             VER TODOS LOS PRODUCTOS
-          </Typography>
+          </Button>
         </Box>
       )}
     </Box>

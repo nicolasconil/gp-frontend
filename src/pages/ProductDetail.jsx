@@ -1,9 +1,10 @@
 import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { createOrder, createPaymentPreference, getAllProducts } from '../api/public.api.js';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useCart } from '../context/CartContext'
+import { getAllProducts } from '../api/public.api.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -21,6 +22,14 @@ const ProductDetail = () => {
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
+
+  useEffect(() => {
+    const newProduct = location.state?.product || {};
+    const newVariations = newProduct.variations || [];
+    const newColors = [...new Set(newVariations.map(v => v.color))];
+    setSelectedColor(newColors[0] || null);
+    setSelectedVariation(null);
+  }, [location.state?.product]);
 
   const isSizeAvailable = (size) => {
     return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
@@ -44,35 +53,11 @@ const ProductDetail = () => {
     },
   });
 
-  const handleBuyNow = async () => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = async () => {
     if (!selectedVariation) return;
-    try {
-      const orderData = {
-        products: [
-          {
-            productId: product._id,
-            product: product.name,
-            image: selectedVariation.image || product.image,
-            price: product.price,
-            quantity: 1,
-            size: selectedVariation.size,
-          },
-        ],
-        total: product.price,
-        buyer: {
-          name: 'Invitado',
-          email: 'invitado@email.com',
-        },
-      };
-      const orderResponse = await createOrder(orderData);
-      const createdOrder = orderResponse.data;
-      const preferenceResponse = await createPaymentPreference(createdOrder);
-      const preferenceId = preferenceResponse.data.id;
-      window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${preferenceId}`;
-    } catch (error) {
-      console.error('Error al crear la preferencia de pago:', error);
-      alert('Hubo un error al procesar el pago. Intenta nuevamente.');
-    }
+    addToCart(product, selectedVariation.size, selectedColor, 1);
   };
 
   return (
@@ -299,9 +284,9 @@ const ProductDetail = () => {
                   },
                   position: 'relative',
                 }}
-                onClick={handleBuyNow}
+                onClick={handleAddToCart}
               >
-                {isOutOfStock ? 'Agotado' : 'Comprar ahora'}
+                {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
 
                 <Box
                   sx={{
@@ -373,7 +358,7 @@ const ProductDetail = () => {
                 sx={{
                   cursor: 'pointer',
                   position: 'relative',
-                  height: 480,
+                  height: 455,
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'transform .3s ease',

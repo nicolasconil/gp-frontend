@@ -1,14 +1,12 @@
 import { Box, Button, Card, CardContent, CardMedia, Typography, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { useCart } from '../context/CartContext.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const Feed = ({ products = [], onClick }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -20,15 +18,8 @@ const Feed = ({ products = [], onClick }) => {
             ? product.image
             : 'https://via.placeholder.com/300x300?text=Producto';
 
-        const handleAddToCart = (e) => {
-          e.stopPropagation();
-          if (isOutOfStock) return;
-          const productWithPrice = {
-            ...product,
-            price: product.price || 9999,
-            quantity: 1,
-          }
-          addToCart(productWithPrice);
+        const handleGoTODetail = () => {
+          navigate(`/producto/${product._id}`, { state: { product } });
         };
 
         return (
@@ -92,68 +83,65 @@ const Feed = ({ products = [], onClick }) => {
                   py: 3,
                 }}
               >
-                <Tooltip title="Ver detalle" arrow>
-                  <Box
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    border: isOutOfStock ? '3px solid grey' : '3px solid black',
+                    px: 2,
+                    py: 1,
+                    position: 'relative',
+                    mx: 'auto',
+                    borderRadius: '4px',
+                    maxWidth: '100%',
+                    marginTop: '-10px'
+                  }}
+                >
+                  <Typography
                     sx={{
-                      display: 'inline-block',
-                      border: isOutOfStock ? '3px solid grey' : '3px solid black',
-                      px: 2,
-                      py: 1,
-                      position: 'relative',
-                      mx: 'auto',
-                      borderRadius: '4px',
-                      maxWidth: '100%',
-                      marginTop: '-10px'
+                      fontFamily: '"Archivo Black", sans-serif',
+                      fontSize: 'clamp(1rem, 1.5vw, 1.3rem)',
+                      letterSpacing: {
+                        xs: '-1px',
+                        sm: isOutOfStock ? '-1.5px' : '-2px',
+                      },
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      textAlign: 'center',
+                      lineHeight: 1.2,
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: '#222',
+                      },
+                      color: isOutOfStock ? "#4448" : 'black',
                     }}
                   >
-                    <Typography
-                      sx={{
-                        fontFamily: '"Archivo Black", sans-serif',
-                        fontSize: 'clamp(1rem, 1.5vw, 1.3rem)',
-                        letterSpacing: {
-                          xs: '-1px',
-                          sm: isOutOfStock ? '-1.5px' : '-2px',
-                        },
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                        textAlign: 'center',
-                        lineHeight: 1.2,
-                        whiteSpace: 'normal',
-                        wordBreak: 'break-word',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          color: '#444',
-                        },
-                        color: isOutOfStock ? "#4448" : 'black',
-                      }}
-                    >
-                      {product.name}
-                    </Typography>
-
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -5,
-                        left: 4,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: isOutOfStock ? 'grey' : 'black',
-                        borderRadius: '2px',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 3,
-                        right: -5,
-                        width: '4px',
-                        height: '104.5%',
-                        backgroundColor: isOutOfStock ? 'grey' : 'black',
-                        borderRadius: '2px',
-                      }}
-                    />
-                  </Box>
-                </Tooltip>
+                    {product.name}
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -5,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: isOutOfStock ? 'grey' : 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 3,
+                      right: -5,
+                      width: '4px',
+                      height: '104.5%',
+                      backgroundColor: isOutOfStock ? 'grey' : 'black',
+                      borderRadius: '2px',
+                    }}
+                  />
+                </Box>
                 <Box
                   sx={{
                     display: 'inline-block',
@@ -169,7 +157,6 @@ const Feed = ({ products = [], onClick }) => {
                   <Typography sx={{ fontWeight: 600, fontSize: 18, color: isOutOfStock ? '#4448' : 'black' }}>
                     ${product.price?.toLocaleString('es-AR')}
                   </Typography>
-
                   <Box
                     sx={{
                       position: 'absolute',
@@ -193,7 +180,6 @@ const Feed = ({ products = [], onClick }) => {
                     }}
                   />
                 </Box>
-
                 <Box
                   sx={{
                     display: 'inline-block',
@@ -208,8 +194,7 @@ const Feed = ({ products = [], onClick }) => {
                     variant="contained"
                     disabled={isOutOfStock}
                     fullWidth
-                    startIcon={isOutOfStock ? '' : <AddShoppingCartIcon />}
-                    onClick={handleAddToCart}
+                    onClick={(e) => { e.stopPropagation(); handleGoTODetail(); } }
                     sx={{
                       fontSize: 16,
                       fontWeight: 600,
@@ -223,7 +208,7 @@ const Feed = ({ products = [], onClick }) => {
                       }
                     }}
                   >
-                    { isOutOfStock ? 'Agotado' : 'Agregar'}
+                    {isOutOfStock ? 'Agotado' : 'Ver más'}
                   </Button>
                   <Box
                     sx={{

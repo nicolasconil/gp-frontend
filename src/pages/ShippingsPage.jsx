@@ -123,31 +123,54 @@ const ShippingsPage = () => {
                     Gestión de envíos
                 </Typography>
             </Box>
-
-            <DataGrid
-                autoHeight
-                rows={rows}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                checkboxSelection
-                loading={isLoading}
-                components={{ LoadingOverlay: LinearProgress }}
-                sx={{
-                    fontFamily: '"Archivo Black", sans-serif',
-                    border: "3px solid black",
-                    boxShadow: 1,
-                    borderRadius: 1,
-                    "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "#f3f3f3",
-                        fontSize: 16,
-                    },
-                    "& .MuiDataGrid-cell": {
-                        fontSize: 15,
-                    },
-                }}
-            />
-
+            {!rows.length && !isLoading ? (
+                <Box
+                    sx={{
+                        border: '3px solid black',
+                        borderRadius: 1,
+                        p: 2,
+                        backgroundColor: '#fefefe',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        textAlign="center"
+                        sx={{
+                            fontFamily: '"Archivo Black", sans-serif',
+                            letterSpacing: '-2px',
+                            fontSize: '1.5rem',
+                        }}
+                    >
+                        No hay envíos registrados.
+                    </Typography>
+                </Box>
+            ) : (
+                <DataGrid
+                    autoHeight
+                    rows={rows}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    checkboxSelection
+                    loading={isLoading}
+                    components={{ LoadingOverlay: LinearProgress }}
+                    sx={{
+                        fontFamily: '"Archivo Black", sans-serif',
+                        border: "3px solid black",
+                        boxShadow: 1,
+                        borderRadius: 1,
+                        "& .MuiDataGrid-columnHeaders": {
+                            backgroundColor: "#f3f3f3",
+                            fontSize: 16,
+                        },
+                        "& .MuiDataGrid-cell": {
+                            fontSize: 15,
+                        },
+                    }}
+                />
+            )}
             <ShippingDialog
                 open={openDialog}
                 onClose={() => setOpenDialog(false)}
