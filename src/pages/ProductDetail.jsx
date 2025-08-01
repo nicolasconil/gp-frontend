@@ -353,7 +353,7 @@ const ProductDetail = () => {
 
         <Grid container spacing={12} sx={{ px: 0, justifyContent: 'center', pt: 5 }}>
           {productsData?.slice(0, 3).map((item) => (
-            <Grid key={item._id} item xs={12} sm={6} md={4}>
+            <Grid key={item._id} xs={12} sm={6} md={4} sx={{ width: 300, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
               <Box
                 sx={{
                   cursor: 'pointer',
@@ -389,7 +389,7 @@ const ProductDetail = () => {
                     mb: 1,
                     px: { xs: 0.5, md: 1 },
                     py: { xs: 0.2, md: 0.5 },
-                    minHeight: 50,
+                    minHeight: 40,
                     backgroundColor: '#fff',
                     display: 'flex',
                     alignItems: 'center',

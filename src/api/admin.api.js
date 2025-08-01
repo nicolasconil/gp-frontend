@@ -236,4 +236,43 @@ export const getOrdersForShipping = async (access_token) => {
     });
 };
 
-export const getShippingByOrderId = (orderId) => api.get(`/shipping/${orderId}`);
+export const getShippingOrderById = async (orderId, access_token) => {
+    const csrfToken = await getCsrfToken();
+    const res = await api.get(`/shipping/order/${orderId}`, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        }
+    });
+    return res.data;
+};
+
+export const dispatchShipping = async (orderId, dispatchData, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.post(`/shipping/${orderId}/dispatch`, dispatchData, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        },
+    });
+};
+
+export const updateShippingDetails = async (orderId, updateData, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.patch(`/shipping/${orderId}`, updateData, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        }
+    });
+};
+
+export const createShippingForOrder = async (orderId, access_token) => {
+    const csrfToken = await getCsrfToken();
+    return api.post(`/shipping/${orderId}`, null, {
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'x-csrf-token': csrfToken,
+        }
+    });
+};

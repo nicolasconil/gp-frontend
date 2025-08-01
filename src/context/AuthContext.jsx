@@ -46,12 +46,12 @@ export const AuthProvider = ({ children }) => {
       setAuthLoading(false);
       return;
     }
-
     (async () => {
       try {
         const { data } = await api.get("/users/me");
         localStorage.setItem("user", JSON.stringify(data));
-        setUser({ role: data.role, ...data });
+        const storedToken = JSON.parse(localStorage.getItem("user"))?.access_token;
+        setUser({ role: data.role, ...data, access_token: storedToken });
       } catch {
         localStorage.removeItem("user");
         setUser(null);

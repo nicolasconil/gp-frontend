@@ -48,6 +48,7 @@ const OrderDialog = ({ order, onStatusChange, onDelete, updating, onClose }) => 
                         </Typography>
                         <Typography variant="body1" sx={{ ml: 1 }}> <strong> Nombre: </strong> {order.guestName || "Invitado"} </Typography>
                         <Typography variant="body1" sx={{ ml: 1 }}> <strong> Email: </strong> {order.guestEmail || "No disponible"} </Typography>
+                        <Typography variant="body1" sx={{ ml: 1 }}> <strong> Teléfono: </strong> {order.guestPhone || "No disponible"} </Typography>
                         <Typography variant="body1" sx={{ ml: 1 }}>
                             <strong> Fecha de creación de orden: </strong>{" "}
                             {order.createdAt
@@ -84,9 +85,14 @@ const OrderDialog = ({ order, onStatusChange, onDelete, updating, onClose }) => 
                         <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-1.25px', textDecoration: 'underline' }}>
                             Estado del envío:
                         </Typography>
-                        <Typography variant="body1" sx={{ ml: 1 }}> {order.status.charAt(0).toUpperCase() + order.status.slice(1)} </Typography>
-                        {order.shipping?.status && (
-                            <Typography sx={{ mt: 1 }}> Estado envío: {order.shipping?.status} </Typography>
+                        {order.shipping?.status ? (
+                            <Typography variant="body1" sx={{ ml: 1 }}>
+                                {order.shipping.status.charAt(0).toUpperCase() + order.shipping.status.slice(1)}
+                            </Typography>
+                        ) : (
+                            <Typography variant="body1" sx={{ ml: 1 }}>
+                                No informado
+                            </Typography>
                         )}
                     </Box>
                     <Box mt={1}>

@@ -59,8 +59,9 @@ const Cart = () => {
                         })),
                         totalAmount,
                         totalQuantity
-                    }
-                }
+                    },
+                },
+                resetCart 
             });
         } catch (error) {
             console.error('Error al crear la orden:', error);
