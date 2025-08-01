@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrdersForShipping, updateShippingStatus } from "../api/admin.api.js";
+import { dispatchShipping, getOrdersForShipping, updateShippingStatus, createShippingForOrder } from "../api/admin.api.js";
 import { Box, Typography, Button, LinearProgress, Paper } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import ShippingDialog from "./ShippingDialog.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { LocalShippingOutlined, HourglassEmptyOutlined, CancelOutlined, DoneAllOutlined } from "@mui/icons-material";
+import { EditOutlined } from "@mui/icons-material";
+import { getOrderById } from "../api/user.api.js";
 
 const ShippingsPage = () => {
     const { user } = useAuth();
@@ -16,83 +17,85 @@ const ShippingsPage = () => {
 
     const { data, isLoading } = useQuery({
         queryKey: ["ordersForShipping"],
-        queryFn: () => getOrdersForShipping(user?.access_token),
+        queryFn: getOrdersForShipping,
     });
 
     const mutation = useMutation({
-        mutationFn: ({ orderId, status }) =>
-            updateShippingStatus(orderId, { status }, user?.access_token),
-        onSuccess: () => queryClient.invalidateQueries(["ordersForShipping"]),
+        mutationFn: async ({ orderId, payload }) => {
+            await updateShippingStatus(orderId, payload, user?.access_token);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(["ordersForShipping"]);
+            setOpenDialog(false);
+            setSelectedOrder(null);
+        },
+        onError: (error) => {
+            console.error('Error al actualizar el estado:', error);
+        }
     });
 
-    const handleShippingUpdate = (orderId, status) => {
-        mutation.mutate({ orderId, status });
-        setOpenDialog(false);
+    const handleShippingUpdate = (orderId, form) => {
+        const payload = {
+            status: form.status,
+            shippingTrackingNumber: form.shippingTrackingNumber,
+            carrier: form.carrier,
+            method: form.method,
+        };
+        mutation.mutate({ orderId, payload });
     };
 
+    const handleShippingDialogClose = async () => {
+        setOpenDialog(false);
+        if (selectedOrder) {
+            try {
+                if (!selectedOrder.shipping) {
+                    await createShippingForOrder(selectedOrder._id, user?.access_token);
+                }
+                const refreshed = await getOrderById(selectedOrder._id, user?.access_token);
+                setSelectedOrder(refreshed.order);
+                await queryClient.invalidateQueries(["ordersForShipping"]);
+            } catch (error) {
+                console.error('Error al actualizar la orden:', error);
+            }
+        }
+    };
+
+    const capitalize = (text) =>
+        text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
+
     const columns = [
-        { field: "id", headerName: "ID de orden", width: 150 },
-        { field: "guestName", headerName: "Cliente", width: 200 },
-        { field: "shippingStatus", headerName: "Estado de envío", width: 180 },
+        { field: "id", headerName: "ID de orden", width: 600 },
+        { field: "guestName", headerName: "Cliente", width: 400 },
+        { field: "shippingStatus", headerName: "Estado de envío", width: 250 },
         {
             field: "actions",
             headerName: "Acciones",
+            width: 160,
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() => {
-                            setSelectedOrder(params.row); // Selecciona la orden
-                            setOpenDialog(true); // Abre el diálogo
-                        }}
-                        sx={{ minWidth: 0, padding: 1 }}
-                    >
-                        <DoneAllOutlined />
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="warning"
-                        onClick={() => {
-                            setSelectedOrder(params.row); // Selecciona la orden
-                            setOpenDialog(true); // Abre el diálogo
-                        }}
-                        sx={{ minWidth: 0, padding: 1 }}
-                    >
-                        <HourglassEmptyOutlined />
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => {
-                            setSelectedOrder(params.row); // Selecciona la orden
-                            setOpenDialog(true); // Abre el diálogo
-                        }}
-                        sx={{ minWidth: 0, padding: 1 }}
-                    >
-                        <CancelOutlined />
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="success"
-                        onClick={() => {
-                            setSelectedOrder(params.row); // Selecciona la orden
-                            setOpenDialog(true); // Abre el diálogo
-                        }}
-                        sx={{ minWidth: 0, padding: 1 }}
-                    >
-                        <LocalShippingOutlined />
-                    </Button>
-                </Box>
+                <Button
+                    variant="outlined"
+                    onClick={() => {
+                        setSelectedOrder(params.row.originalOrder);
+                        setOpenDialog(true);
+                    }}
+                    sx={{ minWidth: 0, padding: 1, border: 'none', color: 'black', backgroundColor: 'transparent' }}
+                >
+                    <EditOutlined />
+                </Button>
             ),
         },
     ];
 
-    const rows = data?.data?.map((order) => ({
-        id: order._id,
-        guestName: order.guestName,
-        shippingStatus: order.shipping?.status || "pendiente",
-    })) || [];
+    const rows =
+        data?.data?.map((order) => {
+            const updatedStatus = order?.shipping?.status || "pendiente";
+            return {
+                id: order._id,
+                guestName: order.guestName,
+                shippingStatus: capitalize(updatedStatus),
+                originalOrder: order,
+            };
+        }) || [];
 
     return (
         <Paper
@@ -123,24 +126,25 @@ const ShippingsPage = () => {
                     Gestión de envíos
                 </Typography>
             </Box>
+
             {!rows.length && !isLoading ? (
                 <Box
                     sx={{
-                        border: '3px solid black',
+                        border: "3px solid black",
                         borderRadius: 1,
                         p: 2,
-                        backgroundColor: '#fefefe',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        backgroundColor: "#fefefe",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}
                 >
                     <Typography
                         textAlign="center"
                         sx={{
                             fontFamily: '"Archivo Black", sans-serif',
-                            letterSpacing: '-2px',
-                            fontSize: '1.5rem',
+                            letterSpacing: "-2px",
+                            fontSize: "1.5rem",
                         }}
                     >
                         No hay envíos registrados.
@@ -171,11 +175,13 @@ const ShippingsPage = () => {
                     }}
                 />
             )}
+
             <ShippingDialog
                 open={openDialog}
-                onClose={() => setOpenDialog(false)}
-                shipping={selectedOrder || {}}
+                onClose={handleShippingDialogClose}
+                shipping={selectedOrder?.shipping ?? {}}
                 onSubmit={handleShippingUpdate}
+                order={selectedOrder}
             />
         </Paper>
     );

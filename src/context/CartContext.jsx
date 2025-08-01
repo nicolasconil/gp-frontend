@@ -39,7 +39,11 @@ const CartProvider = ({ children }) => {
     };
 
     const removeFromCart = (variationId) => {
-        setCartItems(prevItems => prevItems.filter(item => item.id !== variationId));
+        setCartItems(prevItems => {
+            const updatedCartItems = prevItems.filter(item => item.id !== variationId);
+            localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+            return updatedCartItems;
+        });
     };
 
     const updateQuantity = (variationId, quantity) => {

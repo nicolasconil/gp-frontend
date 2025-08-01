@@ -199,7 +199,7 @@ const OrdersPage = () => {
                 <Box display="grid" gap={2}>
                     {paginatedOrders.map((order) => (
                         <Button key={order._id} onClick={() => setDialog({ open: true, order })} variant="outlined" color="inherit" sx={{ justifyContent: 'space-between', fontFamily: '"Archivo Black", sans-serif', textTransform: 'none', color: 'black', border: '2px solid black' }}>
-                           Orden #{order._id} - Cliente: {order.guestName || 'Invitado'} - Email: {order.guestEmail || 'Invitado'} - Envío {order.status}
+                           Orden #{order._id} - Cliente: {order.guestName || 'Invitado'} - Email: {order.guestEmail || 'Invitado'} - Estado de la orden: {order.status}
                             {order.shipping?.status && ` - Envío: ${order.shipping.status ?? 'No disponible'}`}
                         </Button>
                     ))}

@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createOrder, createPaymentPreference } from "../api/public.api.js";
 import { Box, Button, CircularProgress, TextField, Typography } from "@mui/material";
+import { useCart } from "../context/CartContext.jsx";
 
 const customInputStyles = {
     fontFamily: '"Archivo Black", sans-serif',
@@ -47,6 +48,7 @@ const Checkout = () => {
     const navigate = useNavigate();
     const orderSummary = state?.orderSummary;
     const [loading, setLoading] = useState(false);
+    const { resetCart } = useCart();
 
     const [formData, setFormData] = useState({
         fullName: '',
@@ -68,8 +70,6 @@ const Checkout = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
-        // Limpieza de los datos (eliminando espacios al inicio y final)
         const cleanedFormData = {
             street: formData.street.trim(),
             city: formData.city.trim(),
@@ -82,28 +82,6 @@ const Checkout = () => {
             apartment: formData.apartment.trim(),
             floor: formData.floor.trim(),
         };
-
-        // Verificar qué campo está vacío
-        if (!cleanedFormData.street) {
-            console.log("Campo street está vacío");
-        }
-        if (!cleanedFormData.city) {
-            console.log("Campo city está vacío");
-        }
-        if (!cleanedFormData.province) {
-            console.log("Campo province está vacío");
-        }
-        if (!cleanedFormData.postalCode) {
-            console.log("Campo postalCode está vacío");
-        }
-
-        // Validación de los campos obligatorios
-        if (!cleanedFormData.street || !cleanedFormData.city || !cleanedFormData.province || !cleanedFormData.postalCode) {
-            alert("Por favor, completa todos los campos requeridos.");
-            setLoading(false);
-            return;
-        }
-
         try {
             const orderPayload = {
                 guestEmail: cleanedFormData.email,
@@ -126,9 +104,13 @@ const Checkout = () => {
                     color: p.color,
                 }))
             };
-            console.log("Payload que se envía al backend:", orderPayload);
             const { data: order } = await createOrder(orderPayload);
+            if (order.status === 'rechazada') {
+                alert('No hay stock suficiente para uno o más productos en tu carrito. Por favor, revisá antes de continuar.');
+                return;
+            }
             const { data: preference } = await createPaymentPreference(order);
+            resetCart();
             window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${preference.id}`;
         } catch (error) {
             console.error('Error al procesar el pago:', error);

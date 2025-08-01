@@ -7,10 +7,10 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Grid,
   Button,
-  Typography,
   Alert,
+  Typography,
+  Box,
 } from "@mui/material";
 
 const customInputStyles = {
@@ -48,31 +48,21 @@ const customInputStyles = {
   },
 };
 
-const ShippingDialog = ({ open, onClose, shipping, onSubmit }) => {
+const ShippingDialog = ({ open, onClose, shipping, onSubmit, order }) => {
   const [form, setForm] = useState({});
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (shipping) {
+    if (open && shipping) {
       setForm({
-        shippingCarrier: shipping.shippingCarrier || "",
-        shippingMethod: shipping.shippingMethod || "",
+        status: shipping.status || "pendiente",
         shippingTrackingNumber: shipping.shippingTrackingNumber || "",
-        destinationPostalCode: shipping.destinationPostalCode || "",
-        fullName: shipping.deliveryAddress?.fullName || "",
-        phone: shipping.deliveryAddress?.phone || "",
-        street: shipping.deliveryAddress?.street || "",
-        number: shipping.deliveryAddress?.number || "",
-        apartment: shipping.deliveryAddress?.apartment || "",
-        city: shipping.deliveryAddress?.city || "",
-        province: shipping.deliveryAddress?.province || "",
-        notes: shipping.notes || "",
-        shippingCost: shipping.shippingCost || "",
-        status: shipping.status || "",
+        carrier: shipping.carrier || "",
+        method: shipping.method || "",
       });
       setError("");
     }
-  }, [shipping]);
+  }, [open, shipping]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,8 +75,25 @@ const ShippingDialog = ({ open, onClose, shipping, onSubmit }) => {
       setError("Debes seleccionar un estado de envío.");
       return;
     }
-    onSubmit(shipping._id, form.status);
+    if (form.status === "en camino" && !form.shippingTrackingNumber?.trim()) {
+      setError("Debes ingresar el número de seguimiento para marcar como 'en camino'.");
+      return;
+    }
+    const payload = {
+      status: form.status,
+      shippingTrackingNumber: form.shippingTrackingNumber,
+      carrier: form.carrier,
+      method: form.method,
+    };
+    onSubmit(order._id, payload);
   };
+
+  if (!order) {
+    return null;
+  }
+
+  const capitalizeWords = (str) =>
+    str.replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -96,53 +103,143 @@ const ShippingDialog = ({ open, onClose, shipping, onSubmit }) => {
           fontSize: 22,
           textAlign: "center",
           letterSpacing: "-2px",
+          textDecoration: 'underline'
         }}
       >
-        Editar Envío
+        Estado de envío
       </DialogTitle>
-
       <DialogContent dividers sx={{ px: 4, py: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2, fontFamily: '"Archivo Black", sans-serif' }}>
             {error}
           </Alert>
         )}
-
+        <Box>
+          <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px" }}>
+            Orden #{order._id}
+          </Typography>
+          <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px", mt: 2, textDecoration: 'underline' }}>
+            Cliente:
+          </Typography>
+          <Typography variant="body1" sx={{ ml: 1 }}>
+            <strong>Nombre:</strong> {order.guestName || "Invitado"}
+          </Typography>
+          <Typography variant="body1" sx={{ ml: 1 }}>
+            <strong>Email:</strong> {order.guestEmail || "Invitado"}
+          </Typography>
+          <Typography variant="body1" sx={{ ml: 1 }}> <strong> Teléfono: </strong> {order.guestPhone || "No disponible"} </Typography>
+          <Typography variant="body1" sx={{ ml: 1 }}>
+            <strong> Fecha de creación de orden: </strong>{" "}
+            {order.createdAt
+              ? new Date(order.createdAt).toLocaleString("es-AR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              : "No disponible"}
+          </Typography>
+          {order.guestAddress ? (
+            <Box mt={1}>
+              <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px", textDecoration: "underline" }}>
+                Dirección de envío:
+              </Typography>
+              <Typography variant="body1" sx={{ ml: 1 }}>
+                {order.guestAddress.street} {order.guestAddress.number}
+                {order.guestAddress.apartment ? `, Dpto ${order.guestAddress.apartment}` : ""}
+                {order.guestAddress.floor ? `, Piso ${order.guestAddress.floor}` : ""}
+              </Typography>
+              <Typography variant="body1" sx={{ ml: 1 }}>
+                {order.guestAddress.city}, {order.guestAddress.province}, CP {order.guestAddress.postalCode}
+              </Typography>
+            </Box>
+          ) : (
+            <Typography variant="body2" sx={{ ml: 1 }}>Sin dirección cargada.</Typography>
+          )}
+        </Box>
+        <Box mt={1}>
+          <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-1.25px', textDecoration: 'underline' }}>
+            Productos:
+          </Typography>
+          {order.products?.length ? (
+            order.products.map((p, idx) => (
+              <Box key={idx} sx={{ ml: 1 }}>
+                <Typography variant="body1">
+                  - {p.product?.name ? capitalizeWords(p.product.name) : 'Producto no disponible'} ({p.color || 'sin color'}, {p.size || 'sin talle'}) x{p.quantity} - ${p.price}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" sx={{ ml: 1 }}> Sin productos. </Typography>
+          )}
+        </Box>
+        <Box mt={1}>
+          <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px", textDecoration: "underline" }}>
+            Estado de la orden:
+          </Typography>
+          <Typography variant="body1" sx={{ ml: 1 }}>
+            {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : "Estado no disponible"}
+          </Typography>
+        </Box>
+        <Box mt={1}>
+          <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px", textDecoration: "underline" }}>
+            Detalles del envío:
+          </Typography>
+        </Box>
+        <TextField
+          label="Transportista"
+          name="carrier"
+          value={form.carrier}
+          onChange={handleChange}
+          fullWidth
+          sx={{ ...customInputStyles, mt: 2 }}
+          placeholder="Ej: Correo Argentino"
+          disabled={form.status !== "en camino"}
+        />
+        <TextField
+          label="Método de envío"
+          name="method"
+          value={form.method}
+          onChange={handleChange}
+          fullWidth
+          sx={{ ...customInputStyles, mt: 3 }}
+          placeholder="Ej: Estándar, Express, Sucursal, etc."
+          disabled={form.status !== "en camino"}
+        />
+        <Box mt={1}>
+          <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: "-1.25px", textDecoration: "underline" }}>
+            Cambiar estado del envío:
+          </Typography>
+        </Box>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {Object.entries(form).map(([key, value]) => (
-              key !== "status" && (
-                <Grid item xs={12} sm={key === "street" || key === "city" || key === "province" ? 6 : 12} key={key}>
-                  <TextField
-                    label={key.replace(/([A-Z])/g, ' $1').toUpperCase()}
-                    name={key}
-                    value={value}
-                    onChange={handleChange}
-                    fullWidth
-                    sx={customInputStyles}
-                  />
-                </Grid>
-              )
+          <TextField
+            label="Estado del envío"
+            name="status"
+            select
+            value={form.status}
+            onChange={handleChange}
+            fullWidth
+            sx={{ ...customInputStyles, mt: 2 }}
+          >
+            {["pendiente", "preparando", "en camino", "entregado", "rechazado", "devuelto"].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option.charAt(0).toUpperCase() + option.slice(1)}
+              </MenuItem>
             ))}
-            <Grid item xs={12}>
-              <TextField
-                label="Estado"
-                name="status"
-                select
-                value={form.status}
-                onChange={handleChange}
-                fullWidth
-                sx={customInputStyles}
-              >
-                {["pendiente", "preparando", "en camino", "entregado", "rechazado", "devuelto"].map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          </Grid>
-          <DialogActions sx={{ px: 0, py: 2 }}>
+          </TextField>
+
+          {form.status === "en camino" && (
+            <TextField
+              label="Código de seguimiento"
+              name="shippingTrackingNumber"
+              value={form.shippingTrackingNumber}
+              onChange={handleChange}
+              fullWidth
+              sx={{ ...customInputStyles, mt: 3 }}
+            />
+          )}
+          <DialogActions sx={{ px: 0, mt: 5 }}>
             <Button
               onClick={onClose}
               sx={{
@@ -156,6 +253,7 @@ const ShippingDialog = ({ open, onClose, shipping, onSubmit }) => {
             <Button
               type="submit"
               variant="contained"
+              onClick={handleSubmit}
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
                 backgroundColor: "black",
@@ -182,6 +280,7 @@ ShippingDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   shipping: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
+  order: PropTypes.object.isRequired,
 };
 
 export default ShippingDialog;
