@@ -8,7 +8,7 @@ const api = axios.create({
 
 export default api;
 
-const EXCLUDED_FROM_CSRF = ['/auth/refresh-token'];
+const EXCLUDED_FROM_CSRF = ['/auth/login','/auth/refresh-token'];
 
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
