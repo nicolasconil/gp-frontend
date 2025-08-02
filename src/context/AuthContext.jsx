@@ -41,31 +41,39 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const authPages = ["/login", "/forgot-password", "/reset-password"];
+
     if (authPages.includes(location.pathname)) {
       setAuthLoading(false);
       return;
     }
-    setAuthLoading(false);
+    (async () => {
+      try {
+        const { data } = await api.get("/users/me");
+        localStorage.setItem("user", JSON.stringify(data));
+        const storedToken = JSON.parse(localStorage.getItem("user"))?.access_token;
+        setUser({ role: data.role, ...data, access_token: storedToken });
+      } catch {
+        localStorage.removeItem("user");
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    })();
   }, [location.pathname]);
 
   const login = useCallback(async (credentials) => {
-    const { data } = await loginRequest(credentials);
-    const { access_token, user } = data;
-    const userData = { 
-      access_token, 
-      role: user.role, 
-      email: user.email, 
-    };
+    const { data: { access_token } } = await loginRequest(credentials);                
+    const { data } = await api.get("/users/me");    
+    const userData = { role: data.role, ...data, access_token };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
-    return userData;
   }, []);
 
   const logout = useCallback(async () => {
-    await logoutRequest();
+    await logoutRequest();                          
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/");
+    navigate("/");                                  
   }, [navigate]);
 
   const value = {
