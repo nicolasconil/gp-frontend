@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   }, [location.pathname]);
 
   const login = useCallback(async (credentials) => {
-    const { data: { access_token } } = await loginRequest(credentials);
-    const userData = { access_token };
+    const { data: { access_token, role, email } } = await loginRequest(credentials);
+    const userData = { access_token, role, email };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   }, []);
