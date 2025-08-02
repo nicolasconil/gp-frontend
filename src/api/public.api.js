@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCsrfToken } from "./csrf.api.js";
+import { getCsrfToken, fetchCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
@@ -18,7 +18,7 @@ api.interceptors.request.use(async (config) => {
   if (needsCsrf && !isExcluded) {
     const csrf = await getCsrfToken();
     if (csrf) {
-      config.headers['x-csrf-token'] = csrf;
+      config.headers['X-XSRF-TOKEN'] = csrf;
     }
   }
   config.withCredentials = true;
@@ -28,7 +28,9 @@ api.interceptors.request.use(async (config) => {
 
 // autenticación 
 export const login = async (credentials) => {
+    await fetchCsrfToken();
     const csrfToken = await getCsrfToken();
+    if (!csrfToken) throw new Error('CSRF Token no disponible.');
     return api.post('/auth/login', credentials, {
         headers: {
             'X-XSRF-TOKEN': csrfToken
