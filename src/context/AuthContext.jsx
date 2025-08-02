@@ -46,33 +46,21 @@ export const AuthProvider = ({ children }) => {
       setAuthLoading(false);
       return;
     }
-    (async () => {
-      try {
-        const { data } = await api.get("/users/me");
-        localStorage.setItem("user", JSON.stringify(data));
-        const storedToken = JSON.parse(localStorage.getItem("user"))?.access_token;
-        setUser({ role: data.role, ...data, access_token: storedToken });
-      } catch {
-        localStorage.removeItem("user");
-        setUser(null);
-      } finally {
-        setAuthLoading(false);
-      }
-    })();
+    setAuthLoading(false);
   }, [location.pathname]);
 
   const login = useCallback(async (credentials) => {
-    const { data: { access_token } } = await loginRequest(credentials);                  
+    const { data: { access_token } } = await loginRequest(credentials);
     const userData = { access_token };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   }, []);
 
   const logout = useCallback(async () => {
-    await logoutRequest();                          
+    await logoutRequest();
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/");                                  
+    navigate("/");
   }, [navigate]);
 
   const value = {
