@@ -31,6 +31,7 @@ export const login = async (credentials) => {
   const csrfToken = await fetchCsrfToken();
   if (!csrfToken) throw new Error("CSRF Token no disponible.");
   return api.post('/auth/login', credentials, {
+    withCredentials: true,
     headers: {
       'XSRF-TOKEN': csrfToken 
     }
