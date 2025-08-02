@@ -51,3 +51,7 @@ export const createPaymentPreference = async (orderData) => {
         },
     });
 };
+
+export const suscribeToNewsletter = async (email) => {
+    return api.post('/promotions/subscribe', { email });
+};
