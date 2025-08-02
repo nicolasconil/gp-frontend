@@ -1,12 +1,31 @@
 import { Box, Typography, TextField, IconButton, Link, useMediaQuery } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { suscribeToNewsletter } from '../api/public.api.js';
 
 const Footer = () => {
   const isBelow1550 = useMediaQuery('(max-width:1550px)');
 
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith("/panel") || pathname.startsWith("/administrador");
+
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubmitting(true);
+    try {
+      await suscribeToNewsletter(email);
+      setEmail('');
+    } catch (error) {
+      console.error('Error al suscribirse:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (isAdmin) {
     return (
@@ -63,7 +82,6 @@ const Footer = () => {
   return (
     <>
       <Box sx={{ borderTop: '1px solid #e0e0e0', width: '100%', mt: '150px' }} />
-
       <Box
         component="footer"
         sx={{
@@ -75,7 +93,6 @@ const Footer = () => {
           mb: -2,
         }}
       >
-
         <Typography
           variant="body2"
           sx={{
@@ -107,7 +124,6 @@ const Footer = () => {
           <Link href="/terms-of-service" underline="hover">TÉRMINOS DEL SERVICIO</Link>&nbsp;–&nbsp;
           <Link href="/shipping-policy" underline="hover">POLÍTICAS DE ENVÍO</Link>
         </Typography>
-
         <Typography
           variant="h5"
           sx={{
@@ -120,9 +136,9 @@ const Footer = () => {
         >
           UNITE A NUESTRA FAMILIA
         </Typography>
-
         <Box
           component="form"
+          onSubmit={handleSubmit}
           sx={{
             width: { xs: '90%', sm: '400px' },
             mx: 'auto',
@@ -134,6 +150,9 @@ const Footer = () => {
             fullWidth
             variant="outlined"
             placeholder="EMAIL"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={submitting}
             InputProps={{
               sx: {
                 borderRadius: 1,
@@ -152,8 +171,9 @@ const Footer = () => {
               },
             }}
           />
-
           <IconButton
+            type='submit'
+            disabled={submitting}
             sx={{
               position: 'absolute',
               top: '50%',
@@ -165,7 +185,6 @@ const Footer = () => {
           >
             <ArrowForwardIcon />
           </IconButton>
-
           <Box
             sx={{
               position: 'absolute',
@@ -189,7 +208,6 @@ const Footer = () => {
             }}
           />
         </Box>
-
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 5 }}>
           <IconButton
             href="https://www.instagram.com/gp.footwear/"
@@ -216,7 +234,6 @@ const Footer = () => {
           >
             <Box component="img" src="/instagram.svg" alt="Instagram" />
           </IconButton>
-
           <IconButton
             href="https://www.tiktok.com/@gpfootwear"
             target="_blank"
@@ -244,7 +261,6 @@ const Footer = () => {
             <Box component="img" src="/tiktok.svg" alt="TikTok" />
           </IconButton>
         </Box>
-
         <Box sx={{ width: '100%', overflow: 'hidden', px: 0, m: 0 }}>
           {isBelow1550 ? (
             <Box
