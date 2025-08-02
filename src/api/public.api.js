@@ -31,7 +31,7 @@ export const login = async (credentials) => {
     const csrfToken = await getCsrfToken();
     return api.post('/auth/login', credentials, {
         headers: {
-            'x-csrf-token': csrfToken
+            'X-XSRF-TOKEN': csrfToken
         }
     })
 }
