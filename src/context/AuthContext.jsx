@@ -67,6 +67,7 @@ export const AuthProvider = ({ children }) => {
     const userData = { role: data.role, ...data, access_token };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
+    return userData;
   }, []);
 
   const logout = useCallback(async () => {
