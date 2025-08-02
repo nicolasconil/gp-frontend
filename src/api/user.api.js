@@ -2,7 +2,7 @@ import axios from "axios";
 import { getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
     withCredentials: true
 });
 
