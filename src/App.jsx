@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { fetchCsrfToken } from "./api/csrf.api.js";
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -21,6 +23,10 @@ import TermsOfServicePage from './pages/TermsOfServicePage.jsx';
 import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
 
 function App() {
+    useEffect(() => {
+      fetchCsrfToken();
+    }, []);
+    
   return (
     <>
       <Header />
