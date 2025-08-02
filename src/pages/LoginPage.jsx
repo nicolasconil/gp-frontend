@@ -27,16 +27,15 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const loggedUser = await login(form);
+      console.log(loggedUser);
       const dest = rolesToPanel.includes((loggedUser || user)?.role)
         ? "/panel"
         : "/";
       navigate(dest);
     } catch (err) {
       const message = err?.response?.data?.message;
-
       if (message === "Contraseña incorrecta.") {
         setError("Contraseña incorrecta");
       } else if (message === "Usuario no encontrado.") {
