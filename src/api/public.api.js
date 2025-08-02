@@ -11,16 +11,20 @@ export default api;
 const EXCLUDED_FROM_CSRF = ['/auth/refresh-token'];
 
 api.interceptors.request.use(async (config) => {
-    const method = config.method?.toLowerCase();
-    const url = config.url;
-    const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(method);
-    const isExcluded = EXCLUDED_FROM_CSRF.some(path => url.includes(path));
-    if (needsCsrf && !isExcluded) {
-        const csrf = await getCsrfToken();
-        config.headers['x-csrf-token'] = csrf;
+  const method = config.method?.toLowerCase();
+  const url = config.url;
+  const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(method);
+  const isExcluded = EXCLUDED_FROM_CSRF.some(path => url.includes(path));
+  if (needsCsrf && !isExcluded) {
+    const csrf = await getCsrfToken();
+    if (csrf) {
+      config.headers['x-csrf-token'] = csrf;
     }
-    return config;
+  }
+  config.withCredentials = true;
+  return config;
 });
+
 
 // autenticación 
 export const login = (credentials) => api.post('/auth/login', credentials)
