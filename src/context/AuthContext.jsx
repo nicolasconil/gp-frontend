@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const authPages = ["/login", "/forgot-password", "/reset-password"];
-
     if (authPages.includes(location.pathname)) {
       setAuthLoading(false);
       return;
@@ -54,6 +53,7 @@ export const AuthProvider = ({ children }) => {
     const userData = { access_token, role, email };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
+    return userData;
   }, []);
 
   const logout = useCallback(async () => {
