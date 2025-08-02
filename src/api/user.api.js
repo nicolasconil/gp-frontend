@@ -7,7 +7,7 @@ const api = axios.create({
 });
 
 // usuarios
-export const getUserProfile = () => api.get('/me');
+export const getUserProfile = () => api.get('/me', { withCredentials: true });
 
 export const updateUserProfile = async (userData) => {
     const csrfToken = await getCsrfToken();
