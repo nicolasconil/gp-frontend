@@ -7,7 +7,20 @@ const api = axios.create({
 });
 
 // usuarios
-export const getUserProfile = () => api.get('/me', { withCredentials: true });
+export const getUserProfile = async (access_token) => {
+    try {
+        const csrfToken = await getCsrfToken();
+        return await api.get('/me', { 
+            headers: {
+                'Authorization': `Bearer ${access_token}`,
+                'XSRF-TOKEN': csrfToken,
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        throw error;  // O maneja el error de manera adecuada
+    }
+};
 
 export const updateUserProfile = async (userData) => {
     const csrfToken = await getCsrfToken();
