@@ -16,7 +16,7 @@ api.interceptors.request.use(async (config) => {
     const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(method);
     const isExcluded = EXCLUDED_FROM_CSRF.some(path => url.includes(path));
     if (needsCsrf && !isExcluded) {
-        const csrf =  await getCsrfToken();
+        const csrf = await getCsrfToken();
         config.headers['x-csrf-token'] = csrf;
     }
     return config;
