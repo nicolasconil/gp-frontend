@@ -7,12 +7,12 @@ const api = axios.create({
 });
 
 // usuarios
-export const getUserProfile = async (access_token) => {
+export const getUserProfile = async (token) => {
     try {
         const csrfToken = await getCsrfToken();
         return await api.get('/me', { 
             headers: {
-                'Authorization': `Bearer ${access_token}`,
+                'Authorization': `Bearer ${token}`,
                 'XSRF-TOKEN': csrfToken,
             }
         });
