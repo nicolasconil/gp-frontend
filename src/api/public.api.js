@@ -28,15 +28,15 @@ api.interceptors.request.use(async (config) => {
 
 // autenticación 
 export const login = async (credentials) => {
-    await fetchCsrfToken();
-    const csrfToken = await getCsrfToken();
-    if (!csrfToken) throw new Error('CSRF Token no disponible.');
-    return api.post('/auth/login', credentials, {
-        headers: {
-            'XSRF-TOKEN': csrfToken
-        }
-    })
-}
+  const csrfToken = await fetchCsrfToken();
+  if (!csrfToken) throw new Error("CSRF Token no disponible.");
+  return api.post('/auth/login', credentials, {
+    headers: {
+      'XSRF-TOKEN': csrfToken 
+    }
+  });
+};
+
 export const refreshToken = () => api.post('/auth/refresh-token');
 export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
