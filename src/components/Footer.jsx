@@ -103,9 +103,9 @@ const Footer = () => {
             GP FOOTWEAR
           </Link>{' '}
           –&nbsp;
-          <Link href="/refund-policy" underline="hover">REFUND POLICY</Link>&nbsp;–&nbsp;
-          <Link href="/terms-of-service" underline="hover">TERMS OF SERVICE</Link>&nbsp;–&nbsp;
-          <Link href="/shipping-policy" underline="hover">SHIPPING POLICY</Link>
+          <Link href="/about-us" underline="hover">NOSOTROS</Link>&nbsp;–&nbsp;
+          <Link href="/terms-of-service" underline="hover">TÉRMINOS DEL SERVICIO</Link>&nbsp;–&nbsp;
+          <Link href="/shipping-policy" underline="hover">POLÍTICAS DE ENVÍO</Link>
         </Typography>
 
         <Typography
