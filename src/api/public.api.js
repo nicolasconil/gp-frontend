@@ -18,7 +18,7 @@ api.interceptors.request.use(async (config) => {
   if (needsCsrf && !isExcluded) {
     const csrf = await getCsrfToken();
     if (csrf) {
-      config.headers['X-XSRF-TOKEN'] = csrf;
+      config.headers['x-csrf-token'] = csrf;
     }
   }
   config.withCredentials = true;
@@ -33,7 +33,7 @@ export const login = async (credentials) => {
     if (!csrfToken) throw new Error('CSRF Token no disponible.');
     return api.post('/auth/login', credentials, {
         headers: {
-            'X-XSRF-TOKEN': csrfToken
+            'x-csrf-token': csrfToken
         }
     })
 }
