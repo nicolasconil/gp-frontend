@@ -16,6 +16,10 @@ import CatalogsPage from './pages/CatalogsPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 import ShippingsPage from './pages/ShippingsPage.jsx';
 
+import AboutUsPage from './pages/AboutUsPage.jsx';
+import TermsOfServicePage from './pages/TermsOfServicePage.jsx';
+import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
+
 function App() {
   return (
     <>
@@ -27,6 +31,9 @@ function App() {
         <Route path='/productos' element={<AllProductsPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/checkout' element={<Checkout />} />
+        <Route path='/about-us' element={<AboutUsPage />} />
+        <Route path='/terms-of-service' element={<TermsOfServicePage />} />
+        <Route path='/shipping-policy' element={<ShippingPolicyPage />} />
 
         <Route 
           path='/panel' 
