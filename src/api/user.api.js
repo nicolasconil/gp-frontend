@@ -7,41 +7,41 @@ const api = axios.create({
 });
 
 // usuarios
-export const getUserProfile = async (token) => {
-    try {
-        const csrfToken = await getCsrfToken();
-        return await api.get('/me', { 
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'XSRF-TOKEN': csrfToken,
-            }
-        });
-    } catch (error) {
-        console.error("Error fetching user profile:", error);
-        throw error;  // O maneja el error de manera adecuada
-    }
-};
+// export const getUserProfile = async (token) => {
+//     try {
+//         const csrfToken = await getCsrfToken();
+//         return await api.get('/me', { 
+//             headers: {
+//                 'Authorization': `Bearer ${token}`,
+//                 'XSRF-TOKEN': csrfToken,
+//             }
+//         });
+//     } catch (error) {
+//         console.error("Error fetching user profile:", error);
+//         throw error;  // O maneja el error de manera adecuada
+//     }
+// };
 
-export const updateUserProfile = async (userData) => {
-    const csrfToken = await getCsrfToken();
-    return api.put('/me', userData, {
-        headers: {
-            'x-csrf-token': csrfToken,
-        },
-    });
-};
+// export const updateUserProfile = async (userData) => {
+//     const csrfToken = await getCsrfToken();
+//     return api.put('/me', userData, {
+//         headers: {
+//             'x-csrf-token': csrfToken,
+//         },
+//     });
+// };
 
-export const deleteAccount = async () => {
-    const csrfToken = await getCsrfToken();    
-    return api.delete('/me', {
-        headers: {
-            'x-csrf-token': csrfToken,
-        },
-    });
-};
+// export const deleteAccount = async () => {
+//     const csrfToken = await getCsrfToken();    
+//     return api.delete('/me', {
+//         headers: {
+//             'x-csrf-token': csrfToken,
+//         },
+//     });
+// };
 
-export const getUserOrders = () => api.get('/me/orders');
-export const exportUserData = (format) => api.get(`/me/exports?format=${format}`);
+// export const getUserOrders = () => api.get('/me/orders');
+// export const exportUserData = (format) => api.get(`/me/exports?format=${format}`);
 
 // órdenes
 export const getMyOrders = (access_token) => {
