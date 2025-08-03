@@ -6,14 +6,6 @@ const api = axios.create({
     withCredentials: true
 });
 
-export const getUserProfile = async () => {
-  const csrfToken = getCsrfToken();
-  return api.get('/auth/users/me', {
-    headers: {
-      'XSRF-TOKEN': csrfToken,
-    },
-  });
-};
 
 // export const updateUserProfile = async (userData) => {
 //     const csrfToken = await getCsrfToken();

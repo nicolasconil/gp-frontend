@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     const csrfToken = getCsrfToken();
-    const { data } = await api.get("/users/me", {
+    const { data } = await api.get("/auth/users/me", {
       headers: {
         'XSRF-TOKEN': csrfToken,
       },

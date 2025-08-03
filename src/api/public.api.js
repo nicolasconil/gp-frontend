@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCsrfToken, fetchCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
@@ -8,32 +8,20 @@ const api = axios.create({
 
 export default api;
 
-const EXCLUDED_FROM_CSRF = ['/auth/login','/auth/refresh-token'];
-
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
-  const url = config.url;
-  const needsCsrf = ['post', 'put', 'patch', 'delete'].includes(method);
-  const isExcluded = EXCLUDED_FROM_CSRF.some(path => url.includes(path));
-  if (needsCsrf && !isExcluded) {
-    const csrf = await getCsrfToken();
-    if (csrf) {
-      config.headers['XSRF-TOKEN'] = csrf;
-    }
+  if (["post","put","patch","delete"].includes(method)) {
+    config.headers["X-XSRF-TOKEN"] = await fetchCsrfToken();
   }
-  config.withCredentials = true;
   return config;
 });
 
 
 // autenticación 
-export const login = async (credentials, access_token) => {
+export const login = async (credentials) => {
   const csrfToken = await fetchCsrfToken();
-  if (!csrfToken) throw new Error("CSRF Token no disponible.");
   return api.post('/auth/login', credentials, {
-    withCredentials: true,
     headers: {
-      'Authorization': `Bearer ${access_token}`,
       'XSRF-TOKEN': csrfToken 
     }
   });
@@ -59,7 +47,7 @@ export const createOrder = async (orderData) => {
 };
 
 export const createPaymentPreference = async (orderData) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.post('/mercadopago/preference', orderData, {
         headers: {
             'x-csrf-token': csrfToken,
@@ -69,4 +57,13 @@ export const createPaymentPreference = async (orderData) => {
 
 export const suscribeToNewsletter = async (email) => {
     return api.post('/promotions/subscribe', { email });
+};
+
+export const getUserProfile = async () => {
+  const csrfToken = fetchCsrfToken();
+  return api.get('/auth/users/me', {
+    headers: {
+      'XSRF-TOKEN': csrfToken,
+    },
+  });
 };
