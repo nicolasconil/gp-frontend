@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
@@ -8,7 +8,7 @@ const api = axios.create({
 
 
 // export const updateUserProfile = async (userData) => {
-//     const csrfToken = await getCsrfToken();
+//     const csrfToken = await fetchCsrfToken();
 //     return api.put('/me', userData, {
 //         headers: {
 //             'x-csrf-token': csrfToken,
@@ -17,7 +17,7 @@ const api = axios.create({
 // };
 
 // export const deleteAccount = async () => {
-//     const csrfToken = await getCsrfToken();    
+//     const csrfToken = await fetchCsrfToken();    
 //     return api.delete('/me', {
 //         headers: {
 //             'x-csrf-token': csrfToken,
@@ -46,7 +46,7 @@ export const getOrderById = (id, access_token) => {
 };
 
 export const cancelOrder = async (id, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/orders/${id}/cancel`, {}, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -56,7 +56,7 @@ export const cancelOrder = async (id, access_token) => {
 };
 
 export const updateOrderPayment = async (id, paymentInfo, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/orders/${id}/payment`, paymentInfo, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -66,7 +66,7 @@ export const updateOrderPayment = async (id, paymentInfo, access_token) => {
 };
 
 export const updateOrderFields = async (id, updateData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/orders/${id}`, updateData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,

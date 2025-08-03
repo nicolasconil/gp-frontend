@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
@@ -10,7 +10,7 @@ const api = axios.create({
 export const getAllUsers = () => api.get('/users');
 
 export const updateUserById = async (userId, data, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.put(`/users/${userId}`, data, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -20,7 +20,7 @@ export const updateUserById = async (userId, data, access_token) => {
 };
 
 export const deleteUserById = async (userId, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.delete(`/users/${userId}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -31,7 +31,7 @@ export const deleteUserById = async (userId, access_token) => {
 
 // productos
 export const createProduct = async (product, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     const fd = new FormData();
 
     for (const [k, v] of Object.entries(product)) {
@@ -57,7 +57,7 @@ export const createProduct = async (product, access_token) => {
 };
 
 export const updateProduct = async (id, product, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     const fd = new FormData();
 
     for (const [k, v] of Object.entries(product)) {
@@ -79,7 +79,7 @@ export const updateProduct = async (id, product, access_token) => {
 };
 
 export const deleteProduct = async (productId, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.delete(`/products/${productId}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -89,7 +89,7 @@ export const deleteProduct = async (productId, access_token) => {
 };
 
 export const updateProductStock = async (productId, stock, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/products/${productId}/stock`, { stock }, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -100,7 +100,7 @@ export const updateProductStock = async (productId, stock, access_token) => {
 
 // catálogos
 export const createCatalog = async (catalogData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.post('/catalogs', catalogData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -110,7 +110,7 @@ export const createCatalog = async (catalogData, access_token) => {
 };
 
 export const updateCatalog = async (id, catalogData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/catalogs/${id}`, catalogData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -120,7 +120,7 @@ export const updateCatalog = async (id, catalogData, access_token) => {
 };
 
 export const deleteCatalog = async (id, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.delete(`/catalogs/${id}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -139,7 +139,7 @@ export const getAllOrders = (access_token) => {
 };
 
 export const updateOrderStatus = async (id, statusData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/orders/${id}/status`, statusData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -149,7 +149,7 @@ export const updateOrderStatus = async (id, statusData, access_token) => {
 };
 
 export const dispatchOrder = async (id, dispatchData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/orders/${id}/dispatch`, dispatchData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -159,7 +159,7 @@ export const dispatchOrder = async (id, dispatchData, access_token) => {
 };
 
 export const deleteOrder = async (id, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.delete(`/orders/${id}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -170,7 +170,7 @@ export const deleteOrder = async (id, access_token) => {
 
 // movimientos de stock
 export const recordStockMovement = async (movementData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.post('/stock-movements', movementData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -197,7 +197,7 @@ export const getAllShippings = (access_token) => {
 };
 
 export const updateShippingStatus = async (orderId, statusData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/shipping/${orderId}/status`, statusData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -207,7 +207,7 @@ export const updateShippingStatus = async (orderId, statusData, access_token) =>
 };
 
 export const updateShipping = async (orderId, shippingData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/shipping/${orderId}`, shippingData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -217,7 +217,7 @@ export const updateShipping = async (orderId, shippingData, access_token) => {
 };
 
 export const deleteShipping = async (orderId, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.delete(`/shipping/${orderId}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -227,7 +227,7 @@ export const deleteShipping = async (orderId, access_token) => {
 };
 
 export const getOrdersForShipping = async (access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.get('/orders/for-shipping', {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -237,7 +237,7 @@ export const getOrdersForShipping = async (access_token) => {
 };
 
 export const getShippingOrderById = async (orderId, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     const res = await api.get(`/shipping/order/${orderId}`, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -248,7 +248,7 @@ export const getShippingOrderById = async (orderId, access_token) => {
 };
 
 export const dispatchShipping = async (orderId, dispatchData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.post(`/shipping/${orderId}/dispatch`, dispatchData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -258,7 +258,7 @@ export const dispatchShipping = async (orderId, dispatchData, access_token) => {
 };
 
 export const updateShippingDetails = async (orderId, updateData, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.patch(`/shipping/${orderId}`, updateData, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
@@ -268,7 +268,7 @@ export const updateShippingDetails = async (orderId, updateData, access_token) =
 };
 
 export const createShippingForOrder = async (orderId, access_token) => {
-    const csrfToken = await getCsrfToken();
+    const csrfToken = await fetchCsrfToken();
     return api.post(`/shipping/${orderId}`, null, {
         headers: {
             'Authorization': `Bearer ${access_token}`,
