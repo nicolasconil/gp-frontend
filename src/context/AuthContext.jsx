@@ -3,32 +3,27 @@ import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { login as loginRequest, logout as logoutRequest, refreshToken } from "../api/public.api.js";
 import api from "../api/public.api.js";
+import { getCsrfToken } from "../api/csrf.api.js";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const cached = localStorage.getItem("user");
-    return cached ? JSON.parse(cached) : null;
-  });
+  const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const requestInterceptor = api.interceptors.request.use((config) => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (storedUser?.access_token) {
-        config.headers["Authorization"] = `Bearer ${storedUser.access_token}`;
-      }
-      return config;
+  const fetchUserProfile = async () => {
+    const csrfToken = getCsrfToken();
+    const { data } = await api.get("/users/me", {
+      headers: {
+        'XSRF-TOKEN': csrfToken,
+      },
+      withCredentials: true,
     });
-    return () => {
-      api.interceptors.request.eject(requestInterceptor);
-    };
-  }, []);
+    return data;
+  };
 
   useEffect(() => {
     const responseInterceptor = api.interceptors.response.use(
@@ -38,8 +33,8 @@ export const AuthProvider = ({ children }) => {
         if (err.response?.status === 401 && !originalConfig._retry) {
           originalConfig._retry = true;
           try {
-            await refreshToken(); // esto debería renovar el token y setear cookies
-            return api(originalConfig); // reintenta con nuevo token
+            await refreshToken();
+            return api(originalConfig);
           } catch {
             localStorage.removeItem("user");
             setUser(null);
@@ -58,16 +53,10 @@ export const AuthProvider = ({ children }) => {
       setAuthLoading(false);
       return;
     }
+
     (async () => {
       try {
-        const storedToken = JSON.parse(localStorage.getItem("user"))?.access_token;
-        if (!storedToken) throw new Error("No token");
-        const { data } = await api.get("/users/me", {
-          headers: {
-            Authorization: `Bearer ${storedToken}`
-          }
-        });
-        const userData = { role: data.role, ...data, access_token: storedToken };
+        const userData = await fetchUserProfile();
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
       } catch {
@@ -80,23 +69,18 @@ export const AuthProvider = ({ children }) => {
   }, [location.pathname]);
 
   const login = useCallback(async (credentials) => {
-    const { data: { access_token } } = await loginRequest(credentials);                
-    const { data } = await api.get("/users/me", {
-      headers: {
-        Authorization: `Bearer ${access_token}`
-      }
-    });    
-    const userData = { role: data.role, ...data, access_token };
+    await loginRequest(credentials);
+    const userData = await fetchUserProfile();
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     return userData;
   }, []);
 
   const logout = useCallback(async () => {
-    await logoutRequest();                          
+    await logoutRequest();
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/");                                  
+    navigate("/");
   }, [navigate]);
 
   const value = {
