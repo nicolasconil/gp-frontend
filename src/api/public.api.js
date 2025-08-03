@@ -50,7 +50,7 @@ export const createPaymentPreference = async (orderData) => {
     const csrfToken = await fetchCsrfToken();
     return api.post('/mercadopago/preference', orderData, {
         headers: {
-            'x-csrf-token': csrfToken,
+            'XSRF-TOKEN': csrfToken,
         },
     });
 };
