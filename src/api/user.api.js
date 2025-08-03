@@ -2,77 +2,63 @@ import axios from "axios";
 import { getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
-    withCredentials: true
+  baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
+  withCredentials: true,
 });
 
-export const getUserProfile = () => api.get('/users/me', { withCredentials: true });
+// Helper para headers
+const getAuthHeaders = async (accessToken, includeCsrf = false) => {
+  const headers = {
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+  };
 
-// export const updateUserProfile = async (userData) => {
-//     const csrfToken = await getCsrfToken();
-//     return api.put('/me', userData, {
-//         headers: {
-//             'x-csrf-token': csrfToken,
-//         },
-//     });
-// };
+  if (includeCsrf) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) headers["x-csrf-token"] = csrfToken;
+  }
 
-// export const deleteAccount = async () => {
-//     const csrfToken = await getCsrfToken();    
-//     return api.delete('/me', {
-//         headers: {
-//             'x-csrf-token': csrfToken,
-//         },
-//     });
-// };
-
-// export const getUserOrders = () => api.get('/me/orders');
-// export const exportUserData = (format) => api.get(`/me/exports?format=${format}`);
-
-// órdenes
-export const getMyOrders = (access_token) => {
-    return api.get('/orders/my-orders', {
-        headers: {
-            'Authorization': `Bearer ${access_token}`, 
-        },
-    });
+  return headers;
 };
 
-export const getOrderById = (id, access_token) => {
-    return api.get(`/orders/${id}`, {
-        headers: {
-            'Authorization': `Bearer ${access_token}`,
-        },
-    });
+// 🧍 Perfil de usuario
+export const getUserProfile = async () => {
+  const headers = await getAuthHeaders(null, true);
+  return api.get("/users/me", { headers });
 };
 
-export const cancelOrder = async (id, access_token) => {
-    const csrfToken = await getCsrfToken();
-    return api.patch(`/orders/${id}/cancel`, {}, {
-        headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'x-csrf-token': csrfToken,
-        },
-    });
+// 🧾 Órdenes del usuario
+export const getMyOrders = async (accessToken) => {
+  const headers = await getAuthHeaders(accessToken);
+  return api.get("/orders/my-orders", { headers });
 };
 
-export const updateOrderPayment = async (id, paymentInfo, access_token) => {
-    const csrfToken = await getCsrfToken();
-    return api.patch(`/orders/${id}/payment`, paymentInfo, {
-        headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'x-csrf-token': csrfToken,
-        },
-    });
+export const getOrderById = async (id, accessToken) => {
+  const headers = await getAuthHeaders(accessToken);
+  return api.get(`/orders/${id}`, { headers });
 };
 
-export const updateOrderFields = async (id, updateData, access_token) => {
-    const csrfToken = await getCsrfToken();
-    return api.patch(`/orders/${id}`, updateData, {
-        headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'x-csrf-token': csrfToken,
-        },
-    });
+export const cancelOrder = async (id, accessToken) => {
+  const headers = await getAuthHeaders(accessToken, true);
+  return api.patch(`/orders/${id}/cancel`, {}, { headers });
 };
 
+export const updateOrderPayment = async (id, paymentInfo, accessToken) => {
+  const headers = await getAuthHeaders(accessToken, true);
+  return api.patch(`/orders/${id}/payment`, paymentInfo, { headers });
+};
+
+export const updateOrderFields = async (id, updateData, accessToken) => {
+  const headers = await getAuthHeaders(accessToken, true);
+  return api.patch(`/orders/${id}`, updateData, { headers });
+};
+
+// 🛠️ (Opcionales: descomentar si los usás)
+export const updateUserProfile = async (userData, accessToken) => {
+  const headers = await getAuthHeaders(accessToken, true);
+  return api.put("/users/me", userData, { headers });
+};
+
+export const deleteAccount = async (accessToken) => {
+  const headers = await getAuthHeaders(accessToken, true);
+  return api.delete("/users/me", { headers });
+};
