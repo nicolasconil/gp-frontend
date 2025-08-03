@@ -8,10 +8,8 @@ const api = axios.create({
 export const fetchCsrfToken = async () => {
   try {
     const res = await api.get('/auth/csrf-token'); 
-    console.log('CSRF Token obtenido:', res.data.csrfToken);
     return res.data.csrfToken;
   } catch (error) {
-    console.error("Error al obtener el token CSRF:", error);
     return null;
   }
 };
