@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { login as loginRequest, logout as logoutRequest, refreshToken } from "../api/public.api.js";
 import api from "../api/public.api.js";
-import { getCsrfToken } from "../api/csrf.api.js";
+import { fetchCsrfToken } from "../api/csrf.api.js";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const fetchUserProfile = async () => {
-    const csrfToken = getCsrfToken();
+    const csrfToken = fetchCsrfToken();
     const { data } = await api.get("/auth/users/me", {
       headers: {
         'XSRF-TOKEN': csrfToken,
