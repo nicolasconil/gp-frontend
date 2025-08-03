@@ -18,15 +18,28 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const interceptor = api.interceptors.response.use(
+    const requestInterceptor = api.interceptors.request.use((config) => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (storedUser?.access_token) {
+        config.headers["Authorization"] = `Bearer ${storedUser.access_token}`;
+      }
+      return config;
+    });
+    return () => {
+      api.interceptors.request.eject(requestInterceptor);
+    };
+  }, []);
+
+  useEffect(() => {
+    const responseInterceptor = api.interceptors.response.use(
       (res) => res,
       async (err) => {
         const originalConfig = err.config;
         if (err.response?.status === 401 && !originalConfig._retry) {
           originalConfig._retry = true;
           try {
-            await refreshToken();
-            return api(originalConfig);
+            await refreshToken(); // esto debería renovar el token y setear cookies
+            return api(originalConfig); // reintenta con nuevo token
           } catch {
             localStorage.removeItem("user");
             setUser(null);
@@ -36,22 +49,27 @@ export const AuthProvider = ({ children }) => {
         return Promise.reject(err);
       }
     );
-    return () => api.interceptors.response.eject(interceptor);
+    return () => api.interceptors.response.eject(responseInterceptor);
   }, [location.pathname, navigate]);
 
   useEffect(() => {
     const authPages = ["/login", "/forgot-password", "/reset-password"];
-
     if (authPages.includes(location.pathname)) {
       setAuthLoading(false);
       return;
     }
     (async () => {
       try {
-        const { data } = await api.get("/users/me");
-        localStorage.setItem("user", JSON.stringify(data));
         const storedToken = JSON.parse(localStorage.getItem("user"))?.access_token;
-        setUser({ role: data.role, ...data, access_token: storedToken });
+        if (!storedToken) throw new Error("No token");
+        const { data } = await api.get("/users/me", {
+          headers: {
+            Authorization: `Bearer ${storedToken}`
+          }
+        });
+        const userData = { role: data.role, ...data, access_token: storedToken };
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
       } catch {
         localStorage.removeItem("user");
         setUser(null);
@@ -63,7 +81,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (credentials) => {
     const { data: { access_token } } = await loginRequest(credentials);                
-    const { data } = await api.get("/users/me");    
+    const { data } = await api.get("/users/me", {
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    });    
     const userData = { role: data.role, ...data, access_token };
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
