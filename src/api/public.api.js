@@ -27,12 +27,13 @@ api.interceptors.request.use(async (config) => {
 
 
 // autenticación 
-export const login = async (credentials) => {
+export const login = async (credentials, access_token) => {
   const csrfToken = await fetchCsrfToken();
   if (!csrfToken) throw new Error("CSRF Token no disponible.");
   return api.post('/auth/login', credentials, {
     withCredentials: true,
     headers: {
+      'Authorization': `Bearer ${access_token}`,
       'XSRF-TOKEN': csrfToken 
     }
   });
