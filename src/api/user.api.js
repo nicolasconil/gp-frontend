@@ -8,7 +8,7 @@ const api = axios.create({
 
 export const getUserProfile = async () => {
   const csrfToken = getCsrfToken();
-  return api.get('/users/me', {
+  return api.get('/auth/users/me', {
     headers: {
       'XSRF-TOKEN': csrfToken,
     },
