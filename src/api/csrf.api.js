@@ -14,13 +14,9 @@ export const fetchCsrfToken = async () => {
   }
 };
 
-// export const getCsrfToken = () => {
-//   const csrfToken = document.cookie
-//     .split('; ')
-//     .find(row => row.startsWith('XSRF-TOKEN'))
-//     ?.split('=')[1];
-//   if (!csrfToken) {
-//     console.error("CSRF token no encontrado en las cookies.");
-//   }
-//   return csrfToken;
-// };
+export const getCsrfToken = () => {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('XSRF-TOKEN='))
+    ?.split('=')[1];
+};
