@@ -10,6 +10,7 @@ api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
     await fetchCsrfToken();
+    await new Promise((r) => setTimeout(r, 50))
     config.headers["X-XSRF-TOKEN"] = getCsrfToken();
   }
   return config;
@@ -18,26 +19,12 @@ api.interceptors.request.use(async (config) => {
 export default api;
 
 // autenticación 
-export const login = async (credentials) => {
-  await fetchCsrfToken();
-  return api.post('/auth/login', credentials, {
-    headers: {
-      'X-XSRF-TOKEN': getCsrfToken()
-    }
-  });
-};
+export const login = (credentials) => api.post('/auth/login', credentials);
 
 export const refreshToken = () => api.post('/auth/refresh-token');
 export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
-export const logout = async () => {
-  await fetchCsrfToken();
-  return api.post('/auth/logout', {}, {
-    headers: {
-      'X-XSRF-TOKEN': getCsrfToken()
-    }
-  })
-}
+export const logout = async () => api.post('/auth/logout');
 
 // productos
 export const getAllProducts = () => api.get('/products');
