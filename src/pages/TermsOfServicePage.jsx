@@ -68,7 +68,7 @@ const TermsOfServicePage = () => (
         letterSpacing: '-0.05rem',
       }}
     >
-      Aceptamos pagos en <strong>efectivo</strong> desde sus puntos de pago proporcionados por Mercado Pago, <strong>transferencia</strong> a través de Mercado Pago y tanto <strong>tarjetas de débito</strong> como <strong>tarjetas de crédito</strong> (únicamente en 1 pago) también proporcionadas por Mercado Pago.
+      Aceptamos pagos en <strong>efectivo</strong> desde sus puntos de pago proporcionados por Mercado Pago, <strong>transferencia</strong> a través de Mercado Pago y tanto <strong>tarjetas de débito</strong> como <strong>tarjetas de crédito</strong> también proporcionadas por Mercado Pago.
     </Typography>
 
     <Typography
