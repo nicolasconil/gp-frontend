@@ -42,7 +42,7 @@ const Footer = () => {
           {isBelow1550 ? (
             <Box
               component="img"
-              src="../public/logo1.svg"
+              src="https://i.imgur.com/xPXwqNk.png"
               alt="GP Footwear"
               sx={{
                 width: '100%',
@@ -265,7 +265,7 @@ const Footer = () => {
           {isBelow1550 ? (
             <Box
               component="img"
-              src="../public/logo1.svg"
+              src="https://i.imgur.com/xPXwqNk.png"
               alt="GP Footwear"
               sx={{
                 width: '100%',
