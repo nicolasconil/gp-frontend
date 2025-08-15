@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const fetchUserProfile = async () => {
-    const csrfToken = fetchCsrfToken();
+    await fetchCsrfToken();
     const { data } = await api.get("/auth/users/me", {
       headers: {
         'XSRF-TOKEN': csrfToken,
@@ -69,6 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, [location.pathname]);
 
   const login = useCallback(async (credentials) => {
+    await fetchCsrfToken();
     await loginRequest(credentials);
     const userData = await fetchUserProfile();
     localStorage.setItem("user", JSON.stringify(userData));
