@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { login as loginRequest, logout as logoutRequest, refreshToken } from "../api/public.api.js";
 import api from "../api/public.api.js";
-import { fetchCsrfToken } from "../api/csrf.api.js";
+import { fetchCsrfToken, getCsrfToken } from "../api/csrf.api.js";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
