@@ -3,15 +3,15 @@ import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
-  withCredentials: true
+  withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
     await fetchCsrfToken();
-    await new Promise((r) => setTimeout(r, 50))
-    config.headers["X-XSRF-TOKEN"] = getCsrfToken();
   }
   return config;
 });
@@ -19,7 +19,12 @@ api.interceptors.request.use(async (config) => {
 export default api;
 
 // autenticación 
-export const login = (credentials) => api.post('/auth/login', credentials);
+export const login = (credentials) => {
+  return (async () => {
+    await fetchCsrfToken();
+    return api.post('/auth/login', credentials);
+  })();
+};
 
 export const refreshToken = () => api.post('/auth/refresh-token');
 export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
