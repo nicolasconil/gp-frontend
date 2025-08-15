@@ -11,7 +11,10 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    await fetchCsrfToken();
+    const token = await fetchCsrfToken();
+    if (token) {
+      config.headers["X-XSRF-TOKEN"] = token;
+    }
   }
   return config;
 });
@@ -19,11 +22,9 @@ api.interceptors.request.use(async (config) => {
 export default api;
 
 // autenticación 
-export const login = (credentials) => {
-  return (async () => {
+export const login = async (credentials) => {
     await fetchCsrfToken();
     return api.post('/auth/login', credentials);
-  })();
 };
 
 export const refreshToken = () => api.post('/auth/refresh-token');
