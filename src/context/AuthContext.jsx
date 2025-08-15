@@ -15,12 +15,12 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const fetchUserProfile = async () => {
-    await fetchCsrfToken();
+    await fetchCsrfToken(); 
     const { data } = await api.get("/auth/users/me", {
-      headers: {
-        'XSRF-TOKEN': csrfToken,
-      },
       withCredentials: true,
+      headers: {
+        "X-XSRF-TOKEN": getCsrfToken(), 
+      },
     });
     return data;
   };
