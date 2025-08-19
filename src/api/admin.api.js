@@ -1,9 +1,11 @@
 import axios from "axios";
-import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
 api.interceptors.request.use(async (config) => {
@@ -28,7 +30,7 @@ export const deleteUserById = (userId, access_token) =>
   api.delete(`/users/${userId}`, { headers: { Authorization: `Bearer ${access_token}` } });
 
 // productos
-export const createProduct = async (product, access_token) => {
+export const createProduct = (product, access_token) => {
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -41,14 +43,11 @@ export const createProduct = async (product, access_token) => {
 
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
-  return api.post(
-    "/products",
-    fd,
-    { headers }
-  );
+
+  return api.post("/products", fd, { headers });
 };
 
-export const updateProduct = async (id, product, access_token) => {
+export const updateProduct = (id, product, access_token) => {
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -61,15 +60,16 @@ export const updateProduct = async (id, product, access_token) => {
 
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
-  return api.put(
-    `/products/${id}`,
-    fd,
-    { headers }
-  );
+
+  return api.put(`/products/${id}`, fd, { headers });
 };
 
-export const deleteProduct = (productId, access_token) =>
-  api.delete(`/products/${productId}`, { headers: { Authorization: `Bearer ${access_token}` } });
+export const deleteProduct = (id, access_token) => {
+  const headers = {};
+  if (access_token) headers.Authorization = `Bearer ${access_token}`;
+
+  return api.delete(`/products/${id}`, { headers });
+};
 
 export const updateProductStock = (productId, stock, access_token) =>
   api.patch(
