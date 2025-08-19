@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
@@ -11,8 +11,12 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    const csrf = await fetchCsrfToken();
+    let csrf = getCsrfToken();
+    if (!csrf) {
+      csrf = await fetchCsrfToken();
+    }
     if (csrf) {
+      config.headers = config.headers || {};
       config.headers["X-XSRF-TOKEN"] = csrf;
     }
   }
@@ -30,7 +34,9 @@ export const deleteUserById = (userId, access_token) =>
   api.delete(`/users/${userId}`, { headers: { Authorization: `Bearer ${access_token}` } });
 
 // productos
-export const createProduct = (product, access_token) => {
+export const createProduct = async (product, access_token) => {
+  let csrf = getCsrfToken();
+  if (!csrf) csrf = await fetchCsrfToken();
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -42,10 +48,13 @@ export const createProduct = (product, access_token) => {
   });
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
+  if (csrf) headers ['X-XSRF-TOKEN'] = csrf;
   return api.post("/products", fd, { headers });
 };
 
-export const updateProduct = (id, product, access_token) => {
+export const updateProduct = async (id, product, access_token) => {
+  let csrf = getCsrfToken();
+  if (!csrf) csrf = await fetchCsrfToken();
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -57,13 +66,16 @@ export const updateProduct = (id, product, access_token) => {
   });
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
+  if (csrf) headers['X-XSRF-TOKEN'] = csrf;
   return api.put(`/products/${id}`, fd, { headers });
 };
 
-export const deleteProduct = (id, access_token) => {
+export const deleteProduct = async (id, access_token) => {
+  let csrf = getCsrfToken();
+  if (!csrf) csrf = await fetchCsrfToken(); 
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
-
+  if (csrf) headers['X-XSRF-TOKEN'] = csrf;
   return api.delete(`/products/${id}`, { headers });
 };
 

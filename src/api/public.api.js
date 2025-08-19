@@ -11,8 +11,12 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    const token = await fetchCsrfToken();
+    let token = getCsrfToken();
+    if (!token) {
+      token = await fetchCsrfToken();
+    }
     if (token) {
+      config.headers = config.headers || {};
       config.headers["X-XSRF-TOKEN"] = token;
     }
   }
