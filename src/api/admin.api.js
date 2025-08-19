@@ -4,8 +4,6 @@ import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
   withCredentials: true,
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
 api.interceptors.request.use(async (config) => {
