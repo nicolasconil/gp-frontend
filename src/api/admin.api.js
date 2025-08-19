@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchCsrfToken } from "./csrf.api.js";
+import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
@@ -28,7 +28,7 @@ export const deleteUserById = (userId, access_token) =>
   api.delete(`/users/${userId}`, { headers: { Authorization: `Bearer ${access_token}` } });
 
 // productos
-export const createProduct = (product, access_token) => {
+export const createProduct = async (product, access_token) => {
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -38,15 +38,23 @@ export const createProduct = (product, access_token) => {
       );
     }
   });
-
+  let csrf = getCsrfToken();
+  if (!csrf) {
+    csrf = await fetchCsrfToken();
+  }
+  if (csrf) {
+    fd.append('_csrf', csrf);
+  }
+  const headers = {};
+  if (access_token) headers.Authorization = `Bearer ${access_token}`;
   return api.post(
     "/products",
     fd,
-    { headers: { Authorization: `Bearer ${access_token}` } }
+    { headers }
   );
 };
 
-export const updateProduct = (id, product, access_token) => {
+export const updateProduct = async (id, product, access_token) => {
   const fd = new FormData();
   Object.entries(product).forEach(([k, v]) => {
     if (v != null) {
@@ -56,11 +64,19 @@ export const updateProduct = (id, product, access_token) => {
       );
     }
   });
-
+  let csrf = getCsrfToken();
+  if (!csrf) {
+    csrf = await fetchCsrfToken();
+  }
+  if (csrf) {
+    fd.append("_csrf", csrf);
+  }
+  const headers = {};
+  if (access_token) headers.Authorization = `Bearer ${access_token}`;
   return api.put(
     `/products/${id}`,
     fd,
-    { headers: { Authorization: `Bearer ${access_token}` } }
+    { headers }
   );
 };
 
