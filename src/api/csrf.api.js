@@ -5,13 +5,11 @@ export const fetchCsrfToken = async () => {
       credentials: 'include'
     }); 
     if (!res.ok) {
-      console.error('fetchCsrfToken: respuesta no OK', res.status);
       return null;
     }
     const data = await res.json();
     return data?.csrfToken || null;
   } catch (error) {
-    console.error('fetchCsrfToken error', error);
     return null;
   }
 };

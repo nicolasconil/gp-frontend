@@ -11,9 +11,9 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    const csrf = await fetchCsrfToken();
-    if (csrf) {
-      config.headers["X-XSRF-TOKEN"] = csrf;
+    const token = await fetchCsrfToken();
+    if (token) {
+      config.headers["X-XSRF-TOKEN"] = token;
     }
   }
   return config;
@@ -40,10 +40,8 @@ export const createProduct = (product, access_token) => {
       );
     }
   });
-
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
-
   return api.post("/products", fd, { headers });
 };
 
@@ -57,10 +55,8 @@ export const updateProduct = (id, product, access_token) => {
       );
     }
   });
-
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
-
   return api.put(`/products/${id}`, fd, { headers });
 };
 
