@@ -8,10 +8,10 @@ const api = axios.create({
   xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    const token = getCsrfToken();
+    const token = await fetchCsrfToken();
     if (token) {
       config.headers["X-XSRF-TOKEN"] = token;
     }
