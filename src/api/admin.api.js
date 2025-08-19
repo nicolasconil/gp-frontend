@@ -38,13 +38,7 @@ export const createProduct = async (product, access_token) => {
       );
     }
   });
-  let csrf = getCsrfToken();
-  if (!csrf) {
-    csrf = await fetchCsrfToken();
-  }
-  if (csrf) {
-    fd.append('_csrf', csrf);
-  }
+
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
   return api.post(
@@ -64,13 +58,7 @@ export const updateProduct = async (id, product, access_token) => {
       );
     }
   });
-  let csrf = getCsrfToken();
-  if (!csrf) {
-    csrf = await fetchCsrfToken();
-  }
-  if (csrf) {
-    fd.append("_csrf", csrf);
-  }
+
   const headers = {};
   if (access_token) headers.Authorization = `Bearer ${access_token}`;
   return api.put(
