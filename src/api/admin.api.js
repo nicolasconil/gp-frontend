@@ -4,14 +4,16 @@ import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
 api.interceptors.request.use(async (config) => {
   const method = config.method?.toLowerCase();
   if (["post", "put", "patch", "delete"].includes(method)) {
-    const csrf = await fetchCsrfToken();
-    if (csrf) {
-      config.headers["X-XSRF-TOKEN"] = csrf;
+    const token = await fetchCsrfToken();
+    if (token) {
+      config.headers["X-XSRF-TOKEN"] = token;
     }
   }
   return config;
@@ -68,8 +70,12 @@ export const updateProduct = async (id, product, access_token) => {
   );
 };
 
-export const deleteProduct = (productId, access_token) =>
-  api.delete(`/products/${productId}`, { headers: { Authorization: `Bearer ${access_token}` } });
+export const deleteProduct = (id, access_token) => {
+  const headers = {};
+  if (access_token) headers.Authorization = `Bearer ${access_token}`;
+
+  return api.delete(`/products/${id}`, { headers });
+};
 
 export const updateProductStock = (productId, stock, access_token) =>
   api.patch(
