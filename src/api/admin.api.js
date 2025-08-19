@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchCsrfToken } from "./csrf.api.js";
+import { getCsrfToken } from "./csrf.api.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL + "/api",
@@ -8,10 +8,10 @@ const api = axios.create({
   xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
-api.interceptors.request.use(async (config) => {
+api.interceptors.request.use((config) => {
   const method = config.method?.toLowerCase();
   if (["post","put","patch","delete"].includes(method)) {
-    const csrf = await fetchCsrfToken();
+    const csrf = getCsrfToken();
     if (csrf) config.headers["X-XSRF-TOKEN"] = csrf;
   }
   return config;
