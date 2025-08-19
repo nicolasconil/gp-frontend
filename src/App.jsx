@@ -22,6 +22,8 @@ import AboutUsPage from './pages/AboutUsPage.jsx';
 import TermsOfServicePage from './pages/TermsOfServicePage.jsx';
 import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
 
+import ScrollToTop from './components/ScrollToTop.jsx';
+
 function App() {
     useEffect(() => {
       fetchCsrfToken();
@@ -29,6 +31,7 @@ function App() {
     
   return (
     <>
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path='/' element={<HomePage />} />
