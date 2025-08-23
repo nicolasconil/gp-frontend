@@ -41,7 +41,7 @@ export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const logout = async () => api.post('/auth/logout');
 
 // productos
-export const getAllProducts = () => api.get('/products');
+export const getAllProducts = () => api.get('/products').then(res => res.data);
 export const getProductById = (id) => api.get(`/products/${id}`);
 
 // catálogos 
