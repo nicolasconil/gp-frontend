@@ -1,8 +1,12 @@
 import axios from "axios";
 import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 
+const backendBase = import.meta.env.PROD
+  ? '/api'
+  : (import.meta.env.VITE_BACKEND_URL + '/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL + '/api',
+  baseURL: backendBase,
   withCredentials: true,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
