@@ -5,16 +5,12 @@ import Feed from "../components/Feed.jsx";
 import { useNavigate } from "react-router-dom";
 
 const AllProductsPage = () => {
-    const { data: productsData, isLoading, isError } = useQuery({
-        queryKey: ['allProducts'],
-        queryFn: getAllProducts,
-
-        select: (res) => res?.data ?? res,
-
-        staleTime: 1000 * 60, // 1 minuto
-    });
-
-    const products = Array.isArray(productsData) ? productsData : [];
+    const { data, isLoading, isError } = useQuery({ 
+        queryKey: ['allProducts'], 
+        queryFn: getAllProducts, 
+    }); 
+    
+    const products = data?.data || [];
     const navigate = useNavigate();
 
     if (isLoading) {
