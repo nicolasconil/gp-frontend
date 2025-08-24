@@ -11,6 +11,8 @@ const CartProvider = ({ children }) => {
     useEffect(() => {
         if (cartItems.length > 0) {
             localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        } else {
+            localStorage.removeItem('cartItems');
         }
     }, [cartItems]);
 
@@ -27,20 +29,22 @@ const CartProvider = ({ children }) => {
             image: product.image
         };
         setCartItems((prevItems) => {
-            const existingProductIndex = prevItems.findIndex(item => item.id === variationId);
+            const prev = Array.isArray(prevItems) ? prevItems : [];
+            const existingProductIndex = prev.findIndex(item => item.id === variationId);
             if (existingProductIndex > -1) {
-                const updatedCartItems = [...prevItems];
+                const updatedCartItems = [...prev];
                 updatedCartItems[existingProductIndex].quantity += quantity;
                 return updatedCartItems;
             } else {
-                return [...prevItems, cartItem];
+                return [...prev, cartItem];
             }
         });
     };
 
     const removeFromCart = (variationId) => {
         setCartItems(prevItems => {
-            const updatedCartItems = prevItems.filter(item => item.id !== variationId);
+            const prev = Array.isArray(prevItems) ? prevItems : [];
+            const updatedCartItems = prev.filter(item => item.id !== variationId);
             localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
             return updatedCartItems;
         });
@@ -48,7 +52,8 @@ const CartProvider = ({ children }) => {
 
     const updateQuantity = (variationId, quantity) => {
         setCartItems((prevItems) => {
-            const updatedCartItems = prevItems.map(item => {
+            const prev = Array.isArray(prevItems) ? prevItems : [];
+            const updatedCartItems = prev.map(item => {
                 if (item.id === variationId) {
                     return { ...item, quantity };
                 }

@@ -1,0 +1,6 @@
+﻿C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Header.jsx:37 const filteredResults = productsData?.filter((product) =>
+C:\Users\conil\Desktop\gpfotwearfrontend\src\context\CartContext.jsx:43 const updatedCartItems = prevItems.filter(item => item.id !== variationId);
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\OrdersPage.jsx:55 setOrders(orders.filter((order) => order._id !== orderId));
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\OrdersPage.jsx:63 const filteredOrders = Array.isArray(orders) ? orders.filter((o) => {
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDetail.jsx:51 const items = data.data.filter(p => p._id !== product._id);
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDialog.jsx:120 setVariations((prev) => prev.filter((_, i) => i !== index));

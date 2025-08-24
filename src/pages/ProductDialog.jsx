@@ -109,7 +109,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
       stock: Number(currentStock),
       product: initial._id,
     };
-    setVariations((prev) => [...prev, newVar]);
+    setVariations((prev) => [...(Array.isArray(prev) ? prev : []), newVar]);
     setCurrentSize("");
     setCurrentColor("");
     setCurrentStock("");
@@ -117,7 +117,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   };
 
   const removeVariation = (index) => {
-    setVariations((prev) => prev.filter((_, i) => i !== index));
+    setVariations((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
   };
 
   const submit = () => {
