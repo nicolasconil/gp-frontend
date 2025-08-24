@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import Cart from "./Cart.jsx";
 import { getAllProducts } from "../api/public.api.js";
 import { useQuery } from "@tanstack/react-query";
+import { ensureArray } from "../utils/array.js";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,7 +35,9 @@ const Header = () => {
     select: (data) => data.data,
   });
 
-  const filteredResults = productsData?.filter((product) =>
+  const productsArr = ensureArray(productsData);
+
+  const filteredResults = productsArr.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 

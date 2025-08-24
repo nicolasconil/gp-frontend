@@ -52,7 +52,7 @@ const OrdersPage = () => {
         try {
             setUpdatingId(orderId);
             await deleteOrder(orderId, user.access_token);
-            setOrders(orders.filter((order) => order._id !== orderId));
+            setOrders(Array.isArray(orders) ? orders.filter((order) => order._id !== orderId) : []);
         } catch (error) {
             console.error("Error eliminando la orden:", error);
         } finally {
