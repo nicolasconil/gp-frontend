@@ -1,0 +1,26 @@
+﻿C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Cart.jsx:35 products: cartItems.map(item => ({
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Cart.jsx:51 products: cartItems.map(item => ({
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Cart.jsx:183 {cartItems.map((item) => {
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Checkout.jsx:99 products: orderSummary.products.map(p => ({
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Feed.jsx:13 {products.map((product) => {
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Header.jsx:72 {filteredResults.map((product) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\components\Header.jsx:183 {filteredResults.map(product => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\context\CartContext.jsx:56 const updatedCartItems = prev.map(item => {
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\AllProductsPage.jsx:158 {products.map(product => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\OrderDialog.jsx:103 order.products.map((p, idx) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\OrderDialog.jsx:136 {statusOptions.map((status) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\OrdersPage.jsx:200 {paginatedOrders.map((order) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\PanelPage.jsx:81 {menu.map(({ to, label, icon }) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDetail.jsx:22 const allColors = [...new Set(variations.map(v => v.color))];
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDetail.jsx:30 const newColors = [...new Set(newVariations.map(v => v.color))];
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDetail.jsx:139 {allColors.map(color => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDetail.jsx:218 {productsData?.slice(0, 3).map((item) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDialog.jsx:136 variations: variations.map((v) => ({
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDialog.jsx:209 {genderOptions.map((o) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductDialog.jsx:333 {variations.map((v, i) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ProductPage.jsx:164 {visibleProducts.map((product) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ShippingDialog.jsx:166 order.products.map((p, idx) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ShippingDialog.jsx:225 {["pendiente", "preparando", "en camino", "entregado", "rechazado", "devuelto"].map((option) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\ShippingsPage.jsx:90 data?.data?.map((order) => {
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\StockMovementDialog.jsx:56 {movements.map((m) => (
+C:\Users\conil\Desktop\gpfotwearfrontend\src\pages\UsersPage.jsx:179 {roleOptions.map((r) => (

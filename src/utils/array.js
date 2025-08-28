@@ -5,3 +5,4 @@ export const ensureArray = (maybeArr) => {
 };
 
 export const safeFilter = (arr, fn) => Array.isArray(arr) ? arr.filter(fn) : [];
+export const safeMap = (arr, fn) => Array.isArray(arr) ? arr.map(fn) : [];
