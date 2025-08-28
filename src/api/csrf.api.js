@@ -1,13 +1,14 @@
 export const fetchCsrfToken = async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/csrf-token`, {
+    const res = await fetch('/api/auth/csrf-token', {
       method: 'GET',
-      credentials: 'include'
-    }); 
+      credentials: 'include' 
+    });
+
     if (!res.ok) {
       return null;
     }
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
     return data?.csrfToken || null;
   } catch (error) {
     return null;
@@ -16,8 +17,8 @@ export const fetchCsrfToken = async () => {
 
 export const getCsrfToken = () => {
   try {
-    const match = document.cookie.match(new RegExp('(^|; )' + 'XSRF-TOKEN' + '=([^;]+)'));
-    return match ? decodeURIComponent(match[2]) : null;
+    const match = document.cookie.match(new RegExp('(?:^|; )' + 'XSRF-TOKEN' + '=([^;]+)'));
+    return match ? decodeURIComponent(match[1]) : null;
   } catch (error) {
     return null;
   }
