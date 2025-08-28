@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     const { data } = await api.get("/auth/users/me", {
       withCredentials: true,
       headers: {
-        "X-XSRF-TOKEN": getCsrfToken(), 
+        "X-XSRF-TOKEN": getCsrfToken(),
       },
     });
     return data;
@@ -29,25 +29,38 @@ export const AuthProvider = ({ children }) => {
     const responseInterceptor = api.interceptors.response.use(
       (res) => res,
       async (err) => {
-        const originalConfig = err.config;
-        if (err.response?.status === 401 && !originalConfig._retry) {
-          originalConfig._retry = true;
-          try {
-            await refreshToken();
-            return api(originalConfig);
-          } catch {
-            localStorage.removeItem("user");
-            setUser(null);
-            if (location.pathname !== "/login") navigate("/login");
-          }
+        const originalConfig = err.config || {};
+        if (err.response?.status !== 401) return Promise.reject(err);
+        if (originalConfig._retry || /\/auth\/refresh|\/auth\/login|\/auth\/logout/.test(originalConfig.url)) {
+          localStorage.removeItem("user");
+          setUser(null);
+          if (location.pathname !== "/login") navigate("/login");
+          return Promise.reject(err);
         }
-        return Promise.reject(err);
+        originalConfig._retry = true;
+        try {
+          await refreshToken();
+          originalConfig.withCredentials = true;
+          originalConfig.headers = {
+            ...(originalConfig.headers || {}),
+            "X-XSRF-TOKEN": getCsrfToken(),
+          };
+          return api(originalConfig);
+        } catch (refreshErr) {
+          localStorage.removeItem("user");
+          setUser(null);
+          if (location.pathname !== "/login") navigate("/login");
+          return Promise.reject(refreshErr);
+        }
       }
     );
-    return () => api.interceptors.response.eject(responseInterceptor);
+    return () => {
+      api.interceptors.response.eject(responseInterceptor);
+    };
   }, [location.pathname, navigate]);
 
   useEffect(() => {
+    let mounted = true;
     const authPages = ["/login", "/forgot-password", "/reset-password"];
     if (authPages.includes(location.pathname)) {
       setAuthLoading(false);
@@ -55,33 +68,52 @@ export const AuthProvider = ({ children }) => {
     }
 
     (async () => {
+      setAuthLoading(true);
       try {
         const userData = await fetchUserProfile();
+        if (!mounted) return;
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
-      } catch {
+      } catch (e) {
+        if (!mounted) return;
         localStorage.removeItem("user");
         setUser(null);
       } finally {
+        if (!mounted) return;
         setAuthLoading(false);
       }
     })();
+
+    return () => {
+      mounted = false;
+    };
   }, [location.pathname]);
 
-  const login = useCallback(async (credentials) => {
-    await fetchCsrfToken();
-    await loginRequest(credentials);
-    const userData = await fetchUserProfile();
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    return userData;
-  }, []);
+  const login = useCallback(
+    async (credentials) => {
+      try {
+        await fetchCsrfToken(); 
+        await loginRequest(credentials); 
+        const userData = await fetchUserProfile();
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
+        return userData;
+      } catch (err) {
+        throw err;
+      }
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
-    await logoutRequest();
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/");
+    try {
+      await logoutRequest(); 
+    } catch (e) {
+    } finally {
+      localStorage.removeItem("user");
+      setUser(null);
+      navigate("/");
+    }
   }, [navigate]);
 
   const value = {
