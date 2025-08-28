@@ -1,8 +1,23 @@
+// src/api/public.api.js  (o donde esté tu public.api.js)
 import axios from "axios";
 import { fetchCsrfToken, getCsrfToken } from "./csrf.api.js";
 
+// Normaliza un valor de URL para evitar 'undefined'
+const normalize = (u) => (typeof u === "string" ? u.replace(/\/$/, "") : "");
+
+// Si VITE_BACKEND_URL no está definido, no dejar "undefined" en la base
+const rawBackend = normalize(import.meta.env.VITE_BACKEND_URL);
+const isProd = !!import.meta.env.PROD;
+
+// En producción usá el proxy /api (Netlify _redirects), en dev apuntá al backend si está definido
+const BASE_IN_PROD = "/api";
+const backendBase = isProd
+  ? BASE_IN_PROD
+  : (rawBackend ? `${rawBackend}/api` : "/api");
+
+// Crear instancia axios segura
 const api = axios.create({
-  baseURL: import.meta.env_VITE_BACKEND_URL + '/api',
+  baseURL: backendBase,
   withCredentials: true,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
