@@ -133,8 +133,8 @@ const Feed = ({ products = [], onClick }) => {
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: 3,
-                      right: -4.7,
+                      top: 2.5,
+                      right: -5,
                       width: '4px',
                       height: '104.5%',
                       backgroundColor: isOutOfStock ? 'grey' : 'black',
