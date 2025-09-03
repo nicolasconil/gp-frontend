@@ -134,7 +134,7 @@ const Feed = ({ products = [], onClick }) => {
                     sx={{
                       position: 'absolute',
                       top: 3,
-                      right: -5,
+                      right: -4.7,
                       width: '4px',
                       height: '104.5%',
                       backgroundColor: isOutOfStock ? 'grey' : 'black',
