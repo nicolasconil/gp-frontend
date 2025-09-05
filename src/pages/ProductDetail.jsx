@@ -332,7 +332,7 @@ const ProductDetail = () => {
           sx={{
             cursor: 'default',
             fontFamily: '"Archivo Black", sans-serif',
-            fontSize: { xs: '1.6rem', sm: '2rem', md: '4rem' },
+            fontSize: { xs: '2.4rem', sm: '2rem', md: '4rem' },
             textTransform: 'uppercase',
             mb: 5,
             letterSpacing: { xs: '-1.5px', md: '-8.5px' },
@@ -352,7 +352,7 @@ const ProductDetail = () => {
             },
           }}
         >
-          También podría gustarte
+          Para vos
         </Typography>
 
         <Grid container spacing={12} sx={{ px: 0, justifyContent: 'center', pt: 5 }}>
