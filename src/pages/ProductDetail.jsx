@@ -139,7 +139,7 @@ const ProductDetail = () => {
               {allColors.map(color => (
                 <Button
                   key={color}
-                  onClick={() => { selectedColor(color); setSelectedVariation(null); }}
+                  onClick={() => { setSelectedColor(color); setSelectedVariation(null); }}
                   variant={selectedColor === color ? 'contained' : 'outlined'}
                   sx={{
                     fontFamily: '"Archivo Black", sans-serif',
@@ -153,7 +153,8 @@ const ProductDetail = () => {
                     border: '2px solid black',
                     color: selectedColor === color ? 'white' : 'black',
                     backgroundColor: selectedColor === color ? 'black' : 'white',
-                    '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' }
+                    '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' },
+                    position: 'relative', // importante para los boxes absolutos
                   }}
                 >
                   {color}
@@ -191,7 +192,7 @@ const ProductDetail = () => {
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1r)', md: 'repeat(3, 1fr)' },
+                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(3, 1fr)' },
                 gap: 1,
                 mb: 3,
                 justifyContent: { xs: 'center', md: 'flex-start' }
@@ -259,7 +260,7 @@ const ProductDetail = () => {
               <Button
                 variant="contained"
                 disabled={isOutOfStock || !variations.length}
-                startIcon={isOutOfStock ? '' : <AddShoppingCartIcon />}
+                startIcon={isOutOfStock || !variations.length ? null : <AddShoppingCartIcon />}
                 sx={{
                   textTransform: 'uppercase',
                   fontWeight: 600,
@@ -331,16 +332,18 @@ const ProductDetail = () => {
           sx={{
             cursor: 'default',
             fontFamily: '"Archivo Black", sans-serif',
-            fontSize: { xs: '1.8rem', sm: '2rem', md: '4rem' },
+            fontSize: { xs: '1.6rem', sm: '2rem', md: '4rem' },
             textTransform: 'uppercase',
             mb: 5,
-            letterSpacing: { xs: '-3.5px', md: '-8.5px' },
+            letterSpacing: { xs: '-1.5px', md: '-8.5px' },
             textDecoration: 'underline',
             mt: 10,
             color: '#e4ebe8',
-            mx: { xs: 0, sm: 0, md: 'auto' },
-            px: { xs: 0, sm: 0 },
-            whiteSpace: 'nowrap',
+            mx: 'auto',
+            px: { xs: 2, sm: 0 },
+            whiteSpace: { xs: 'normal', md: 'nowrap' },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             transition: 'transform 0.4s ease',
             '&:hover': {
               ...(isMobile ? {} : {
