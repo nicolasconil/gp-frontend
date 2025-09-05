@@ -352,7 +352,7 @@ const ProductDetail = () => {
             },
           }}
         >
-          Para vos
+          Te recomendamos
         </Typography>
 
         <Grid container spacing={12} sx={{ px: 0, justifyContent: 'center', pt: 5 }}>
