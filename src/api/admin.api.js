@@ -42,6 +42,20 @@ const makeAuthHeader = (access_token) => {
   return access_token ? { Authorization: `Bearer ${access_token}` } : {};
 };
 
+function appendFieldsToFormData(fd, product) {
+  Object.entries(product).forEach(([k, v]) => {
+    if (v == null) return;
+    if (k === "variations") {
+      fd.append("variations", JSON.stringify(v));
+    } else if (k === "newImages" || k === "imagesToKeep") {
+      // handled separately outside
+    } else {
+      // primitive or string types
+      fd.append(k, v);
+    }
+  });
+}
+
 // usuarios (moderadores y administrador)
 export const getAllUsers = (access_token) =>
   api.get("/users", { headers: makeAuthHeader(access_token) });
@@ -57,11 +71,17 @@ export const createProduct = async (product, access_token) => {
   let csrf = getCsrfToken();
   if (!csrf) csrf = await fetchCsrfToken();
   const fd = new FormData();
-  Object.entries(product).forEach(([k, v]) => {
-    if (v != null) {
-      fd.append(k === "variations" ? "variations" : k, k === "variations" ? JSON.stringify(v) : v);
-    }
-  });
+  appendFieldsToFormData(fd, product);
+  if (Array.isArray(product.imagesToKeep)) {
+    fd.append('imagesToKeep', JSON.stringify(product.imagesToKeep));
+  }
+  if (Array.isArray(product.newImages) && product.newImages.length > 0) {
+    product.newImages.forEach((file) => {
+      fd.append('images', file);
+    });
+  } else if (product.image && typeof product.image === 'string') {
+    fd.append('image', product.image);
+  }
   const headers = { ...makeAuthHeader(access_token) };
   if (csrf) headers['X-XSRF-TOKEN'] = csrf;
   return api.post("/products", fd, { headers });
@@ -71,11 +91,16 @@ export const updateProduct = async (id, product, access_token) => {
   let csrf = getCsrfToken();
   if (!csrf) csrf = await fetchCsrfToken();
   const fd = new FormData();
-  Object.entries(product).forEach(([k, v]) => {
-    if (v != null) {
-      fd.append(k === "variations" ? "variations" : k, k === "variations" ? JSON.stringify(v) : v);
-    }
-  });
+  appendFieldsToFormData(fd, product);
+  if (Array.isArray(product.imagesToKeep)) {
+    fd.append('imagesToKeep', JSON.stringify(product.imagesToKeep));
+  }
+  if (Array.isArray(product.newImages) && product.newImages.length > 0) {
+    product.newImages.forEach((file) => fd.append('images', file));
+  }
+  if (!product.newImages && product.image && typeof product.image === 'string') {
+    fd.append('image', product.image);
+  }
   const headers = { ...makeAuthHeader(access_token) };
   if (csrf) headers['X-XSRF-TOKEN'] = csrf;
   return api.put(`/products/${id}`, fd, { headers });

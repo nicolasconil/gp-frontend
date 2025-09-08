@@ -12,10 +12,14 @@ const Feed = ({ products = [], onClick }) => {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {products.map((product) => {
         const isOutOfStock = product.stock === 0;
-        const imageUrl = product.image?.startsWith('/uploads')
-          ? `${baseURL}${product.image}`
-          : product.image
-            ? product.image
+        const primaryImage = Array.isArray(product.images) && product.images.length
+          ? product.images[0]
+          : product.image;
+
+        const imageUrl = primaryImage?.startsWith('/uploads')
+          ? `${baseURL}${primaryImage}`
+          : primaryImage
+            ? primaryImage
             : 'https://via.placeholder.com/300x300?text=Producto';
 
         const handleGoTODetail = () => {

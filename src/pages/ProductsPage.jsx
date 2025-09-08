@@ -151,7 +151,7 @@ const ProductsPage = () => {
                 gender: "hombre",
                 catalog: "",
                 isActive: true,
-                image: null,
+                images: [], 
               },
               onSubmit: handleCreateProduct,
             })
