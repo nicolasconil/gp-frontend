@@ -1,18 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, IconButton } from '@mui/material';
+import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../context/CartContext';
 import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination } from 'swiper/modules/pagination';
-import { A11y } from 'swiper/modules/a11y';
-import { Keyboard } from 'swiper/modules/keyboard';
-import 'swiper/css';
-import 'swiper/css/pagination';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -53,6 +46,53 @@ export default function ProductDetail() {
     setMainIndex(0);
   }, [product._id]);
 
+  const touchStartX = useRef(null);
+  const touchDelta = useRef(0);
+
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches?.[0]?.clientX ?? null;
+    touchDelta.current = 0;
+  };
+  const onTouchMove = (e) => {
+    if (touchStartX.current == null) return;
+    const x = e.touches?.[0]?.clientX ?? 0;
+    touchDelta.current = x - touchStartX.current;
+  };
+  const onTouchEnd = () => {
+    if (touchStartX.current == null) return;
+    const dx = touchDelta.current;
+    if (Math.abs(dx) > 50 && images.length > 1) {
+      if (dx < 0) setMainIndex((i) => (i + 1) % images.length);
+      else setMainIndex((i) => (i - 1 + images.length) % images.length);
+    }
+    touchStartX.current = null;
+    touchDelta.current = 0;
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowRight' && images.length > 1) setMainIndex((i) => (i + 1) % images.length);
+      if (e.key === 'ArrowLeft' && images.length > 1) setMainIndex((i) => (i - 1 + images.length) % images.length);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [images.length]);
+
+  useEffect(() => {
+    if (document.getElementById('product-detail-css')) return;
+    const style = document.createElement('style');
+    style.id = 'product-detail-css';
+    style.innerHTML = `
+      .pd-bullets { display:flex; gap:8px; justify-content:center; align-items:center; padding:12px 0 0 0; }
+      .pd-bullet { width:10px; height:10px; opacity:0.55; transform:scale(1); border-radius:999px; background:#111; display:inline-block; transition:transform .22s ease, opacity .22s ease; }
+      .pd-bullet.active { transform:scale(1.5); opacity:1; }
+      @media (max-width:600px){ .pd-bullet{ width:12px;height:12px } .pd-bullet.active{ transform:scale(1.65) } }
+      .pd-image{ transition: transform .35s ease, opacity .28s ease; }
+      .pd-image.anim{ transform: translateY(-4px); }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   const isSizeAvailable = (size) => {
     return variations.some((v) => v.color === selectedColor && v.size === size && v.stock > 0);
   };
@@ -75,28 +115,6 @@ export default function ProductDetail() {
     return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
   }, [images, mainIndex, selectedColor, product]);
 
-  useEffect(() => {
-    if (document.getElementById('product-detail-swiper-css')) return;
-    const style = document.createElement('style');
-    style.id = 'product-detail-swiper-css';
-    style.innerHTML = `
-      /* bullets */
-      .custom-swiper-pagination { display:flex; gap:8px; justify-content:center; align-items:center; padding:12px 0 0 0; }
-      .custom-bullet { width:10px; height:10px; opacity:0.55; transform:scale(1); border-radius:999px; background:#111; display:inline-block; transition:transform .22s ease, opacity .22s ease; }
-      .custom-bullet.custom-bullet-active { transform:scale(1.5); opacity:1; }
-
-      @media (max-width: 600px) {
-        .custom-bullet { width:12px; height:12px; }
-        .custom-bullet.custom-bullet-active { transform:scale(1.65); }
-      }
-
-      .product-detail-image { transition: transform .35s ease, opacity .28s ease; }
-      .product-detail-image--anim { transform: translateY(-4px); }
-      .swiper-container-wrap { background: transparent; }
-    `;
-    document.head.appendChild(style);
-  }, []);
-
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts'],
     queryFn: getAllProducts,
@@ -107,7 +125,6 @@ export default function ProductDetail() {
   });
 
   const { addToCart } = useCart();
-
   const handleAddToCart = async () => {
     if (!selectedVariation) return;
     addToCart(product, selectedVariation.size, selectedColor, 1);
@@ -119,98 +136,53 @@ export default function ProductDetail() {
         <Grid
           xs={12}
           md={6}
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            maxWidth: { md: 600 },
-            mx: 'auto',
-          }}
+          sx={{ display: 'flex', justifyContent: 'center', maxWidth: { md: 600 }, mx: 'auto' }}
         >
           <Box
             role={`region`}
             aria-label={`Galería de imágenes del producto ${product.name || ''}`}
             sx={{ width: '100%', position: 'relative', display: 'flex', justifyContent: 'center' }}
-            className="swiper-container-wrap"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
-            <Swiper
-              modules={[Pagination, A11y, Keyboard]}
-              spaceBetween={8}
-              slidesPerView={1}
-              onSlideChange={(s) => setMainIndex(s.activeIndex % Math.max(images.length, 1))}
-              loop={images.length > 1}
-              pagination={{
-                el: '.custom-swiper-pagination',
-                clickable: true,
-                bulletClass: 'custom-bullet',
-                bulletActiveClass: 'custom-bullet-active',
+            <img
+              src={displayImage}
+              alt={product.name}
+              className={`pd-image ${'anim'}`}
+              style={{
+                width: '100%',
+                height: isMobile ? 'auto' : 600,
+                maxHeight: isMobile ? '65vh' : 600,
+                objectFit: 'contain',
+                display: 'block',
+                userSelect: 'none',
               }}
-              keyboard={{ enabled: true }}
-              a11y={{
-                enabled: true,
-                prevSlideMessage: 'Imagen anterior',
-                nextSlideMessage: 'Siguiente imagen',
-                slideLabelMessage: 'Imagen {{index}} de {{slidesLength}}',
-              }}
-              style={{ width: '100%' }}
-            >
-              {images.length ? (
-                images.map((img, idx) => {
-                  const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
-                  return (
-                    <SwiperSlide key={idx} aria-label={`Imagen ${idx + 1} de ${images.length}`}>
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                        <img
-                          src={src}
-                          alt={product.name ? `${product.name} - imagen ${idx + 1}` : `producto imagen ${idx + 1}`}
-                          className={`product-detail-image ${idx === mainIndex ? 'product-detail-image--anim' : ''}`}
-                          style={{
-                            width: '100%',
-                            height: isMobile ? 'auto' : 600,
-                            maxHeight: isMobile ? '65vh' : 600,
-                            objectFit: 'contain',
-                            display: 'block',
-                            userSelect: 'none',
-                          }}
-                          draggable={false}
-                        />
-                      </Box>
-                    </SwiperSlide>
-                  );
-                })
-              ) : (
-                <SwiperSlide>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <img
-                      src={getImageForColor()}
-                      alt={product.name || 'producto'}
-                      className="product-detail-image product-detail-image--anim"
-                      style={{ width: '100%', height: isMobile ? 'auto' : 600, maxHeight: isMobile ? '65vh' : 600, objectFit: 'contain', display: 'block' }}
-                      draggable={false}
-                    />
-                  </Box>
-                </SwiperSlide>
-              )}
+              draggable={false}
+            />
 
-              <div className="custom-swiper-pagination" aria-hidden="false" role="tablist" style={{ width: '100%' }} />
-            </Swiper>
+            {images.length > 1 && (
+              <Box sx={{ position: 'absolute', bottom: 8, left: 0, right: 0, pointerEvents: 'none' }}>
+                <Box className="pd-bullets" sx={{ pointerEvents: 'auto' }}>
+                  {images.map((_, i) => (
+                    <Box
+                      key={i}
+                      role="button"
+                      aria-label={`Ir a imagen ${i + 1}`}
+                      onClick={() => setMainIndex(i)}
+                      className={`pd-bullet ${i === mainIndex ? 'active' : ''}`}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
           </Box>
         </Grid>
 
-        <Grid
-          xs={12}
-          md={6}
-          sx={{
-            maxWidth: { md: 600 },
-            mx: 'auto',
-            textAlign: { xs: 'left', md: 'left' },
-            pl: { xs: 0, md: 7 },
-          }}
-        >
+        <Grid xs={12} md={6} sx={{ maxWidth: { md: 600 }, mx: 'auto', textAlign: { xs: 'left', md: 'left' }, pl: { xs: 0, md: 7 } }}>
           <Box sx={{ pt: { xs: 3, md: 7 }, pb: 4 }}>
-            <Typography
-              variant="h3"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
-            >
+            <Typography variant="h3" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}>
               {product.name}
             </Typography>
 
@@ -241,11 +213,8 @@ export default function ProductDetail() {
                         if (typeof img !== 'string') return false;
                         return img.toLowerCase().includes(String(color).toLowerCase());
                       });
-                      if (idx > -1) {
-                        setMainIndex(idx);
-                      } else {
-                        setMainIndex(0);
-                      }
+                      if (idx > -1) setMainIndex(idx);
+                      else setMainIndex(0);
                     }
                   }}
                   variant={selectedColor === color ? 'contained' : 'outlined'}
