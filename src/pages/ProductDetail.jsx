@@ -168,26 +168,28 @@ const ProductDetail = () => {
 
             {/* bullets overlay (no cambios a estilos originales; agregado funcional) */}
             {images.length > 1 && (
-              <Box sx={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 1, pointerEvents: 'none' }}>
-                {images.map((_, i) => (
-                  <Box
-                    key={i}
-                    role="button"
-                    aria-label={`Ir a imagen ${i + 1}`}
-                    onClick={() => setMainIndex(i)}
-                    sx={{
-                      width: i === mainIndex ? 14 : 10,
-                      height: i === mainIndex ? 14 : 10,
-                      borderRadius: 99,
-                      backgroundColor: '#111',
-                      opacity: i === mainIndex ? 1 : 0.55,
-                      transform: i === mainIndex ? 'scale(1.5)' : 'scale(1)',
-                      transition: 'transform .22s ease, opacity .22s ease',
-                      cursor: 'pointer',
-                      pointerEvents: 'auto',
-                    }}
-                  />
-                ))}
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 1.5 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {images.map((_, i) => (
+                    <Box
+                      key={i}
+                      role="button"
+                      aria-label={`Ir a imagen ${i + 1}`}
+                      onClick={() => setMainIndex(i)}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: i === mainIndex ? '#888' : '#bbb', 
+                        opacity: i === mainIndex ? 0.95 : 0.55,
+                        transform: i === mainIndex ? 'scale(1.15)' : 'scale(1)',
+                        transition: 'transform .18s ease, opacity .18s ease, background-color .18s ease',
+                        cursor: 'pointer',
+                        '&:focus-visible': { outline: '2px solid rgba(0,0,0,0.12)', outlineOffset: 2 },
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
             )}
           </Box>
