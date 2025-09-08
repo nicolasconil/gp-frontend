@@ -1,5 +1,6 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Grid, Alert, Typography, Box, IconButton } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useEffect, useCallback } from "react";
 
 const genderOptions = [
@@ -44,9 +45,14 @@ const customInputStyles = {
   },
 };
 
+const toPreviewUrl = (file) =>
+  typeof file === "string" ? file : URL.createObjectURL(file);
+
 const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   const [form, setForm] = useState({});
-  const [file, setFile] = useState(null);
+  const [newFiles, setNewFiles] = useState([]); // Files selected now (Array of File)
+  const [existingImages, setExistingImages] = useState([]); // URLs already on product
+  const [imagesToKeep, setImagesToKeep] = useState([]); // subset of existingImages to keep
   const [error, setError] = useState("");
 
   const [variations, setVariations] = useState([]);
@@ -65,10 +71,17 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
       gender: initial.gender || "hombre",
       catalog: initial.catalog || "",
       isActive: initial.isActive ?? true,
-      image: initial.image || null,
     });
 
-    setFile(null);
+    const imgs = Array.isArray(initial.images) && initial.images.length
+      ? initial.images
+      : initial.image
+        ? [initial.image]
+        : [];
+
+    setExistingImages(imgs);
+    setImagesToKeep(imgs.slice()); 
+    setNewFiles([]);
     setError("");
     setVariations(initial.variations || []);
     setCurrentSize("");
@@ -82,10 +95,32 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0]);
+      const filesArr = Array.from(e.dataTransfer.files);
+      setNewFiles((prev) => [...prev, ...filesArr]);
       e.dataTransfer.clearData();
     }
   }, []);
+
+  const handleFilesSelected = (e) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setNewFiles((prev) => [...prev, ...files]);
+  };
+
+  const removeNewFile = (index) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (url) => {
+    // remove from existingImages and imagesToKeep
+    setExistingImages((prev) => prev.filter((u) => u !== url));
+    setImagesToKeep((prev) => prev.filter((u) => u !== url));
+  };
+
+  const toggleKeepExisting = (url) => {
+    setImagesToKeep((prev) =>
+      prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]
+    );
+  };
 
   const addVariation = () => {
     if (!currentSize || !currentColor || !currentStock) {
@@ -117,28 +152,28 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   };
 
   const removeVariation = (index) => {
-    setVariations((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
+    setVariations((prev) => (Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []));
   };
 
   const submit = () => {
-    if (!file && !form.image) {
-      setError("Debes seleccionar una imagen.");
+    if ((imagesToKeep.length === 0) && newFiles.length === 0) {
+      setError("Debes seleccionar al menos una imagen (subir nueva o conservar alguna existente).");
       return;
     }
     if (variations.length === 0) {
       setError("Agregá al menos una combinación de talle y color.");
       return;
-    };
+    }
 
-    onSubmit({
+    const payload = {
       ...form,
       _id: initial._id,
-      variations: variations.map((v) => ({
-        ...v,
-        product: initial._id,
-      })),
-      image: file || form.image,
-    });
+      variations: variations.map((v) => ({ ...v, product: initial._id })),
+      newImages: newFiles, 
+      imagesToKeep, 
+    };
+
+    onSubmit(payload);
     onClose();
   };
 
@@ -152,7 +187,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
           letterSpacing: '-2px',
         }}
       >
-        {title || "EDITAR PRODUCTO"} 
+        {title || (initial._id ? "EDITAR PRODUCTO" : "NUEVO PRODUCTO")}
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 4, py: 3 }}>
@@ -245,7 +280,8 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
                 type="file"
                 accept="image/*"
                 hidden
-                onChange={(e) => setFile(e.target.files[0])}
+                multiple
+                onChange={handleFilesSelected}
               />
               <IconButton disableRipple>
                 <UploadFileIcon fontSize="large" />
@@ -256,9 +292,40 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
                   letterSpacing: "-1.25px",
                 }}
               >
-                {file ? file.name : "Arrastrá una imagen o hacé click"}
+                {newFiles.length ? `${newFiles.length} file(s) selected` : "Arrastrá imágenes o hacé click (puede subir múltiples)"}
               </Typography>
             </Box>
+
+            {existingImages.length > 0 && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                {existingImages.map((url, idx) => (
+                  <Box key={idx} sx={{ position: 'relative' }}>
+                    <img src={toPreviewUrl(url)} alt={`existing-${idx}`} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6, border: imagesToKeep.includes(url) ? '3px solid black' : '2px solid #ccc' }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                      <Button size="small" onClick={() => toggleKeepExisting(url)} sx={{ mt: 0.5 }}>
+                        {imagesToKeep.includes(url) ? 'Keep' : 'Keep'}
+                      </Button>
+                      <IconButton size="small" onClick={() => removeExistingImage(url)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {newFiles.length > 0 && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                {newFiles.map((f, i) => (
+                  <Box key={i} sx={{ position: 'relative' }}>
+                    <img src={toPreviewUrl(f)} alt={`new-${i}`} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6 }} />
+                    <IconButton size="small" onClick={() => removeNewFile(i)} sx={{ position: 'absolute', top: 2, right: 2 }}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Grid>
 
           <Grid item xs={12}>

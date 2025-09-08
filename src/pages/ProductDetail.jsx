@@ -1,25 +1,25 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useCart } from '../context/CartContext'
+import { useCart } from '../context/CartContext';
 import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
-const ProductDetail = () => {
+export default function ProductDetail() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { product } = location.state ?? { product: {} };
+  const { product = {} } = location.state ?? {};
   const variations = product.variations || [];
   const isOutOfStock = product.stock === 0;
   const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
-  const allColors = [...new Set(variations.map(v => v.color))];
+  const allColors = [...new Set(variations.map((v) => v.color))];
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
@@ -27,29 +27,70 @@ const ProductDetail = () => {
   useEffect(() => {
     const newProduct = location.state?.product || {};
     const newVariations = newProduct.variations || [];
-    const newColors = [...new Set(newVariations.map(v => v.color))];
+    const newColors = [...new Set(newVariations.map((v) => v.color))];
     setSelectedColor(newColors[0] || null);
     setSelectedVariation(null);
   }, [location.state?.product]);
 
+  const images = useMemo(() => {
+    if (Array.isArray(product.images) && product.images.length) return product.images;
+    if (product.image) return [product.image];
+    const varImgs = variations.map((v) => v.image).filter(Boolean);
+    if (varImgs.length) return Array.from(new Set(varImgs));
+    return [];
+  }, [product, variations]);
+
+  const [mainIndex, setMainIndex] = useState(0);
+  const dragging = useRef(false);
+  const lastX = useRef(0);
+
+  useEffect(() => {
+    setMainIndex(0);
+  }, [product._id]);
+
+  const onDown = (e) => {
+    dragging.current = true;
+    lastX.current = e.clientX ?? e.touches?.[0]?.clientX;
+  };
+  const onUp = () => (dragging.current = false);
+  const onMove = (e) => {
+    if (!dragging.current || images.length < 2) return;
+    const x = e.clientX ?? e.touches?.[0]?.clientX;
+    const dx = x - lastX.current;
+    if (Math.abs(dx) > 8) {
+      const step = dx > 0 ? -1 : 1;
+      setMainIndex((i) => (i + step + images.length) % images.length);
+      lastX.current = x;
+    }
+  };
+
   const isSizeAvailable = (size) => {
-    return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    return variations.some((v) => v.color === selectedColor && v.size === size && v.stock > 0);
   };
 
   const getVariationForSize = (size) => {
-    return variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    return variations.find((v) => v.color === selectedColor && v.size === size && v.stock > 0);
   };
 
   const getImageForColor = () => {
-    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
-    return variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
+    const variationWithImage = variations.find((v) => v.color === selectedColor && v.image);
+    return variationWithImage?.image || (product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible');
   };
+
+  const displayImage = useMemo(() => {
+    if (images.length) {
+      const img = images[mainIndex];
+      return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
+    }
+    const img = getImageForColor();
+    return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
+  }, [images, mainIndex, selectedColor, product]);
 
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts'],
     queryFn: getAllProducts,
-    select: data => {
-      const items = ensureArray(data?.data).filter(p => p._id !== product._id);
+    select: (data) => {
+      const items = ensureArray(data?.data).filter((p) => p._id !== product._id);
       return items.sort(() => 0.5 - Math.random()).slice(0, 3);
     },
   });
@@ -64,13 +105,24 @@ const ProductDetail = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Grid container spacing={6} alignItems="flex-start" justifyContent="center">
-        <Grid xs={12} md={6} sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          maxWidth: { md: 600 },
-          mx: 'auto'
-        }}>
+        <Grid
+          xs={12}
+          md={6}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            maxWidth: { md: 600 },
+            mx: 'auto',
+          }}
+        >
           <Box
+            onMouseDown={onDown}
+            onMouseUp={onUp}
+            onMouseLeave={onUp}
+            onMouseMove={onMove}
+            onTouchStart={onDown}
+            onTouchEnd={onUp}
+            onTouchMove={onMove}
             sx={{
               display: 'flex',
               justifyContent: 'center',
@@ -79,6 +131,8 @@ const ProductDetail = () => {
               borderRadius: 2,
               maxWidth: { xs: '90%', md: 500 },
               minHeight: { md: 600 },
+              width: '100%',
+              cursor: images.length > 1 ? 'grab' : 'default',
               ...(isMobile
                 ? {}
                 : {
@@ -90,11 +144,7 @@ const ProductDetail = () => {
             }}
           >
             <img
-              src={
-                getImageForColor().startsWith('/uploads')
-                  ? `${baseURL}${getImageForColor()}`
-                  : getImageForColor()
-              }
+              src={displayImage}
               alt={product.name}
               style={{
                 width: '100%',
@@ -102,16 +152,23 @@ const ProductDetail = () => {
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'transform 0.3s ease',
+                userSelect: 'none',
               }}
+              draggable={false}
             />
           </Box>
         </Grid>
-        <Grid xs={12} md={6} sx={{
-          maxWidth: { md: 600 },
-          mx: 'auto',
-          textAlign: { xs: 'left', md: 'left' },
-          pl: { xs: 0, md: 7 }
-        }}>
+
+        <Grid
+          xs={12}
+          md={6}
+          sx={{
+            maxWidth: { md: 600 },
+            mx: 'auto',
+            textAlign: { xs: 'left', md: 'left' },
+            pl: { xs: 0, md: 7 },
+          }}
+        >
           <Box sx={{ pt: { xs: 3, md: 7 }, pb: 4 }}>
             <Typography
               variant="h3"
@@ -128,18 +185,32 @@ const ProductDetail = () => {
               ${product.price?.toLocaleString('es-AR')}
             </Typography>
 
-            <Typography
-              variant="caption"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
-            >
+            <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
               Color:
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-              {allColors.map(color => (
+              {allColors.map((color) => (
                 <Button
                   key={color}
-                  onClick={() => { setSelectedColor(color); setSelectedVariation(null); }}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    setSelectedVariation(null);
+                    if (!images.length) {
+                      const variationForColor = variations.find(v => v.color === color && v.stock > 0) || null;
+                      setSelectedVariation(variationForColor);
+                    } else {
+                      const idx = images.findIndex(img => {
+                        if (typeof img !== 'string') return false;
+                        return img.toLowerCase().includes(String(color).toLowerCase());
+                      });
+                      if (idx > -1) {
+                        setMainIndex(idx);
+                      } else {
+                        setMainIndex(0);
+                      }
+                    }
+                  }}
                   variant={selectedColor === color ? 'contained' : 'outlined'}
                   sx={{
                     fontFamily: '"Archivo Black", sans-serif',
@@ -154,50 +225,21 @@ const ProductDetail = () => {
                     color: selectedColor === color ? 'white' : 'black',
                     backgroundColor: selectedColor === color ? 'black' : 'white',
                     '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' },
-                    position: 'relative', // importante para los boxes absolutos
+                    position: 'relative',
                   }}
                 >
                   {color}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: 4,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: 4,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: { xs: '102%', md: '103%' },
-                      backgroundColor: 'black',
-                      borderRadius: 1,
-                    }}
-                  />
+                  <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: 4 }} />
+                  <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: 'black', borderRadius: 1 }} />
                 </Button>
               ))}
             </Box>
-            <Typography
-              variant="caption"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
-            >
+
+            <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
               Talles:
             </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(3, 1fr)' },
-                gap: 1,
-                mb: 3,
-                justifyContent: { xs: 'center', md: 'flex-start' }
-              }}
-            >
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1, mb: 3, justifyContent: { xs: 'center', md: 'flex-start' } }}>
               {allSizes.map((size) => {
                 const available = isSizeAvailable(size);
                 const isSelected = selectedVariation && selectedVariation.size === size;
@@ -221,41 +263,18 @@ const ProductDetail = () => {
                       backgroundColor: isSelected ? 'black' : available ? 'transparent' : '#f0f0f0',
                       textDecoration: available ? 'none' : 'line-through',
                       '&:hover': {
-                        backgroundColor: isSelected
-                          ? 'black'
-                          : available
-                            ? '#f0f0f0'
-                            : '#d1d1d1',
+                        backgroundColor: isSelected ? 'black' : available ? '#f0f0f0' : '#d1d1d1',
                       },
                     }}
                   >
                     {size}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -4,
-                        left: 4,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 4,
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 2,
-                        right: -4,
-                        width: '4px',
-                        height: { xs: '102%', md: '103%' },
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 1,
-                      }}
-                    />
+                    <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: available ? 'black' : '#777', borderRadius: 4 }} />
+                    <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: available ? 'black' : '#777', borderRadius: 1 }} />
                   </Button>
                 );
               })}
             </Box>
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button
                 variant="contained"
@@ -266,62 +285,33 @@ const ProductDetail = () => {
                   fontWeight: 600,
                   fontSize: 16,
                   color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
-                  backgroundColor: selectedVariation
-                    ? 'black'
-                    : isOutOfStock || !variations.length
-                      ? '#d1d1d1'
-                      : 'white',
+                  backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : 'white',
                   border: '3px solid',
-                  borderColor: selectedVariation
-                    ? 'black'
-                    : isOutOfStock || !variations.length
-                      ? '#777'
-                      : 'black',
-                  '&:hover': {
-                    backgroundColor: selectedVariation
-                      ? 'black'
-                      : isOutOfStock || !variations.length
-                        ? '#d1d1d1'
-                        : '#f0f0f0',
-                  },
+                  borderColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black',
+                  '&:hover': { backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : '#f0f0f0' },
                   position: 'relative',
                 }}
                 onClick={handleAddToCart}
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
 
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: -5.5,
-                    left: 4,
-                    width: '100%',
-                    height: '4px',
-                    backgroundColor: selectedVariation
-                      ? 'black'
-                      : isOutOfStock || !variations.length
-                        ? '#777'
-                        : 'black',
-                    borderRadius: 4,
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 2,
-                    right: -5.5,
-                    width: '4px',
-                    height: { xs: '108%', md: '109%' },
-                    backgroundColor: selectedVariation
-                      ? 'black'
-                      : isOutOfStock || !variations.length
-                        ? '#777'
-                        : 'black',
-                    borderRadius: 1,
-                  }}
-                />
+                <Box sx={{ position: 'absolute', bottom: -5.5, left: 4, width: '100%', height: '4px', backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black', borderRadius: 4 }} />
+                <Box sx={{ position: 'absolute', top: 2, right: -5.5, width: '4px', height: { xs: '108%', md: '109%' }, backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black', borderRadius: 1 }} />
               </Button>
             </Box>
+
+            {images.length > 1 && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                {images.map((img, idx) => {
+                  const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
+                  return (
+                    <Box key={idx} onClick={() => setMainIndex(idx)} sx={{ cursor: 'pointer', border: idx === mainIndex ? '3px solid black' : '2px solid #ddd', borderRadius: 1, overflow: 'hidden' }}>
+                      <img src={src} alt={`thumb-${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', display: 'block' }} />
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
           </Box>
         </Grid>
       </Grid>
@@ -346,9 +336,7 @@ const ProductDetail = () => {
             textOverflow: 'ellipsis',
             transition: 'transform 0.4s ease',
             '&:hover': {
-              ...(isMobile ? {} : {
-                transform: 'scale(1.2)',
-              }),
+              ...(isMobile ? {} : { transform: 'scale(1.2)' }),
             },
           }}
         >
@@ -368,64 +356,27 @@ const ProductDetail = () => {
                   transition: 'transform .3s ease',
                   '&:hover': { transform: 'scale(1.05)' },
                 }}
-                onClick={() =>
-                  navigate(`/producto/${item._id}`, { state: { product: item } })
-                }
+                onClick={() => navigate(`/producto/${item._id}`, { state: { product: item } })}
               >
                 <Box sx={{ height: '70%', overflow: 'hidden' }}>
                   <img
                     src={
-                      item.image?.startsWith('/uploads')
-                        ? `${baseURL}${item.image}`
-                        : item.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
+                      (Array.isArray(item.images) && item.images.length ? item.images[0] : item.image)?.startsWith?.('/uploads')
+                        ? `${baseURL}${(Array.isArray(item.images) && item.images.length ? item.images[0] : item.image)}`
+                        : (Array.isArray(item.images) && item.images.length ? item.images[0] : item.image) || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
                     }
                     alt={item.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </Box>
 
-                <Box
-                  sx={{
-                    position: 'relative',
-                    border: '3px solid black',
-                    borderRadius: 1,
-                    mx: { xs: 6, sm: 1.5, md: 1.5 },
-                    mb: 1,
-                    px: { xs: 0.5, md: 1 },
-                    py: { xs: 0.2, md: 0.5 },
-                    minHeight: 40,
-                    backgroundColor: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+                <Box sx={{ position: 'relative', border: '3px solid black', borderRadius: 1, mx: { xs: 6, sm: 1.5, md: 1.5 }, mb: 1, px: { xs: 0.5, md: 1 }, py: { xs: 0.2, md: 0.5 }, minHeight: 40, backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
 
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: -6,
-                      left: 6,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: '2px',
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 3.5,
-                      right: -6,
-                      width: '5px',
-                      height: '100%',
-                      backgroundColor: 'black',
-                      borderRadius: '2px',
-                    }}
-                  />
+                  <Box sx={{ position: 'absolute', bottom: -6, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
+                  <Box sx={{ position: 'absolute', top: 3.5, right: -6, width: '5px', height: '100%', backgroundColor: 'black', borderRadius: '2px' }} />
                 </Box>
               </Box>
             </Grid>
@@ -434,6 +385,4 @@ const ProductDetail = () => {
       </Box>
     </Container>
   );
-};
-
-export default ProductDetail;
+}

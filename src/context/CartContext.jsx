@@ -18,6 +18,7 @@ const CartProvider = ({ children }) => {
 
     const addToCart = (product, size, color, quantity) => {
         const variationId = `${product._id}_${size}_${color}`;
+        const img = (Array.isArray(product.images) && product.images.length) ? product.images[0] : product.image;
         const cartItem = {
             id: variationId,
             productId: product._id,
@@ -26,7 +27,7 @@ const CartProvider = ({ children }) => {
             color,
             quantity,
             price: product.price,
-            image: product.image
+            image: img
         };
         setCartItems((prevItems) => {
             const prev = Array.isArray(prevItems) ? prevItems : [];
