@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
+import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, IconButton } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../context/CartContext';
@@ -41,27 +43,29 @@ export default function ProductDetail() {
   }, [product, variations]);
 
   const [mainIndex, setMainIndex] = useState(0);
-  const dragging = useRef(false);
-  const lastX = useRef(0);
 
   useEffect(() => {
     setMainIndex(0);
   }, [product._id]);
 
-  const onDown = (e) => {
-    dragging.current = true;
-    lastX.current = e.clientX ?? e.touches?.[0]?.clientX;
+  // Simple touch swipe: record start X and compare on end
+  const touchStartX = useRef(null);
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches?.[0]?.clientX ?? null;
   };
-  const onUp = () => (dragging.current = false);
-  const onMove = (e) => {
-    if (!dragging.current || images.length < 2) return;
-    const x = e.clientX ?? e.touches?.[0]?.clientX;
-    const dx = x - lastX.current;
-    if (Math.abs(dx) > 8) {
-      const step = dx > 0 ? -1 : 1;
-      setMainIndex((i) => (i + step + images.length) % images.length);
-      lastX.current = x;
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const endX = e.changedTouches?.[0]?.clientX ?? null;
+    if (endX == null) return;
+    const dx = endX - touchStartX.current;
+    if (Math.abs(dx) > 50 && images.length > 1) {
+      if (dx < 0) {
+        setMainIndex((i) => (i + 1) % images.length);
+      } else {
+        setMainIndex((i) => (i - 1 + images.length) % images.length);
+      }
     }
+    touchStartX.current = null;
   };
 
   const isSizeAvailable = (size) => {
@@ -102,6 +106,9 @@ export default function ProductDetail() {
     addToCart(product, selectedVariation.size, selectedColor, 1);
   };
 
+  const prevImage = () => setMainIndex((i) => (i - 1 + images.length) % images.length);
+  const nextImage = () => setMainIndex((i) => (i + 1) % images.length);
+
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Grid container spacing={6} alignItems="flex-start" justifyContent="center">
@@ -116,39 +123,61 @@ export default function ProductDetail() {
           }}
         >
           <Box
-            onMouseDown={onDown}
-            onMouseUp={onUp}
-            onMouseLeave={onUp}
-            onMouseMove={onMove}
-            onTouchStart={onDown}
-            onTouchEnd={onUp}
-            onTouchMove={onMove}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
             sx={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               overflow: 'hidden',
               borderRadius: 2,
-              maxWidth: { xs: '90%', md: 500 },
+              maxWidth: { xs: '95%', md: 500 },
               minHeight: { md: 600 },
               width: '100%',
-              cursor: images.length > 1 ? 'grab' : 'default',
-              ...(isMobile
-                ? {}
-                : {
-                  '&:hover img': {
-                    transform: 'scale(1.07)',
-                    transition: 'transform 0.3s ease',
-                  },
-                }),
+              position: 'relative',
             }}
           >
+            {/* Prev / Next buttons overlay */}
+            {images.length > 1 && (
+              <>
+                <IconButton
+                  onClick={prevImage}
+                  sx={{
+                    position: 'absolute',
+                    left: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 4,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.95)' },
+                  }}
+                >
+                  <ArrowBackIosNewIcon />
+                </IconButton>
+                <IconButton
+                  onClick={nextImage}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 4,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.95)' },
+                  }}
+                >
+                  <ArrowForwardIosIcon />
+                </IconButton>
+              </>
+            )}
+
             <img
               src={displayImage}
               alt={product.name}
               style={{
                 width: '100%',
-                height: 'auto',
+                height: isMobile ? 'auto' : 600,
+                maxHeight: isMobile ? '65vh' : 600,
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'transform 0.3s ease',
@@ -229,8 +258,6 @@ export default function ProductDetail() {
                   }}
                 >
                   {color}
-                  <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: 4 }} />
-                  <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: 'black', borderRadius: 1 }} />
                 </Button>
               ))}
             </Box>
@@ -268,8 +295,6 @@ export default function ProductDetail() {
                     }}
                   >
                     {size}
-                    <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: available ? 'black' : '#777', borderRadius: 4 }} />
-                    <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: available ? 'black' : '#777', borderRadius: 1 }} />
                   </Button>
                 );
               })}
@@ -294,19 +319,28 @@ export default function ProductDetail() {
                 onClick={handleAddToCart}
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
-
-                <Box sx={{ position: 'absolute', bottom: -5.5, left: 4, width: '100%', height: '4px', backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black', borderRadius: 4 }} />
-                <Box sx={{ position: 'absolute', top: 2, right: -5.5, width: '4px', height: { xs: '108%', md: '109%' }, backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black', borderRadius: 1 }} />
               </Button>
             </Box>
 
+            {/* thumbnails responsive */}
             {images.length > 1 && (
               <Box sx={{ display: 'flex', gap: 1, mt: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 {images.map((img, idx) => {
                   const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
                   return (
-                    <Box key={idx} onClick={() => setMainIndex(idx)} sx={{ cursor: 'pointer', border: idx === mainIndex ? '3px solid black' : '2px solid #ddd', borderRadius: 1, overflow: 'hidden' }}>
-                      <img src={src} alt={`thumb-${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', display: 'block' }} />
+                    <Box
+                      key={idx}
+                      onClick={() => setMainIndex(idx)}
+                      sx={{
+                        cursor: 'pointer',
+                        border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        width: { xs: 64, sm: 80, md: 80 },
+                        height: { xs: 64, sm: 80, md: 80 },
+                      }}
+                    >
+                      <img src={src} alt={`thumb-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </Box>
                   );
                 })}

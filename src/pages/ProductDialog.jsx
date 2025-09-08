@@ -1,4 +1,19 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Grid, Alert, Typography, Box, IconButton } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  MenuItem,
+  Grid,
+  Alert,
+  Typography,
+  Box,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useEffect, useCallback } from "react";
@@ -49,6 +64,10 @@ const toPreviewUrl = (file) =>
   typeof file === "string" ? file : URL.createObjectURL(file);
 
 const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const thumbSize = isMobile ? 64 : 96;
+
   const [form, setForm] = useState({});
   const [newFiles, setNewFiles] = useState([]); // Files selected now (Array of File)
   const [existingImages, setExistingImages] = useState([]); // URLs already on product
@@ -80,7 +99,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
         : [];
 
     setExistingImages(imgs);
-    setImagesToKeep(imgs.slice()); 
+    setImagesToKeep(imgs.slice());
     setNewFiles([]);
     setError("");
     setVariations(initial.variations || []);
@@ -111,7 +130,6 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   };
 
   const removeExistingImage = (url) => {
-    // remove from existingImages and imagesToKeep
     setExistingImages((prev) => prev.filter((u) => u !== url));
     setImagesToKeep((prev) => prev.filter((u) => u !== url));
   };
@@ -169,8 +187,8 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
       ...form,
       _id: initial._id,
       variations: variations.map((v) => ({ ...v, product: initial._id })),
-      newImages: newFiles, 
-      imagesToKeep, 
+      newImages: newFiles,
+      imagesToKeep,
     };
 
     onSubmit(payload);
@@ -292,20 +310,48 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
                   letterSpacing: "-1.25px",
                 }}
               >
-                {newFiles.length ? `${newFiles.length} file(s) selected` : "Arrastrá imágenes o hacé click (puede subir múltiples)"}
+                {newFiles.length ? `${newFiles.length} archivo(s) seleccionado(s)` : "Arrastrá imágenes o hacé click (podés subir múltiples)"}
               </Typography>
             </Box>
 
+            {/* existing images (responsive thumbnails) */}
             {existingImages.length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 {existingImages.map((url, idx) => (
-                  <Box key={idx} sx={{ position: 'relative' }}>
-                    <img src={toPreviewUrl(url)} alt={`existing-${idx}`} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6, border: imagesToKeep.includes(url) ? '3px solid black' : '2px solid #ccc' }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                      <Button size="small" onClick={() => toggleKeepExisting(url)} sx={{ mt: 0.5 }}>
-                        {imagesToKeep.includes(url) ? 'Keep' : 'Keep'}
+                  <Box key={idx} sx={{ position: 'relative', width: thumbSize, height: thumbSize }}>
+                    <img
+                      src={toPreviewUrl(url)}
+                      alt={`existing-${idx}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: 6,
+                        border: imagesToKeep.includes(url) ? '3px solid black' : '2px solid #ccc',
+                        display: 'block',
+                      }}
+                    />
+                    <Box sx={{ position: 'absolute', right: 2, top: 2, display: 'flex', gap: 0.5 }}>
+                      <Button
+                        size="small"
+                        onClick={() => toggleKeepExisting(url)}
+                        sx={{
+                          minWidth: 0,
+                          p: '2px 6px',
+                          fontSize: 11,
+                          fontFamily: '"Archivo Black", sans-serif',
+                          backgroundColor: imagesToKeep.includes(url) ? 'black' : 'white',
+                          color: imagesToKeep.includes(url) ? 'white' : 'black',
+                          border: '1px solid #ccc',
+                        }}
+                      >
+                        Keep
                       </Button>
-                      <IconButton size="small" onClick={() => removeExistingImage(url)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => removeExistingImage(url)}
+                        sx={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Box>
@@ -314,12 +360,21 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
               </Box>
             )}
 
+            {/* new files previews */}
             {newFiles.length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 {newFiles.map((f, i) => (
-                  <Box key={i} sx={{ position: 'relative' }}>
-                    <img src={toPreviewUrl(f)} alt={`new-${i}`} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6 }} />
-                    <IconButton size="small" onClick={() => removeNewFile(i)} sx={{ position: 'absolute', top: 2, right: 2 }}>
+                  <Box key={i} sx={{ position: 'relative', width: thumbSize, height: thumbSize }}>
+                    <img
+                      src={toPreviewUrl(f)}
+                      alt={`new-${i}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() => removeNewFile(i)}
+                      sx={{ position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(255,255,255,0.9)' }}
+                    >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Box>
