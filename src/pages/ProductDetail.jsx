@@ -8,7 +8,9 @@ import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, A11y, Keyboard } from 'swiper';
+import { Pagination } from 'swiper/modules/pagination';
+import { A11y } from 'swiper/modules/a11y';
+import { Keyboard } from 'swiper/modules/keyboard';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
