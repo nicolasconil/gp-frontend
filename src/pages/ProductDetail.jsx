@@ -1,25 +1,25 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/CartContext'
 import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
-export default function ProductDetail() {
+const ProductDetail = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { product = {} } = location.state ?? {};
+  const { product } = location.state ?? { product: {} };
   const variations = product.variations || [];
   const isOutOfStock = product.stock === 0;
   const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
-  const allColors = [...new Set(variations.map((v) => v.color))];
+  const allColors = [...new Set(variations.map(v => v.color))];
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
@@ -27,15 +27,16 @@ export default function ProductDetail() {
   useEffect(() => {
     const newProduct = location.state?.product || {};
     const newVariations = newProduct.variations || [];
-    const newColors = [...new Set(newVariations.map((v) => v.color))];
+    const newColors = [...new Set(newVariations.map(v => v.color))];
     setSelectedColor(newColors[0] || null);
     setSelectedVariation(null);
   }, [location.state?.product]);
 
+  // --- START: nueva lógica para manejar múltiples imágenes ---
   const images = useMemo(() => {
     if (Array.isArray(product.images) && product.images.length) return product.images;
     if (product.image) return [product.image];
-    const varImgs = variations.map((v) => v.image).filter(Boolean);
+    const varImgs = variations.map(v => v.image).filter(Boolean);
     if (varImgs.length) return Array.from(new Set(varImgs));
     return [];
   }, [product, variations]);
@@ -46,6 +47,7 @@ export default function ProductDetail() {
     setMainIndex(0);
   }, [product._id]);
 
+  // touch handling for mobile swipe
   const touchStartX = useRef(null);
   const touchDelta = useRef(0);
 
@@ -62,69 +64,58 @@ export default function ProductDetail() {
     if (touchStartX.current == null) return;
     const dx = touchDelta.current;
     if (Math.abs(dx) > 50 && images.length > 1) {
-      if (dx < 0) setMainIndex((i) => (i + 1) % images.length);
-      else setMainIndex((i) => (i - 1 + images.length) % images.length);
+      if (dx < 0) setMainIndex(i => (i + 1) % images.length);
+      else setMainIndex(i => (i - 1 + images.length) % images.length);
     }
     touchStartX.current = null;
     touchDelta.current = 0;
   };
 
+  // keyboard navigation (left/right)
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'ArrowRight' && images.length > 1) setMainIndex((i) => (i + 1) % images.length);
-      if (e.key === 'ArrowLeft' && images.length > 1) setMainIndex((i) => (i - 1 + images.length) % images.length);
+      if (e.key === 'ArrowRight' && images.length > 1) setMainIndex(i => (i + 1) % images.length);
+      if (e.key === 'ArrowLeft' && images.length > 1) setMainIndex(i => (i - 1 + images.length) % images.length);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [images.length]);
-
-  useEffect(() => {
-    if (document.getElementById('product-detail-css')) return;
-    const style = document.createElement('style');
-    style.id = 'product-detail-css';
-    style.innerHTML = `
-      .pd-bullets { display:flex; gap:8px; justify-content:center; align-items:center; padding:12px 0 0 0; }
-      .pd-bullet { width:10px; height:10px; opacity:0.55; transform:scale(1); border-radius:999px; background:#111; display:inline-block; transition:transform .22s ease, opacity .22s ease; }
-      .pd-bullet.active { transform:scale(1.5); opacity:1; }
-      @media (max-width:600px){ .pd-bullet{ width:12px;height:12px } .pd-bullet.active{ transform:scale(1.65) } }
-      .pd-image{ transition: transform .35s ease, opacity .28s ease; }
-      .pd-image.anim{ transform: translateY(-4px); }
-    `;
-    document.head.appendChild(style);
-  }, []);
-
-  const isSizeAvailable = (size) => {
-    return variations.some((v) => v.color === selectedColor && v.size === size && v.stock > 0);
-  };
-
-  const getVariationForSize = (size) => {
-    return variations.find((v) => v.color === selectedColor && v.size === size && v.stock > 0);
-  };
-
-  const getImageForColor = () => {
-    const variationWithImage = variations.find((v) => v.color === selectedColor && v.image);
-    return variationWithImage?.image || (product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible');
-  };
 
   const displayImage = useMemo(() => {
     if (images.length) {
       const img = images[mainIndex];
       return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
     }
-    const img = getImageForColor();
-    return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
-  }, [images, mainIndex, selectedColor, product]);
+    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
+    const fallback = variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
+    return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
+  }, [images, mainIndex, selectedColor, product, variations]);
+  // --- END: nueva lógica para manejar múltiples imágenes ---
+
+  const isSizeAvailable = (size) => {
+    return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
+  };
+
+  const getVariationForSize = (size) => {
+    return variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
+  };
+
+  const getImageForColor = () => {
+    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
+    return variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
+  };
 
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts'],
     queryFn: getAllProducts,
-    select: (data) => {
-      const items = ensureArray(data?.data).filter((p) => p._id !== product._id);
+    select: data => {
+      const items = ensureArray(data?.data).filter(p => p._id !== product._id);
       return items.sort(() => 0.5 - Math.random()).slice(0, 3);
     },
   });
 
   const { addToCart } = useCart();
+
   const handleAddToCart = async () => {
     if (!selectedVariation) return;
     addToCart(product, selectedVariation.size, selectedColor, 1);
@@ -133,56 +124,86 @@ export default function ProductDetail() {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Grid container spacing={6} alignItems="flex-start" justifyContent="center">
-        <Grid
-          xs={12}
-          md={6}
-          sx={{ display: 'flex', justifyContent: 'center', maxWidth: { md: 600 }, mx: 'auto' }}
-        >
+        <Grid xs={12} md={6} sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          maxWidth: { md: 600 },
+          mx: 'auto'
+        }}>
           <Box
-            role={`region`}
-            aria-label={`Galería de imágenes del producto ${product.name || ''}`}
-            sx={{ width: '100%', position: 'relative', display: 'flex', justifyContent: 'center' }}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+              borderRadius: 2,
+              maxWidth: { xs: '90%', md: 500 },
+              minHeight: { md: 600 },
+              ...(isMobile
+                ? {}
+                : {
+                  '&:hover img': {
+                    transform: 'scale(1.07)',
+                    transition: 'transform 0.3s ease',
+                  },
+                }),
+            }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
+            role="region"
+            aria-label={`Galería de imágenes del producto ${product.name || ''}`}
           >
             <img
               src={displayImage}
               alt={product.name}
-              className={`pd-image ${'anim'}`}
               style={{
                 width: '100%',
-                height: isMobile ? 'auto' : 600,
-                maxHeight: isMobile ? '65vh' : 600,
+                height: 'auto',
                 objectFit: 'contain',
                 display: 'block',
-                userSelect: 'none',
+                transition: 'transform 0.3s ease',
               }}
-              draggable={false}
             />
 
+            {/* bullets overlay (no cambios a estilos originales; agregado funcional) */}
             {images.length > 1 && (
-              <Box sx={{ position: 'absolute', bottom: 8, left: 0, right: 0, pointerEvents: 'none' }}>
-                <Box className="pd-bullets" sx={{ pointerEvents: 'auto' }}>
-                  {images.map((_, i) => (
-                    <Box
-                      key={i}
-                      role="button"
-                      aria-label={`Ir a imagen ${i + 1}`}
-                      onClick={() => setMainIndex(i)}
-                      className={`pd-bullet ${i === mainIndex ? 'active' : ''}`}
-                      sx={{ cursor: 'pointer' }}
-                    />
-                  ))}
-                </Box>
+              <Box sx={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 1, pointerEvents: 'none' }}>
+                {images.map((_, i) => (
+                  <Box
+                    key={i}
+                    role="button"
+                    aria-label={`Ir a imagen ${i + 1}`}
+                    onClick={() => setMainIndex(i)}
+                    sx={{
+                      width: i === mainIndex ? 14 : 10,
+                      height: i === mainIndex ? 14 : 10,
+                      borderRadius: 99,
+                      backgroundColor: '#111',
+                      opacity: i === mainIndex ? 1 : 0.55,
+                      transform: i === mainIndex ? 'scale(1.5)' : 'scale(1)',
+                      transition: 'transform .22s ease, opacity .22s ease',
+                      cursor: 'pointer',
+                      pointerEvents: 'auto',
+                    }}
+                  />
+                ))}
               </Box>
             )}
           </Box>
         </Grid>
 
-        <Grid xs={12} md={6} sx={{ maxWidth: { md: 600 }, mx: 'auto', textAlign: { xs: 'left', md: 'left' }, pl: { xs: 0, md: 7 } }}>
+        <Grid xs={12} md={6} sx={{
+          maxWidth: { md: 600 },
+          mx: 'auto',
+          textAlign: { xs: 'left', md: 'left' },
+          pl: { xs: 0, md: 7 }
+        }}>
           <Box sx={{ pt: { xs: 3, md: 7 }, pb: 4 }}>
-            <Typography variant="h3" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}>
+            <Typography
+              variant="h3"
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
+            >
               {product.name}
             </Typography>
 
@@ -194,21 +215,22 @@ export default function ProductDetail() {
               ${product.price?.toLocaleString('es-AR')}
             </Typography>
 
-            <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
+            >
               Color:
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-              {allColors.map((color) => (
+              {allColors.map(color => (
                 <Button
                   key={color}
                   onClick={() => {
                     setSelectedColor(color);
                     setSelectedVariation(null);
-                    if (!images.length) {
-                      const variationForColor = variations.find(v => v.color === color && v.stock > 0) || null;
-                      setSelectedVariation(variationForColor);
-                    } else {
+                    // si hay images, saltar al índice que contenga el color en el nombre del archivo
+                    if (images.length) {
                       const idx = images.findIndex(img => {
                         if (typeof img !== 'string') return false;
                         return img.toLowerCase().includes(String(color).toLowerCase());
@@ -231,21 +253,50 @@ export default function ProductDetail() {
                     color: selectedColor === color ? 'white' : 'black',
                     backgroundColor: selectedColor === color ? 'black' : 'white',
                     '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' },
-                    position: 'relative',
+                    position: 'relative', // importante para los boxes absolutos
                   }}
                 >
                   {color}
-                  <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: 4 }} />
-                  <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: 'black', borderRadius: 1 }} />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: 4,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
+                    }}
+                  />
                 </Button>
               ))}
             </Box>
-
-            <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
+            >
               Talles:
             </Typography>
-
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1, mb: 3, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(3, 1fr)' },
+                gap: 1,
+                mb: 3,
+                justifyContent: { xs: 'center', md: 'flex-start' }
+              }}
+            >
               {allSizes.map((size) => {
                 const available = isSizeAvailable(size);
                 const isSelected = selectedVariation && selectedVariation.size === size;
@@ -269,46 +320,101 @@ export default function ProductDetail() {
                       backgroundColor: isSelected ? 'black' : available ? 'transparent' : '#f0f0f0',
                       textDecoration: available ? 'none' : 'line-through',
                       '&:hover': {
-                        backgroundColor: isSelected ? 'black' : available ? '#f0f0f0' : '#d1d1d1',
+                        backgroundColor: isSelected
+                          ? 'black'
+                          : available
+                            ? '#f0f0f0'
+                            : '#d1d1d1',
                       },
                     }}
                   >
                     {size}
-
-                    <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: available ? 'black' : '#777', borderRadius: 4 }} />
-                    <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: available ? 'black' : '#777', borderRadius: 1 }} />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: -4,
+                        left: 4,
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: available ? 'black' : '#777',
+                        borderRadius: 4,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: -4,
+                        width: '4px',
+                        height: { xs: '102%', md: '103%' },
+                        backgroundColor: available ? 'black' : '#777',
+                        borderRadius: 1,
+                      }}
+                    />
                   </Button>
                 );
               })}
             </Box>
-
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ position: 'relative' }}>
-                <Button
-                  variant="contained"
-                  disabled={isOutOfStock || !variations.length}
-                  startIcon={isOutOfStock || !variations.length ? null : <AddShoppingCartIcon />}
-                  sx={{
-                    textTransform: 'uppercase',
-                    fontWeight: 600,
-                    fontSize: 16,
-                    color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
-                    backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : 'white',
-                    border: '3px solid',
-                    borderColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black',
-                    '&:hover': { backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : '#f0f0f0' },
-                    position: 'relative',
-                  }}
-                  onClick={handleAddToCart}
-                >
-                  {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
-                </Button>
+              <Button
+                variant="contained"
+                disabled={isOutOfStock || !variations.length}
+                startIcon={isOutOfStock || !variations.length ? null : <AddShoppingCartIcon />}
+                sx={{
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
+                  backgroundColor: selectedVariation
+                    ? 'black'
+                    : isOutOfStock || !variations.length
+                      ? '#d1d1d1'
+                      : 'white',
+                  border: '3px solid',
+                  borderColor: selectedVariation
+                    ? 'black'
+                    : isOutOfStock || !variations.length
+                      ? '#777'
+                      : 'black',
+                  '&:hover': {
+                    backgroundColor: selectedVariation
+                      ? 'black'
+                      : isOutOfStock || !variations.length
+                        ? '#d1d1d1'
+                        : '#f0f0f0',
+                  },
+                  position: 'relative',
+                }}
+                onClick={handleAddToCart}
+              >
+                {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
 
-                <Box sx={{ position: 'absolute', bottom: -5.5, left: 4, width: '100%', height: '4px', backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'), borderRadius: 4 }} />
-                <Box sx={{ position: 'absolute', top: 2, right: -5.5, width: '4px', height: { xs: '108%', md: '109%' }, backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'), borderRadius: 1 }} />
-              </Box>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -5.5,
+                    left: 4,
+                    width: '100%',
+                    height: '4px',
+                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
+                    borderRadius: 4,
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 2,
+                    right: -5.5,
+                    width: '4px',
+                    height: { xs: '108%', md: '109%' },
+                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
+                    borderRadius: 1,
+                  }}
+                />
+              </Button>
             </Box>
 
+            {/* thumbnails responsive (se muestran si hay más de una imagen) */}
             {images.length > 1 && (
               <Box sx={{ display: 'flex', gap: 1, mt: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 {images.map((img, idx) => {
@@ -356,7 +462,9 @@ export default function ProductDetail() {
             textOverflow: 'ellipsis',
             transition: 'transform 0.4s ease',
             '&:hover': {
-              ...(isMobile ? {} : { transform: 'scale(1.2)' }),
+              ...(isMobile ? {} : {
+                transform: 'scale(1.2)',
+              }),
             },
           }}
         >
@@ -376,21 +484,38 @@ export default function ProductDetail() {
                   transition: 'transform .3s ease',
                   '&:hover': { transform: 'scale(1.05)' },
                 }}
-                onClick={() => navigate(`/producto/${item._id}`, { state: { product: item } })}
+                onClick={() =>
+                  navigate(`/producto/${item._id}`, { state: { product: item } })
+                }
               >
                 <Box sx={{ height: '70%', overflow: 'hidden' }}>
                   <img
                     src={
-                      (Array.isArray(item.images) && item.images.length ? item.images[0] : item.image)?.startsWith?.('/uploads')
-                        ? `${baseURL}${(Array.isArray(item.images) && item.images.length ? item.images[0] : item.image)}`
-                        : (Array.isArray(item.images) && item.images.length ? item.images[0] : item.image) || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
+                      item.image?.startsWith('/uploads')
+                        ? `${baseURL}${item.image}`
+                        : item.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
                     }
                     alt={item.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </Box>
 
-                <Box sx={{ position: 'relative', border: '3px solid black', borderRadius: 1, mx: { xs: 6, sm: 1.5, md: 1.5 }, mb: 1, px: { xs: 0.5, md: 1 }, py: { xs: 0.2, md: 0.5 }, minHeight: 40, backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    border: '3px solid black',
+                    borderRadius: 1,
+                    mx: { xs: 6, sm: 1.5, md: 1.5 },
+                    mb: 1,
+                    px: { xs: 0.5, md: 1 },
+                    py: { xs: 0.2, md: 0.5 },
+                    minHeight: 40,
+                    backgroundColor: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
@@ -405,4 +530,6 @@ export default function ProductDetail() {
       </Box>
     </Container>
   );
-}
+};
+
+export default ProductDetail;
