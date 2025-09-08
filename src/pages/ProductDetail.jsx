@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, IconButton } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../context/CartContext';
 import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, A11y, Keyboard } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/pagination';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -48,26 +51,6 @@ export default function ProductDetail() {
     setMainIndex(0);
   }, [product._id]);
 
-  // Simple touch swipe: record start X and compare on end
-  const touchStartX = useRef(null);
-  const onTouchStart = (e) => {
-    touchStartX.current = e.touches?.[0]?.clientX ?? null;
-  };
-  const onTouchEnd = (e) => {
-    if (touchStartX.current == null) return;
-    const endX = e.changedTouches?.[0]?.clientX ?? null;
-    if (endX == null) return;
-    const dx = endX - touchStartX.current;
-    if (Math.abs(dx) > 50 && images.length > 1) {
-      if (dx < 0) {
-        setMainIndex((i) => (i + 1) % images.length);
-      } else {
-        setMainIndex((i) => (i - 1 + images.length) % images.length);
-      }
-    }
-    touchStartX.current = null;
-  };
-
   const isSizeAvailable = (size) => {
     return variations.some((v) => v.color === selectedColor && v.size === size && v.stock > 0);
   };
@@ -90,6 +73,28 @@ export default function ProductDetail() {
     return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
   }, [images, mainIndex, selectedColor, product]);
 
+  useEffect(() => {
+    if (document.getElementById('product-detail-swiper-css')) return;
+    const style = document.createElement('style');
+    style.id = 'product-detail-swiper-css';
+    style.innerHTML = `
+      /* bullets */
+      .custom-swiper-pagination { display:flex; gap:8px; justify-content:center; align-items:center; padding:12px 0 0 0; }
+      .custom-bullet { width:10px; height:10px; opacity:0.55; transform:scale(1); border-radius:999px; background:#111; display:inline-block; transition:transform .22s ease, opacity .22s ease; }
+      .custom-bullet.custom-bullet-active { transform:scale(1.5); opacity:1; }
+
+      @media (max-width: 600px) {
+        .custom-bullet { width:12px; height:12px; }
+        .custom-bullet.custom-bullet-active { transform:scale(1.65); }
+      }
+
+      .product-detail-image { transition: transform .35s ease, opacity .28s ease; }
+      .product-detail-image--anim { transform: translateY(-4px); }
+      .swiper-container-wrap { background: transparent; }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts'],
     queryFn: getAllProducts,
@@ -106,9 +111,6 @@ export default function ProductDetail() {
     addToCart(product, selectedVariation.size, selectedColor, 1);
   };
 
-  const prevImage = () => setMainIndex((i) => (i - 1 + images.length) % images.length);
-  const nextImage = () => setMainIndex((i) => (i + 1) % images.length);
-
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Grid container spacing={6} alignItems="flex-start" justifyContent="center">
@@ -123,68 +125,72 @@ export default function ProductDetail() {
           }}
         >
           <Box
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              overflow: 'hidden',
-              borderRadius: 2,
-              maxWidth: { xs: '95%', md: 500 },
-              minHeight: { md: 600 },
-              width: '100%',
-              position: 'relative',
-            }}
+            role={`region`}
+            aria-label={`Galería de imágenes del producto ${product.name || ''}`}
+            sx={{ width: '100%', position: 'relative', display: 'flex', justifyContent: 'center' }}
+            className="swiper-container-wrap"
           >
-            {/* Prev / Next buttons overlay */}
-            {images.length > 1 && (
-              <>
-                <IconButton
-                  onClick={prevImage}
-                  sx={{
-                    position: 'absolute',
-                    left: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    zIndex: 4,
-                    backgroundColor: 'rgba(255,255,255,0.8)',
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.95)' },
-                  }}
-                >
-                  <ArrowBackIosNewIcon />
-                </IconButton>
-                <IconButton
-                  onClick={nextImage}
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    zIndex: 4,
-                    backgroundColor: 'rgba(255,255,255,0.8)',
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.95)' },
-                  }}
-                >
-                  <ArrowForwardIosIcon />
-                </IconButton>
-              </>
-            )}
-
-            <img
-              src={displayImage}
-              alt={product.name}
-              style={{
-                width: '100%',
-                height: isMobile ? 'auto' : 600,
-                maxHeight: isMobile ? '65vh' : 600,
-                objectFit: 'contain',
-                display: 'block',
-                transition: 'transform 0.3s ease',
-                userSelect: 'none',
+            <Swiper
+              modules={[Pagination, A11y, Keyboard]}
+              spaceBetween={8}
+              slidesPerView={1}
+              onSlideChange={(s) => setMainIndex(s.activeIndex % Math.max(images.length, 1))}
+              loop={images.length > 1}
+              pagination={{
+                el: '.custom-swiper-pagination',
+                clickable: true,
+                bulletClass: 'custom-bullet',
+                bulletActiveClass: 'custom-bullet-active',
               }}
-              draggable={false}
-            />
+              keyboard={{ enabled: true }}
+              a11y={{
+                enabled: true,
+                prevSlideMessage: 'Imagen anterior',
+                nextSlideMessage: 'Siguiente imagen',
+                slideLabelMessage: 'Imagen {{index}} de {{slidesLength}}',
+              }}
+              style={{ width: '100%' }}
+            >
+              {images.length ? (
+                images.map((img, idx) => {
+                  const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
+                  return (
+                    <SwiperSlide key={idx} aria-label={`Imagen ${idx + 1} de ${images.length}`}>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                        <img
+                          src={src}
+                          alt={product.name ? `${product.name} - imagen ${idx + 1}` : `producto imagen ${idx + 1}`}
+                          className={`product-detail-image ${idx === mainIndex ? 'product-detail-image--anim' : ''}`}
+                          style={{
+                            width: '100%',
+                            height: isMobile ? 'auto' : 600,
+                            maxHeight: isMobile ? '65vh' : 600,
+                            objectFit: 'contain',
+                            display: 'block',
+                            userSelect: 'none',
+                          }}
+                          draggable={false}
+                        />
+                      </Box>
+                    </SwiperSlide>
+                  );
+                })
+              ) : (
+                <SwiperSlide>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                    <img
+                      src={getImageForColor()}
+                      alt={product.name || 'producto'}
+                      className="product-detail-image product-detail-image--anim"
+                      style={{ width: '100%', height: isMobile ? 'auto' : 600, maxHeight: isMobile ? '65vh' : 600, objectFit: 'contain', display: 'block' }}
+                      draggable={false}
+                    />
+                  </Box>
+                </SwiperSlide>
+              )}
+
+              <div className="custom-swiper-pagination" aria-hidden="false" role="tablist" style={{ width: '100%' }} />
+            </Swiper>
           </Box>
         </Grid>
 
@@ -258,6 +264,8 @@ export default function ProductDetail() {
                   }}
                 >
                   {color}
+                  <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: 4 }} />
+                  <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: 'black', borderRadius: 1 }} />
                 </Button>
               ))}
             </Box>
@@ -295,34 +303,41 @@ export default function ProductDetail() {
                     }}
                   >
                     {size}
+
+                    <Box sx={{ position: 'absolute', bottom: -4, left: 4, width: '100%', height: '4px', backgroundColor: available ? 'black' : '#777', borderRadius: 4 }} />
+                    <Box sx={{ position: 'absolute', top: 2, right: -4, width: '4px', height: { xs: '102%', md: '103%' }, backgroundColor: available ? 'black' : '#777', borderRadius: 1 }} />
                   </Button>
                 );
               })}
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                variant="contained"
-                disabled={isOutOfStock || !variations.length}
-                startIcon={isOutOfStock || !variations.length ? null : <AddShoppingCartIcon />}
-                sx={{
-                  textTransform: 'uppercase',
-                  fontWeight: 600,
-                  fontSize: 16,
-                  color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
-                  backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : 'white',
-                  border: '3px solid',
-                  borderColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black',
-                  '&:hover': { backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : '#f0f0f0' },
-                  position: 'relative',
-                }}
-                onClick={handleAddToCart}
-              >
-                {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
-              </Button>
+              <Box sx={{ position: 'relative' }}>
+                <Button
+                  variant="contained"
+                  disabled={isOutOfStock || !variations.length}
+                  startIcon={isOutOfStock || !variations.length ? null : <AddShoppingCartIcon />}
+                  sx={{
+                    textTransform: 'uppercase',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    color: selectedVariation ? 'white' : isOutOfStock || !variations.length ? '#777' : 'black',
+                    backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : 'white',
+                    border: '3px solid',
+                    borderColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#777' : 'black',
+                    '&:hover': { backgroundColor: selectedVariation ? 'black' : isOutOfStock || !variations.length ? '#d1d1d1' : '#f0f0f0' },
+                    position: 'relative',
+                  }}
+                  onClick={handleAddToCart}
+                >
+                  {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
+                </Button>
+
+                <Box sx={{ position: 'absolute', bottom: -5.5, left: 4, width: '100%', height: '4px', backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'), borderRadius: 4 }} />
+                <Box sx={{ position: 'absolute', top: 2, right: -5.5, width: '4px', height: { xs: '108%', md: '109%' }, backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'), borderRadius: 1 }} />
+              </Box>
             </Box>
 
-            {/* thumbnails responsive */}
             {images.length > 1 && (
               <Box sx={{ display: 'flex', gap: 1, mt: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 {images.map((img, idx) => {
