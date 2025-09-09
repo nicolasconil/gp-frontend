@@ -400,7 +400,7 @@ const ProductDetail = () => {
                       cursor: 'pointer',
                       border: '2px solid #ddd',
                       borderRadius: 1,
-                      overflow: 'hidden',
+
                       width: { xs: 64, sm: 80, md: 80 },
                       height: { xs: 64, sm: 80, md: 80 },
                       position: 'relative',
