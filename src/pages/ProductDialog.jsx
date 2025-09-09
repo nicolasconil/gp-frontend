@@ -330,6 +330,15 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
                         display: 'block',
                       }}
                     />
+                    <Box sx={{ position: 'absolute', right: 2, top: 2, display: 'flex', gap: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => removeExistingImage(url)}
+                        sx={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
               </Box>
