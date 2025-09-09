@@ -379,60 +379,72 @@ const ProductDetail = () => {
               </Button>
             </Box>
 
-            {images.map((img, idx) => {
-              const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
-              return (
-                <Box
-                  key={idx}
-                  onClick={() => setMainIndex(idx)}
-                  sx={{
-                    cursor: 'pointer',
-                    border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    width: { xs: 64, sm: 80, md: 80 },
-                    height: { xs: 64, sm: 80, md: 80 },
-                    position: 'relative', // necesario para posicionar las líneas
-                  }}
-                >
-                  <img
-                    src={src}
-                    alt={`thumb-${idx}`}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                    }}
-                  />
-                  {/* Línea inferior */}
+            {/* thumbnails responsive (se muestran si hay más de una imagen) */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                justifyContent: 'center',
+                mt: 2,
+                overflowX: 'auto', // permite scroll horizontal
+                flexWrap: 'nowrap', // evita que bajen a otra línea
+              }}
+            >
+              {images.map((img, idx) => {
+                const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
+                return (
                   <Box
+                    key={idx}
+                    onClick={() => setMainIndex(idx)}
                     sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: 4,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: 4,
-                    }}
-                  />
-                  {/* Línea lateral derecha */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: { xs: '102%', md: '103%' },
-                      backgroundColor: 'black',
+                      cursor: 'pointer',
+                      border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
                       borderRadius: 1,
+                      overflow: 'hidden',
+                      width: { xs: 64, sm: 80, md: 80 },
+                      height: { xs: 64, sm: 80, md: 80 },
+                      position: 'relative',
+                      flex: '0 0 auto', // evita que se achiquen
                     }}
-                  />
-                </Box>
-              );
-            })}
-
+                  >
+                    <img
+                      src={src}
+                      alt={`thumb-${idx}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                    {/* Línea inferior */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: -4,
+                        left: 4,
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: 'black',
+                        borderRadius: 4,
+                      }}
+                    />
+                    {/* Línea lateral derecha */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: -4,
+                        width: '4px',
+                        height: { xs: '102%', md: '103%' },
+                        backgroundColor: 'black',
+                        borderRadius: 1,
+                      }}
+                    />
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
         </Grid>
       </Grid>
