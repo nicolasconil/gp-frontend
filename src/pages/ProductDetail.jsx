@@ -32,7 +32,6 @@ const ProductDetail = () => {
     setSelectedVariation(null);
   }, [location.state?.product]);
 
-  // --- START: nueva lógica para manejar múltiples imágenes ---
   const images = useMemo(() => {
     if (Array.isArray(product.images) && product.images.length) return product.images;
     if (product.image) return [product.image];
@@ -47,7 +46,6 @@ const ProductDetail = () => {
     setMainIndex(0);
   }, [product._id]);
 
-  // touch handling for mobile swipe
   const touchStartX = useRef(null);
   const touchDelta = useRef(0);
 
@@ -71,7 +69,6 @@ const ProductDetail = () => {
     touchDelta.current = 0;
   };
 
-  // keyboard navigation (left/right)
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'ArrowRight' && images.length > 1) setMainIndex(i => (i + 1) % images.length);
@@ -90,7 +87,6 @@ const ProductDetail = () => {
     const fallback = variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
-  // --- END: nueva lógica para manejar múltiples imágenes ---
 
   const isSizeAvailable = (size) => {
     return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
@@ -98,11 +94,6 @@ const ProductDetail = () => {
 
   const getVariationForSize = (size) => {
     return variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
-  };
-
-  const getImageForColor = () => {
-    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
-    return variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
   };
 
   const { data: productsData } = useQuery({
@@ -204,7 +195,6 @@ const ProductDetail = () => {
                   onClick={() => {
                     setSelectedColor(color);
                     setSelectedVariation(null);
-                    // si hay images, saltar al índice que contenga el color en el nombre del archivo
                     if (images.length) {
                       const idx = images.findIndex(img => {
                         if (typeof img !== 'string') return false;
@@ -228,7 +218,7 @@ const ProductDetail = () => {
                     color: selectedColor === color ? 'white' : 'black',
                     backgroundColor: selectedColor === color ? 'black' : 'white',
                     '&:hover': { backgroundColor: selectedColor === color ? 'black' : '#f0f0f0' },
-                    position: 'relative', // importante para los boxes absolutos
+                    position: 'relative',
                   }}
                 >
                   {color}
@@ -389,30 +379,60 @@ const ProductDetail = () => {
               </Button>
             </Box>
 
-            {/* thumbnails responsive (se muestran si hay más de una imagen) */}
-            {images.length > 1 && (
-              <Box sx={{ display: 'flex', gap: 1, mt: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                {images.map((img, idx) => {
-                  const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
-                  return (
-                    <Box
-                      key={idx}
-                      onClick={() => setMainIndex(idx)}
-                      sx={{
-                        cursor: 'pointer',
-                        border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        width: { xs: 64, sm: 80, md: 80 },
-                        height: { xs: 64, sm: 80, md: 80 },
-                      }}
-                    >
-                      <img src={src} alt={`thumb-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </Box>
-                  );
-                })}
-              </Box>
-            )}
+            {images.map((img, idx) => {
+              const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
+              return (
+                <Box
+                  key={idx}
+                  onClick={() => setMainIndex(idx)}
+                  sx={{
+                    cursor: 'pointer',
+                    border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    width: { xs: 64, sm: 80, md: 80 },
+                    height: { xs: 64, sm: 80, md: 80 },
+                    position: 'relative', // necesario para posicionar las líneas
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt={`thumb-${idx}`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                  />
+                  {/* Línea inferior */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: 4,
+                    }}
+                  />
+                  {/* Línea lateral derecha */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
+                    }}
+                  />
+                </Box>
+              );
+            })}
+
           </Box>
         </Grid>
       </Grid>
