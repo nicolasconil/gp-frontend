@@ -384,7 +384,7 @@ const ProductDetail = () => {
               sx={{
                 display: 'flex',
                 gap: 1,
-                justifyContent: 'center',
+                justifyContent: 'left',
                 mt: 2,
                 overflowX: 'auto', // permite scroll horizontal
                 flexWrap: 'nowrap', // evita que bajen a otra línea
@@ -398,13 +398,13 @@ const ProductDetail = () => {
                     onClick={() => setMainIndex(idx)}
                     sx={{
                       cursor: 'pointer',
-                      border: idx === mainIndex ? '3px solid black' : '2px solid #ddd',
+                      border: '2px solid #ddd',
                       borderRadius: 1,
                       overflow: 'hidden',
                       width: { xs: 64, sm: 80, md: 80 },
                       height: { xs: 64, sm: 80, md: 80 },
                       position: 'relative',
-                      flex: '0 0 auto', // evita que se achiquen
+                      flex: '0 0 auto', 
                     }}
                   >
                     <img
