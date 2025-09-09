@@ -385,7 +385,7 @@ const ProductDetail = () => {
                 display: 'flex',
                 gap: 1,
                 justifyContent: 'left',
-                mt: 2,
+                mt: 3,
                 overflowX: 'auto', // permite scroll horizontal
                 flexWrap: 'nowrap', // evita que bajen a otra línea
               }}
@@ -421,8 +421,8 @@ const ProductDetail = () => {
                     <Box
                       sx={{
                         position: 'absolute',
-                        bottom: -4,
-                        left: 4,
+                        bottom: 0,
+                        left: 0,
                         width: '100%',
                         height: '4px',
                         backgroundColor: 'black',
@@ -433,8 +433,8 @@ const ProductDetail = () => {
                     <Box
                       sx={{
                         position: 'absolute',
-                        top: 2,
-                        right: -4,
+                        top: 0,
+                        right: 0,
                         width: '4px',
                         height: { xs: '102%', md: '103%' },
                         backgroundColor: 'black',
