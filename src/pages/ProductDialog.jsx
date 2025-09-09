@@ -314,7 +314,6 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
               </Typography>
             </Box>
 
-            {/* existing images (responsive thumbnails) */}
             {existingImages.length > 0 && (
               <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 {existingImages.map((url, idx) => (
@@ -327,34 +326,10 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
                         height: '100%',
                         objectFit: 'cover',
                         borderRadius: 6,
-                        border: imagesToKeep.includes(url) ? '3px solid black' : '2px solid #ccc',
+                        border: imagesToKeep.includes(url) ? '2px solid #ccc' : '2px solid #ccc',
                         display: 'block',
                       }}
                     />
-                    <Box sx={{ position: 'absolute', right: 2, top: 2, display: 'flex', gap: 0.5 }}>
-                      <Button
-                        size="small"
-                        onClick={() => toggleKeepExisting(url)}
-                        sx={{
-                          minWidth: 0,
-                          p: '2px 6px',
-                          fontSize: 11,
-                          fontFamily: '"Archivo Black", sans-serif',
-                          backgroundColor: imagesToKeep.includes(url) ? 'black' : 'white',
-                          color: imagesToKeep.includes(url) ? 'white' : 'black',
-                          border: '1px solid #ccc',
-                        }}
-                      >
-                        Keep
-                      </Button>
-                      <IconButton
-                        size="small"
-                        onClick={() => removeExistingImage(url)}
-                        sx={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
                   </Box>
                 ))}
               </Box>
