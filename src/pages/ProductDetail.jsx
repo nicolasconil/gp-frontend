@@ -400,7 +400,7 @@ const ProductDetail = () => {
                       cursor: 'pointer',
                       border: '2px solid #ddd',
                       borderRadius: 1,
-
+                      overflow: 'hidden',
                       width: { xs: 64, sm: 80, md: 80 },
                       height: { xs: 64, sm: 80, md: 80 },
                       position: 'relative',
@@ -415,30 +415,6 @@ const ProductDetail = () => {
                         height: '100%',
                         objectFit: 'cover',
                         display: 'block',
-                      }}
-                    />
-                    {/* Línea inferior */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -3,
-                        left: -1,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: '#777',
-                        borderRadius: 4,
-                      }}
-                    />
-                    {/* Línea lateral derecha */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: -3,
-                        right: -3,
-                        width: '4px',
-                        height: { xs: '102%', md: '103%' },
-                        backgroundColor: '#777',
-                        borderRadius: 1,
                       }}
                     />
                   </Box>
