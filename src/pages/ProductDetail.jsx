@@ -421,8 +421,8 @@ const ProductDetail = () => {
                     <Box
                       sx={{
                         position: 'absolute',
-                        bottom: -2,
-                        left: -2,
+                        bottom: -3,
+                        left: -1,
                         width: '100%',
                         height: '4px',
                         backgroundColor: '#777',
@@ -433,8 +433,8 @@ const ProductDetail = () => {
                     <Box
                       sx={{
                         position: 'absolute',
-                        top: -2,
-                        right: -2,
+                        top: -3,
+                        right: -3,
                         width: '4px',
                         height: { xs: '102%', md: '103%' },
                         backgroundColor: '#777',
