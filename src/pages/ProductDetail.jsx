@@ -17,6 +17,17 @@ const ProductDetail = () => {
   const location = useLocation();
   const { id } = useParams();
 
+  const resolvedId = id || (() => {
+    try {
+      const parts = location.pathname.split('/').filter(Boolean);
+      return parts.length ? parts[parts.length - 1] : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+
+  console.debug('[ProductDetail] Params & State', { id, resolvedId, productFromState: !!location.state?.product });
+
   const productFromState = location.state?.product || null;
   const [product, setProduct] = useState(productFromState || {});
   const variations = product.variations || [];
@@ -38,23 +49,22 @@ const ProductDetail = () => {
     isLoading: isFetchingProduct,
     isError: productFetchError,
   } = useQuery({
-    queryKey: ['product', id],
-    queryFn: () => getProductById(id),
-    enabled: !productFromState && !!id,
+    queryKey: ['product', resolvedId],
+    queryFn: () => getProductById(resolvedId),
+    enabled: !productFromState && !!resolvedId,
     onSuccess: (res) => {
+      console.debug('[ProductDetail] Raw fetch response:', res);
       const candidate = res?.data?.data || res?.data?.product || res?.data || res;
-      console.debug('[ProductDetail] fetched product raw:', res, '-> normalized:', candidate);
+      console.debug('[ProductDetail] Normalized product:', candidate);
       if (candidate) setProduct(candidate);
     },
     onError: (err) => {
-      console.error('[ProductDetail] error fetching product by id', err);
+      console.error('[ProductDetail] Error fetching product by id', err);
     },
   });
 
   useEffect(() => {
-    if (productFromState) {
-      setProduct(productFromState);
-    }
+    if (productFromState) setProduct(productFromState);
   }, [productFromState]);
 
   const images = useMemo(() => {
@@ -66,10 +76,7 @@ const ProductDetail = () => {
   }, [product, variations]);
 
   const [mainIndex, setMainIndex] = useState(0);
-
-  useEffect(() => {
-    setMainIndex(0);
-  }, [product._id]);
+  useEffect(() => setMainIndex(0), [product._id]);
 
   const touchStartX = useRef(null);
   const touchDelta = useRef(0);
@@ -113,13 +120,11 @@ const ProductDetail = () => {
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
-  const isSizeAvailable = (size) => {
-    return variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
-  };
+  const isSizeAvailable = (size) =>
+    variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
 
-  const getVariationForSize = (size) => {
-    return variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
-  };
+  const getVariationForSize = (size) =>
+    variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
 
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts'],
@@ -131,8 +136,7 @@ const ProductDetail = () => {
   });
 
   const { addToCart } = useCart();
-
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!selectedVariation) return;
     addToCart(product, selectedVariation.size, selectedColor, 1);
   };
@@ -144,13 +148,7 @@ const ProductDetail = () => {
 
   if (!productFromState && isFetchingProduct) {
     return (
-      <Box sx={{
-        height: '60vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column'
-      }}>
+      <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
         <CircularProgress />
         <Typography sx={{ mt: 2 }}>Cargando producto...</Typography>
       </Box>
@@ -159,15 +157,7 @@ const ProductDetail = () => {
 
   if (!productFromState && !isFetchingProduct && (!product || !product._id)) {
     return (
-      <Box sx={{
-        height: '60vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        textAlign: 'center',
-        px: 2
-      }}>
+      <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', textAlign: 'center', px: 2 }}>
         <Box component="img" src={PLACEHOLDER} alt="placeholder" sx={{ width: 120, mb: 2 }} />
         <Typography variant="h6">Producto no encontrado</Typography>
         <Typography sx={{ color: '#666', mt: 1 }}>Revisá el link o volvé a la tienda.</Typography>
