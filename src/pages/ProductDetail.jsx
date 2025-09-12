@@ -66,7 +66,7 @@ const ProductDetail = () => {
 
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
-  const allSizes = Array.from({ length: 11 }, (_, i) => 34 + i);
+  const allSizes = Array.from({ length: 12 }, (_, i) => 34 + i);
   const allColors = [...new Set(variations.map(v => v.color))];
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
