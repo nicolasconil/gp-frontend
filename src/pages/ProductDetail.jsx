@@ -26,8 +26,6 @@ const ProductDetail = () => {
     }
   })();
 
-  console.debug('[ProductDetail] Params & State', { id, resolvedId, productFromState: !!location.state?.product });
-
   const productFromState = location.state?.product || null;
   const [product, setProduct] = useState(productFromState || null);
 
@@ -48,7 +46,7 @@ const ProductDetail = () => {
         }
       }
     } catch (e) {
-      console.warn('[ProductDetail] Normalization step failed', e);
+      return e;
     }
 
     if (!candidate) {
@@ -89,14 +87,11 @@ const ProductDetail = () => {
     queryFn: () => getProductById(resolvedId),
     enabled: !productFromState && !!resolvedId,
     onSuccess: (res) => {
-      console.debug('[ProductDetail] Raw fetch response:', res);
       const candidate = normalizeResponseToProduct(res);
-      console.debug('[ProductDetail] Normalized product candidate:', candidate);
       if (candidate) setProduct(candidate);
       else setProduct(null);
     },
     onError: (err) => {
-      console.error('[ProductDetail] Error fetching product by id', err);
       setProduct(null);
     },
   });
@@ -108,14 +103,10 @@ const ProductDetail = () => {
     let mounted = true;
     (async () => {
       try {
-        console.debug('[ProductDetail] manual fetch START for id', resolvedId);
         const res = await getProductById(resolvedId);
-        console.debug('[ProductDetail] manual fetch response:', res);
         const candidate = normalizeResponseToProduct(res);
-        console.debug('[ProductDetail] manual fetch normalized candidate:', candidate);
         if (mounted) setProduct(candidate || null);
       } catch (err) {
-        console.error('[ProductDetail] manual fetch ERROR', err);
         if (mounted) setProduct(null);
       }
     })();
@@ -215,11 +206,98 @@ const ProductDetail = () => {
     try { return n.toLocaleString('es-AR'); } catch { return String(n); }
   })();
 
-  if (!productFromState && isFetchingProduct) {
+  if (isFetchingProduct) {
     return (
-      <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Cargando producto...</Typography>
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        flexDirection: 'column'
+      }}
+      >
+        <Box
+          component='img'
+          src='/logo1.svg'
+          alt='Cargando...'
+          sx={{
+            width: 120,
+            height: 'auto',
+            opacity: 0.5,
+            animation: 'pulseOpacity 2s infinite ease-in-out',
+          }}
+        />
+        <Typography variant='h5' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+          Cargando productos...
+        </Typography>
+        <style>
+          {`
+            @keyframes pulseOpacity {
+              0% { opacity: 0.2; }
+              50% { opacity: 1; }
+              100% { opacity: 0.2; }
+            }
+          `}
+        </style>
+      </Box>
+    );
+  }
+
+  if (productFetchError) {
+    return (
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        flexDirection: 'column',
+        textAlign: 'center',
+      }}
+      >
+        <Box
+          component='img'
+          src='/logo1.svg'
+          alt='Error'
+          sx={{
+            width: 120,
+            height: 'auto',
+            opacity: 0.3,
+          }}
+        />
+        <Typography variant='h6' sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+          Error cargando los productos.
+        </Typography>
+        <Button
+          variant='contained'
+          onClick={() => window.location.reload()}
+          sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', borderRadius: '4px', backgroundColor: 'black', color: 'white' }}
+        >
+          Reintentar
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -5,
+              left: 6,
+              width: '98%',
+              height: '6px',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 6,
+              right: -5,
+              width: '6px',
+              height: { xs: '95%', md: '97%' },
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+        </Button>
       </Box>
     );
   }
