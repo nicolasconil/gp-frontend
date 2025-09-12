@@ -92,7 +92,6 @@ const Header = () => {
           {filteredResults.map((product) => (
             <Card
               key={product._id}
-              role="button"
               onClick={() => goToProduct(product._id)}
               sx={{
                 border: '2px solid white',
@@ -110,10 +109,12 @@ const Header = () => {
                 component="img"
                 src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
                 alt={product.name}
+                onClick={() => goToProduct(product._id)}
                 sx={{
                   height: 160,
                   objectFit: 'contain',
                   width: '100%',
+                  cursor: 'pointer',
                   transition: 'transform 0.3s ease-in-out',
                   '&:hover': {
                     transform: 'scale(1.05)',
@@ -174,10 +175,12 @@ const Header = () => {
               component="img"
               src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
               alt={product.name}
+              onClick={() => goToProduct(product._id)}
               sx={{
                 width: '100%',
                 height: 180,
                 objectFit: 'contain',
+                cursor: 'pointer',
                 transition: 'transform 0.4s ease-in-out',
                 '&:hover': {
                   transform: 'scale(1.05)',
@@ -205,6 +208,7 @@ const Header = () => {
                 }}
               >
                 <Typography
+                  onClick={() => goToProduct(product._id)}
                   sx={{
                     fontFamily: '"Archivo Black", sans-serif',
                     fontSize: '0.9rem',
@@ -215,6 +219,7 @@ const Header = () => {
                     lineHeight: 1.2,
                     overflow: 'hidden',
                     display: '-webkit-box',
+                    cursor: 'pointer',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     cursor: 'pointer',
