@@ -363,6 +363,7 @@ const ProductDetail = () => {
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'transform 0.3s ease',
+                borderRadius: 'none'
               }}
             />
           </Box>
@@ -675,7 +676,7 @@ const ProductDetail = () => {
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover',
+                        objectFit: 'contain',
                         display: 'block',
                       }}
                     />
