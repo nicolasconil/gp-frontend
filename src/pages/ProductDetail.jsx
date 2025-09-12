@@ -66,7 +66,7 @@ const ProductDetail = () => {
 
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
-  const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
+  const allSizes = Array.from({ length: 11 }, (_, i) => 34 + i);
   const allColors = [...new Set(variations.map(v => v.color))];
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
@@ -298,17 +298,6 @@ const ProductDetail = () => {
             }}
           />
         </Button>
-      </Box>
-    );
-  }
-
-  if (!productFromState && !isFetchingProduct && (!product || !(product._id || product.id))) {
-    return (
-      <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', textAlign: 'center', px: 2 }}>
-        <Box component="img" src={PLACEHOLDER} alt="placeholder" sx={{ width: 120, mb: 2 }} />
-        <Typography variant="h6">Producto no encontrado</Typography>
-        <Typography sx={{ color: '#666', mt: 1 }}>Revisá el link o volvé a la tienda.</Typography>
-        <Button sx={{ mt: 2 }} onClick={() => navigate('/productos')}>Volver a productos</Button>
       </Box>
     );
   }

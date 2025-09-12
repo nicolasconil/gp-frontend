@@ -69,9 +69,9 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   const thumbSize = isMobile ? 64 : 96;
 
   const [form, setForm] = useState({});
-  const [newFiles, setNewFiles] = useState([]); // Files selected now (Array of File)
-  const [existingImages, setExistingImages] = useState([]); // URLs already on product
-  const [imagesToKeep, setImagesToKeep] = useState([]); // subset of existingImages to keep
+  const [newFiles, setNewFiles] = useState([]); 
+  const [existingImages, setExistingImages] = useState([]); 
+  const [imagesToKeep, setImagesToKeep] = useState([]); 
   const [error, setError] = useState("");
 
   const [variations, setVariations] = useState([]);
