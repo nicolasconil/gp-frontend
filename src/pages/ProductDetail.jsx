@@ -31,6 +31,42 @@ const ProductDetail = () => {
   const productFromState = location.state?.product || null;
   const [product, setProduct] = useState(productFromState || null);
 
+  // helper to normalize responses (used in useQuery and manual fetch)
+  const normalizeResponseToProduct = (res) => {
+    let candidate = null;
+    try {
+      if (res && typeof res === 'object') {
+        if (res.data && res.data.data) {
+          candidate = Array.isArray(res.data.data) ? res.data.data[0] : res.data.data;
+        } else if (res.data && res.data.product) {
+          candidate = res.data.product;
+        } else if (res.data && (res.data._id || res.data.id || res.data.name || res.data.title)) {
+          candidate = res.data;
+        } else if (res._id || res.id) {
+          candidate = res;
+        } else if (Array.isArray(res.data)) {
+          candidate = res.data.find(p => p._id === resolvedId || p.id === resolvedId) || res.data[0];
+        }
+      }
+    } catch (e) {
+      console.warn('[ProductDetail] Normalization step failed', e);
+    }
+
+    if (!candidate) {
+      const maybe = res?.data ?? res;
+      if (maybe && typeof maybe === 'object') {
+        const values = Object.values(maybe).filter(v => v && typeof v === 'object');
+        candidate = values.find(v => v._id === resolvedId || v.id === resolvedId) || values[0] || null;
+      }
+    }
+
+    if (candidate && !candidate._id && candidate.id) {
+      candidate._id = candidate.id;
+    }
+
+    return candidate;
+  };
+
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
   const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
@@ -55,46 +91,10 @@ const ProductDetail = () => {
     enabled: !productFromState && !!resolvedId,
     onSuccess: (res) => {
       console.debug('[ProductDetail] Raw fetch response:', res);
-
-      // Normalizar posibles formas de respuesta
-      let candidate = null;
-      try {
-        if (res && typeof res === 'object') {
-          if (res.data && res.data.data) {
-            candidate = Array.isArray(res.data.data) ? res.data.data[0] : res.data.data;
-          } else if (res.data && res.data.product) {
-            candidate = res.data.product;
-          } else if (res.data && (res.data._id || res.data.id || res.data.name)) {
-            candidate = res.data;
-          } else if (res._id || res.id) {
-            candidate = res;
-          } else if (Array.isArray(res.data)) {
-            candidate = res.data.find(p => p._id === resolvedId || p.id === resolvedId) || res.data[0];
-          }
-        }
-      } catch (e) {
-        console.warn('[ProductDetail] Normalization step failed', e);
-      }
-
-      if (!candidate) {
-        const maybe = res?.data ?? res;
-        if (maybe && typeof maybe === 'object') {
-          const values = Object.values(maybe).filter(v => v && typeof v === 'object');
-          candidate = values.find(v => v._id === resolvedId || v.id === resolvedId) || values[0] || null;
-        }
-      }
-
-      if (candidate && !candidate._id && candidate.id) {
-        candidate._id = candidate.id;
-      }
-
+      const candidate = normalizeResponseToProduct(res);
       console.debug('[ProductDetail] Normalized product candidate:', candidate);
-
-      if (candidate) {
-        setProduct(candidate);
-      } else {
-        setProduct(null);
-      }
+      if (candidate) setProduct(candidate);
+      else setProduct(null);
     },
     onError: (err) => {
       console.error('[ProductDetail] Error fetching product by id', err);
@@ -102,13 +102,36 @@ const ProductDetail = () => {
     },
   });
 
+  // manual fetch fallback: si después de useQuery no hay product, intentamos de nuevo y logeamos la respuesta completa
+  useEffect(() => {
+    if (product && (product._id || product.id)) return;
+    if (!resolvedId) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        console.debug('[ProductDetail] manual fetch START for id', resolvedId);
+        const res = await getProductById(resolvedId);
+        console.debug('[ProductDetail] manual fetch response:', res);
+        const candidate = normalizeResponseToProduct(res);
+        console.debug('[ProductDetail] manual fetch normalized candidate:', candidate);
+        if (mounted) setProduct(candidate || null);
+      } catch (err) {
+        console.error('[ProductDetail] manual fetch ERROR', err);
+        if (mounted) setProduct(null);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [resolvedId]);
+
   useEffect(() => {
     if (productFromState) setProduct(productFromState);
   }, [productFromState]);
 
   const images = useMemo(() => {
-    if (Array.isArray(product?.images) && product.images.length) return product.images;
-    if (product?.image) return [product.image];
+    const imgs = product?.images || product?.photos || (product?.image ? [product.image] : []);
+    if (Array.isArray(imgs) && imgs.length) return imgs;
     const varImgs = variations.map(v => v.image).filter(Boolean);
     if (varImgs.length) return Array.from(new Set(varImgs));
     return [];
@@ -185,6 +208,16 @@ const ProductDetail = () => {
     e.currentTarget.src = PLACEHOLDER;
   };
 
+  // friendly getters with fallbacks for UI fields
+  const displayName = product?.name || product?.title || product?.productName || product?.nombre || '';
+  const displayDescription = product?.description || product?.desc || product?.detalle || '';
+  const displayPrice = (() => {
+    const p = product?.price ?? product?.precio ?? product?.amount;
+    if (p == null) return '';
+    const n = typeof p === 'number' ? p : Number(p) || 0;
+    try { return n.toLocaleString('es-AR'); } catch { return String(n); }
+  })();
+
   if (!productFromState && isFetchingProduct) {
     return (
       <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
@@ -236,11 +269,11 @@ const ProductDetail = () => {
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
             role="region"
-            aria-label={`Galería de imágenes del producto ${product?.name || ''}`}
+            aria-label={`Galería de imágenes del producto ${displayName}`}
           >
             <img
               src={displayImage}
-              alt={product?.name}
+              alt={displayName}
               onError={handleImgError}
               style={{
                 width: '100%',
@@ -264,15 +297,15 @@ const ProductDetail = () => {
               variant="h3"
               sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
             >
-              {product?.name}
+              {displayName}
             </Typography>
 
             <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, color: '#555', mb: 2 }}>
-              {product?.description || 'Descripción no disponible'}
+              {displayDescription || 'Descripción no disponible'}
             </Typography>
 
             <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', mb: 3 }}>
-              ${product?.price?.toLocaleString('es-AR')}
+              ${displayPrice}
             </Typography>
 
             <Typography
@@ -341,10 +374,9 @@ const ProductDetail = () => {
                 </Button>
               ))}
             </Box>
-            <Typography
-              variant="caption"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}
-            >
+
+            {/* ... el resto del UI queda igual que tenías ... */}
+            <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
               Talles:
             </Typography>
             <Box
@@ -414,6 +446,7 @@ const ProductDetail = () => {
                 );
               })}
             </Box>
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button
                 variant="contained"
