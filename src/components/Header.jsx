@@ -55,7 +55,6 @@ const Header = () => {
   ) || [];
 
   const goToProduct = (id) => {
-    // redirige a la ruta del producto
     window.location.href = `/producto/${id}`;
   };
 
@@ -63,7 +62,6 @@ const Header = () => {
     if (searchTerm.length <= 0 || filteredResults.length === 0) return null;
 
     if (isMobile) {
-      // inline results (no overlay fijo) - se muestran debajo del input en mobile
       return (
         <Box
           sx={{
@@ -92,7 +90,6 @@ const Header = () => {
           {filteredResults.map((product) => (
             <Card
               key={product._id}
-              onClick={() => goToProduct(product._id)}
               role="button"
               sx={{
                 border: '2px solid white',
@@ -110,10 +107,12 @@ const Header = () => {
                 component="img"
                 src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
                 alt={product.name}
+                onClick={() => goToProduct(product._id)}
                 sx={{
                   height: 160,
                   objectFit: 'contain',
                   width: '100%',
+                  cursor: 'pointer',
                   transition: 'transform 0.3s ease-in-out',
                   '&:hover': {
                     transform: 'scale(1.05)',
@@ -126,7 +125,6 @@ const Header = () => {
       );
     }
 
-    // desktop (comportamiento original) - con cards clickeables
     return (
       <Box
         sx={{
