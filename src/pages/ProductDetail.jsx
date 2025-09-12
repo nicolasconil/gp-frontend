@@ -660,7 +660,7 @@ const ProductDetail = () => {
                     onClick={() => setMainIndex(idx)}
                     sx={{
                       cursor: 'pointer',
-                      border: '2px solid #ddd',
+                      border: '2px solid #f1f1f1ff',
                       borderRadius: 1,
                       overflow: 'hidden',
                       width: { xs: 64, sm: 80, md: 80 },
