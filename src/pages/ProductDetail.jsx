@@ -29,9 +29,10 @@ const ProductDetail = () => {
   console.debug('[ProductDetail] Params & State', { id, resolvedId, productFromState: !!location.state?.product });
 
   const productFromState = location.state?.product || null;
-  const [product, setProduct] = useState(productFromState || {});
-  const variations = product.variations || [];
-  const isOutOfStock = product.stock === 0;
+  const [product, setProduct] = useState(productFromState || null);
+
+  const variations = product?.variations || [];
+  const isOutOfStock = product?.stock === 0;
   const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
   const allColors = [...new Set(variations.map(v => v.color))];
 
@@ -54,12 +55,50 @@ const ProductDetail = () => {
     enabled: !productFromState && !!resolvedId,
     onSuccess: (res) => {
       console.debug('[ProductDetail] Raw fetch response:', res);
-      const candidate = res?.data?.data || res?.data?.product || res?.data || res;
-      console.debug('[ProductDetail] Normalized product:', candidate);
-      if (candidate) setProduct(candidate);
+
+      // Normalizar posibles formas de respuesta
+      let candidate = null;
+      try {
+        if (res && typeof res === 'object') {
+          if (res.data && res.data.data) {
+            candidate = Array.isArray(res.data.data) ? res.data.data[0] : res.data.data;
+          } else if (res.data && res.data.product) {
+            candidate = res.data.product;
+          } else if (res.data && (res.data._id || res.data.id || res.data.name)) {
+            candidate = res.data;
+          } else if (res._id || res.id) {
+            candidate = res;
+          } else if (Array.isArray(res.data)) {
+            candidate = res.data.find(p => p._id === resolvedId || p.id === resolvedId) || res.data[0];
+          }
+        }
+      } catch (e) {
+        console.warn('[ProductDetail] Normalization step failed', e);
+      }
+
+      if (!candidate) {
+        const maybe = res?.data ?? res;
+        if (maybe && typeof maybe === 'object') {
+          const values = Object.values(maybe).filter(v => v && typeof v === 'object');
+          candidate = values.find(v => v._id === resolvedId || v.id === resolvedId) || values[0] || null;
+        }
+      }
+
+      if (candidate && !candidate._id && candidate.id) {
+        candidate._id = candidate.id;
+      }
+
+      console.debug('[ProductDetail] Normalized product candidate:', candidate);
+
+      if (candidate) {
+        setProduct(candidate);
+      } else {
+        setProduct(null);
+      }
     },
     onError: (err) => {
       console.error('[ProductDetail] Error fetching product by id', err);
+      setProduct(null);
     },
   });
 
@@ -68,15 +107,15 @@ const ProductDetail = () => {
   }, [productFromState]);
 
   const images = useMemo(() => {
-    if (Array.isArray(product.images) && product.images.length) return product.images;
-    if (product.image) return [product.image];
+    if (Array.isArray(product?.images) && product.images.length) return product.images;
+    if (product?.image) return [product.image];
     const varImgs = variations.map(v => v.image).filter(Boolean);
     if (varImgs.length) return Array.from(new Set(varImgs));
     return [];
   }, [product, variations]);
 
   const [mainIndex, setMainIndex] = useState(0);
-  useEffect(() => setMainIndex(0), [product._id]);
+  useEffect(() => setMainIndex(0), [product?._id]);
 
   const touchStartX = useRef(null);
   const touchDelta = useRef(0);
@@ -116,7 +155,7 @@ const ProductDetail = () => {
       return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
     }
     const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
-    const fallback = variationWithImage?.image || product.image || PLACEHOLDER;
+    const fallback = variationWithImage?.image || product?.image || PLACEHOLDER;
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
@@ -130,7 +169,7 @@ const ProductDetail = () => {
     queryKey: ['randomProducts'],
     queryFn: getAllProducts,
     select: data => {
-      const items = ensureArray(data?.data).filter(p => p._id !== product._id);
+      const items = ensureArray(data?.data).filter(p => p._id !== product?._id);
       return items.sort(() => 0.5 - Math.random()).slice(0, 3);
     },
   });
@@ -155,7 +194,7 @@ const ProductDetail = () => {
     );
   }
 
-  if (!productFromState && !isFetchingProduct && (!product || !product._id)) {
+  if (!productFromState && !isFetchingProduct && (!product || !(product._id || product.id))) {
     return (
       <Box sx={{ height: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', textAlign: 'center', px: 2 }}>
         <Box component="img" src={PLACEHOLDER} alt="placeholder" sx={{ width: 120, mb: 2 }} />
@@ -197,11 +236,11 @@ const ProductDetail = () => {
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
             role="region"
-            aria-label={`Galería de imágenes del producto ${product.name || ''}`}
+            aria-label={`Galería de imágenes del producto ${product?.name || ''}`}
           >
             <img
               src={displayImage}
-              alt={product.name}
+              alt={product?.name}
               onError={handleImgError}
               style={{
                 width: '100%',
@@ -225,15 +264,15 @@ const ProductDetail = () => {
               variant="h3"
               sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
             >
-              {product.name}
+              {product?.name}
             </Typography>
 
             <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, color: '#555', mb: 2 }}>
-              {product.description || 'Descripción no disponible'}
+              {product?.description || 'Descripción no disponible'}
             </Typography>
 
             <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', mb: 3 }}>
-              ${product.price?.toLocaleString('es-AR')}
+              ${product?.price?.toLocaleString('es-AR')}
             </Typography>
 
             <Typography
