@@ -382,59 +382,58 @@ const ProductDetail = () => {
               >
                 {displayName}
               </Typography>
-
-              {product?.gender && (
-                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box
-                    component="span"
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontFamily: '"Archivo Black", sans-serif',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      px: 0.75,
-                      py: 0.35,
-                      minWidth: 'auto',
-                      borderRadius: 1,
-                      border: '2px solid black',
-                      position: 'relative',
-                      color: 'black',
-                      backgroundColor: 'white',
-                      lineHeight: 1,
-                      userSelect: 'none',
-                    }}
-                  >
-                    {genderLabel(product.gender)}
-
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -4,
-                        left: 4,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: 'black',
-                        borderRadius: 4,
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 2,
-                        right: -4,
-                        width: '4px',
-                        height: { xs: '102%', md: '103%' },
-                        backgroundColor: 'black',
-                        borderRadius: 1,
-                      }}
-                    />
-                  </Box>
-                </Box>
-              )}
             </Box>
+            {product?.gender && (
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: '"Archivo Black", sans-serif',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    px: 0.75,
+                    py: 0.35,
+                    minWidth: 'auto',
+                    borderRadius: 1,
+                    border: '2px solid black',
+                    position: 'relative',
+                    color: 'black',
+                    backgroundColor: 'white',
+                    lineHeight: 1,
+                    userSelect: 'none',
+                  }}
+                >
+                  {genderLabel(product.gender)}
+
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: 4,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
 
             <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.7rem, 1.2vw, 1rem)', color: '#555', mb: 2 }}>
               {displayDescription || 'Descripción no disponible'}
