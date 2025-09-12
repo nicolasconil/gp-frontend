@@ -22,6 +22,7 @@ import Cart from "./Cart.jsx";
 import { getAllProducts } from "../api/public.api.js";
 import { useQuery } from "@tanstack/react-query";
 import { ensureArray } from "../utils/array.js";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +32,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const { logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -55,7 +57,7 @@ const Header = () => {
   ) || [];
 
   const goToProduct = (id) => {
-    window.location.href = `/producto/${id}`;
+    navigate(`/producto/${id}`);
   };
 
   const renderSearchResults = () => {
@@ -91,6 +93,7 @@ const Header = () => {
             <Card
               key={product._id}
               role="button"
+              onClick={() => goToProduct(product._id)}
               sx={{
                 border: '2px solid white',
                 overflow: 'hidden',
@@ -107,12 +110,10 @@ const Header = () => {
                 component="img"
                 src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
                 alt={product.name}
-                onClick={() => goToProduct(product._id)}
                 sx={{
                   height: 160,
                   objectFit: 'contain',
                   width: '100%',
-                  cursor: 'pointer',
                   transition: 'transform 0.3s ease-in-out',
                   '&:hover': {
                     transform: 'scale(1.05)',
@@ -363,7 +364,7 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Tooltip title="Panel administrativo">
-                  <IconButton onClick={() => window.location.href = '/panel'} size="large" sx={{ color: 'black' }}>
+                  <IconButton onClick={() => navigate('/panel')} size="large" sx={{ color: 'black' }}>
                     <AdminPanelIcon />
                   </IconButton>
                 </Tooltip>
