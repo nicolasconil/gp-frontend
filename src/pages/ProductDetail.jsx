@@ -3,11 +3,12 @@ import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } fro
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useCart } from '../context/CartContext'
+import { useCart } from '../context/CartContext.jsx'
 import { getAllProducts } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
+const PLACEHOLDER = '/logo.svg'; 
 
 const ProductDetail = () => {
   const theme = useTheme();
@@ -84,7 +85,7 @@ const ProductDetail = () => {
       return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
     }
     const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
-    const fallback = variationWithImage?.image || product.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible';
+    const fallback = variationWithImage?.image || product.image || PLACEHOLDER;
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
@@ -110,6 +111,11 @@ const ProductDetail = () => {
   const handleAddToCart = async () => {
     if (!selectedVariation) return;
     addToCart(product, selectedVariation.size, selectedColor, 1);
+  };
+
+  const handleImgError = (e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = PLACEHOLDER;
   };
 
   return (
@@ -148,6 +154,7 @@ const ProductDetail = () => {
             <img
               src={displayImage}
               alt={product.name}
+              onError={handleImgError}
               style={{
                 width: '100%',
                 height: 'auto',
@@ -379,19 +386,18 @@ const ProductDetail = () => {
               </Button>
             </Box>
 
-            {/* thumbnails responsive (se muestran si hay más de una imagen) */}
             <Box
               sx={{
                 display: 'flex',
                 gap: 1,
                 justifyContent: 'left',
                 mt: 3,
-                overflowX: 'auto', // permite scroll horizontal
-                flexWrap: 'nowrap', // evita que bajen a otra línea
+                overflowX: 'auto',
+                flexWrap: 'nowrap', 
               }}
             >
               {images.map((img, idx) => {
-                const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img;
+                const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img || PLACEHOLDER;
                 return (
                   <Box
                     key={idx}
@@ -410,6 +416,7 @@ const ProductDetail = () => {
                     <img
                       src={src}
                       alt={`thumb-${idx}`}
+                      onError={handleImgError}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -476,9 +483,10 @@ const ProductDetail = () => {
                     src={
                       item.image?.startsWith('/uploads')
                         ? `${baseURL}${item.image}`
-                        : item.image || 'https://via.placeholder.com/600x600?text=Producto+no+disponible'
+                        : item.image || PLACEHOLDER
                     }
                     alt={item.name}
+                    onError={handleImgError}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </Box>
