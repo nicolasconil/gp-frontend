@@ -1,7 +1,8 @@
-import { Box, Button, Card, CardContent, CardMedia, Typography, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, CardMedia, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
+const PLACEHOLDER = '/logo.svg';
 
 const Feed = ({ products = [], onClick }) => {
   const theme = useTheme();
@@ -20,10 +21,15 @@ const Feed = ({ products = [], onClick }) => {
           ? `${baseURL}${primaryImage}`
           : primaryImage
             ? primaryImage
-            : 'https://via.placeholder.com/300x300?text=Producto';
+            : PLACEHOLDER;
 
         const handleGoTODetail = () => {
           navigate(`/producto/${product._id}`, { state: { product } });
+        };
+
+        const handleImgError = (e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = PLACEHOLDER;
         };
 
         return (
@@ -65,6 +71,7 @@ const Feed = ({ products = [], onClick }) => {
                   component="img"
                   src={imageUrl}
                   alt={product.name}
+                  onError={handleImgError}
                   sx={{
                     width: '100%',
                     height: '100%',

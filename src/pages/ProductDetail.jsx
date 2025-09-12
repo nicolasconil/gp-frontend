@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
+import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, CircularProgress } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -34,18 +34,28 @@ const ProductDetail = () => {
     setSelectedVariation(null);
   }, [product]);
 
-  useQuery({
+  const {
+    isLoading: isFetchingProduct,
+    isError: productFetchError,
+  } = useQuery({
     queryKey: ['product', id],
     queryFn: () => getProductById(id),
-    enabled: !productFromState && !!id, 
+    enabled: !productFromState && !!id,
     onSuccess: (res) => {
-      const fetched = res?.data || res;
-      if (fetched) setProduct(fetched);
+      const candidate = res?.data?.data || res?.data?.product || res?.data || res;
+      console.debug('[ProductDetail] fetched product raw:', res, '-> normalized:', candidate);
+      if (candidate) setProduct(candidate);
     },
     onError: (err) => {
-      console.error('Error fetching product by id', err);
-    }
+      console.error('[ProductDetail] error fetching product by id', err);
+    },
   });
+
+  useEffect(() => {
+    if (productFromState) {
+      setProduct(productFromState);
+    }
+  }, [productFromState]);
 
   const images = useMemo(() => {
     if (Array.isArray(product.images) && product.images.length) return product.images;
@@ -131,6 +141,40 @@ const ProductDetail = () => {
     e.currentTarget.onerror = null;
     e.currentTarget.src = PLACEHOLDER;
   };
+
+  if (!productFromState && isFetchingProduct) {
+    return (
+      <Box sx={{
+        height: '60vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column'
+      }}>
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>Cargando producto...</Typography>
+      </Box>
+    );
+  }
+
+  if (!productFromState && !isFetchingProduct && (!product || !product._id)) {
+    return (
+      <Box sx={{
+        height: '60vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        textAlign: 'center',
+        px: 2
+      }}>
+        <Box component="img" src={PLACEHOLDER} alt="placeholder" sx={{ width: 120, mb: 2 }} />
+        <Typography variant="h6">Producto no encontrado</Typography>
+        <Typography sx={{ color: '#666', mt: 1 }}>Revisá el link o volvé a la tienda.</Typography>
+        <Button sx={{ mt: 2 }} onClick={() => navigate('/productos')}>Volver a productos</Button>
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
