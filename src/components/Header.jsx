@@ -82,6 +82,7 @@ const Header = () => {
                 height: '100%',
                 position: 'relative',
               }}
+              onClick={() => { window.location.href = `/producto/${product._id}` }}
             >
               <CardMedia
                 component="img"
@@ -98,8 +99,9 @@ const Header = () => {
                 }}
               />
             </Card>
-          ))}
-        </Box>
+          ))
+          }
+        </Box >
       );
     }
 
@@ -222,6 +224,7 @@ const Header = () => {
                     borderRadius: '2px',
                   }}
                 />
+                onClick={() => { window.location.href = `/producto/${product._id}` }}
               </Box>
             </CardContent>
           </Card>
