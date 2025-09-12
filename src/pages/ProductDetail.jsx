@@ -364,7 +364,7 @@ const ProductDetail = () => {
               {displayName}
             </Typography>
 
-            <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.9rem, 1.4vw, 1.125rem)', color: '#555', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.7rem, 1.2vw, 1rem)', color: '#555', mb: 2 }}>
               {displayDescription || 'Descripción no disponible'}
             </Typography>
 
