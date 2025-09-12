@@ -384,11 +384,54 @@ const ProductDetail = () => {
               </Typography>
 
               {product?.gender && (
-                <Chip
-                  label={genderLabel(product.gender)}
-                  size="small"
-                  sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 700, textTransform: 'uppercase' }}
-                />
+                <Box sx={{ position: 'relative', display: 'inline-block', ml: 1 }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: '"Archivo Black", sans-serif',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      px: 0.75,
+                      py: 0.35,
+                      minWidth: 'auto',
+                      borderRadius: 1,
+                      border: '2px solid black',
+                      position: 'relative',
+                      color: 'black',
+                      backgroundColor: 'white',
+                      lineHeight: 1,
+                      userSelect: 'none',
+                    }}
+                  >
+                    {genderLabel(product.gender)}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: -4,
+                        left: 6,
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: 'black',
+                        borderRadius: 4,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: -4,
+                        width: '4px',
+                        height: { xs: '102%', md: '103%' },
+                        backgroundColor: 'black',
+                        borderRadius: 1,
+                      }}
+                    />
+                  </Box>
+                </Box>
               )}
             </Box>
 
@@ -396,7 +439,7 @@ const ProductDetail = () => {
               {displayDescription || 'Descripción no disponible'}
             </Typography>
 
-            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', fontSize: 'clamp(0.9rem, 1.4vw, 1.2rem)', mb: 3 }}>
               ${displayPrice}
             </Typography>
 
