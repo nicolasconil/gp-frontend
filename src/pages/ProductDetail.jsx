@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  Grid,
+  useMediaQuery,
+  useTheme,
+  Container,
+  Chip
+} from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +18,17 @@ import { ensureArray } from '../utils/array.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 const PLACEHOLDER = '/logo.svg';
+
+const genderLabel = (g) => {
+  if (!g) return null;
+  const map = {
+    hombre: 'Hombre',
+    mujer: 'Mujer',
+    niños: 'Niños',
+    unisex: 'Unisex'
+  };
+  return map[String(g).toLowerCase()] || String(g);
+};
 
 const ProductDetail = () => {
   const theme = useTheme();
@@ -67,14 +87,17 @@ const ProductDetail = () => {
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
   const allSizes = Array.from({ length: 12 }, (_, i) => 34 + i);
-  const allColors = [...new Set(variations.map(v => v.color))];
+  const allColors = useMemo(() => {
+    const arr = (variations || []).map(v => v.color).filter(Boolean);
+    return Array.from(new Set(arr));
+  }, [variations]);
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
 
   useEffect(() => {
     const newVariations = product?.variations || [];
-    const newColors = [...new Set(newVariations.map(v => v.color))];
+    const newColors = [...new Set(newVariations.map(v => v.color).filter(Boolean))];
     setSelectedColor(newColors[0] || null);
     setSelectedVariation(null);
   }, [product]);
@@ -121,7 +144,7 @@ const ProductDetail = () => {
   const images = useMemo(() => {
     const imgs = product?.images || product?.photos || (product?.image ? [product.image] : []);
     if (Array.isArray(imgs) && imgs.length) return imgs;
-    const varImgs = variations.map(v => v.image).filter(Boolean);
+    const varImgs = (variations || []).map(v => v.image).filter(Boolean);
     if (varImgs.length) return Array.from(new Set(varImgs));
     return [];
   }, [product, variations]);
@@ -166,22 +189,29 @@ const ProductDetail = () => {
       const img = images[mainIndex];
       return img && typeof img === 'string' && img.startsWith('/uploads') ? `${baseURL}${img}` : img;
     }
-    const variationWithImage = variations.find(v => v.color === selectedColor && v.image);
+    const variationWithImage = (variations || []).find(v => v.color === selectedColor && v.image);
     const fallback = variationWithImage?.image || product?.image || PLACEHOLDER;
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
   const isSizeAvailable = (size) =>
-    variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    (variations || []).some(v => v.color === selectedColor && v.size === size && v.stock > 0);
 
   const getVariationForSize = (size) =>
-    variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    (variations || []).find(v => v.color === selectedColor && v.size === size && v.stock > 0);
 
   const { data: productsData } = useQuery({
-    queryKey: ['randomProducts'],
+    queryKey: ['randomProducts', product?.gender],
     queryFn: getAllProducts,
     select: data => {
-      const items = ensureArray(data?.data).filter(p => p._id !== product?._id);
+      const items = ensureArray(data?.data)
+        .filter(p => p._id !== product?._id);
+      if (product?.gender) {
+        const sameGender = items.filter(p => String(p.gender).toLowerCase() === String(product.gender).toLowerCase());
+        if (sameGender.length >= 3) return sameGender.sort(() => 0.5 - Math.random()).slice(0, 3);
+        const others = items.filter(p => String(p.gender).toLowerCase() !== String(product.gender).toLowerCase());
+        return [...sameGender, ...others].slice(0, 3);
+      }
       return items.sort(() => 0.5 - Math.random()).slice(0, 3);
     },
   });
@@ -275,28 +305,6 @@ const ProductDetail = () => {
           sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', borderRadius: '4px', backgroundColor: 'black', color: 'white' }}
         >
           Reintentar
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -5,
-              left: 6,
-              width: '98%',
-              height: '6px',
-              backgroundColor: 'black',
-              borderRadius: '2px',
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 6,
-              right: -5,
-              width: '6px',
-              height: { xs: '95%', md: '97%' },
-              backgroundColor: 'black',
-              borderRadius: '2px',
-            }}
-          />
         </Button>
       </Box>
     );
@@ -357,12 +365,22 @@ const ProductDetail = () => {
           pl: { xs: 0, md: 7 }
         }}>
           <Box sx={{ pt: { xs: 3, md: 7 }, pb: 4 }}>
-            <Typography
-              variant="h3"
-              sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 2, textTransform: 'uppercase', letterSpacing: '-2px' }}
-            >
-              {displayName}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+              <Typography
+                variant="h3"
+                sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 0, textTransform: 'uppercase', letterSpacing: '-2px' }}
+              >
+                {displayName}
+              </Typography>
+
+              {product?.gender && (
+                <Chip
+                  label={genderLabel(product.gender)}
+                  size="small"
+                  sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 700, textTransform: 'uppercase' }}
+                />
+              )}
+            </Box>
 
             <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.7rem, 1.2vw, 1rem)', color: '#555', mb: 2 }}>
               {displayDescription || 'Descripción no disponible'}
@@ -413,28 +431,6 @@ const ProductDetail = () => {
                   }}
                 >
                   {color}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: 4,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: 4,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: { xs: '102%', md: '103%' },
-                      backgroundColor: 'black',
-                      borderRadius: 1,
-                    }}
-                  />
                 </Button>
               ))}
             </Box>
@@ -483,28 +479,6 @@ const ProductDetail = () => {
                     }}
                   >
                     {size}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -4,
-                        left: 4,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 4,
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 2,
-                        right: -4,
-                        width: '4px',
-                        height: { xs: '102%', md: '103%' },
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 1,
-                      }}
-                    />
                   </Button>
                 );
               })}
@@ -538,34 +512,10 @@ const ProductDetail = () => {
                         ? '#d1d1d1'
                         : '#f0f0f0',
                   },
-                  position: 'relative',
                 }}
                 onClick={handleAddToCart}
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
-
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: -5.5,
-                    left: 4,
-                    width: '100%',
-                    height: '4px',
-                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
-                    borderRadius: 4,
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 2,
-                    right: -5.5,
-                    width: '4px',
-                    height: { xs: '108%', md: '109%' },
-                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
-                    borderRadius: 1,
-                  }}
-                />
               </Button>
             </Box>
 
@@ -693,9 +643,6 @@ const ProductDetail = () => {
                   <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
-
-                  <Box sx={{ position: 'absolute', bottom: -6, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
-                  <Box sx={{ position: 'absolute', top: 3.5, right: -6, width: '5px', height: '100%', backgroundColor: 'black', borderRadius: '2px' }} />
                 </Box>
               </Box>
             </Grid>
