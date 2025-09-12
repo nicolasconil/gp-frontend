@@ -384,7 +384,7 @@ const ProductDetail = () => {
               </Typography>
 
               {product?.gender && (
-                <Box sx={{ position: 'relative', display: 'inline-block', ml: 1 }}>
+                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box
                     component="span"
                     sx={{
@@ -408,11 +408,12 @@ const ProductDetail = () => {
                     }}
                   >
                     {genderLabel(product.gender)}
+
                     <Box
                       sx={{
                         position: 'absolute',
                         bottom: -4,
-                        left: 4.5,
+                        left: 4,
                         width: '100%',
                         height: '4px',
                         backgroundColor: 'black',
@@ -439,7 +440,7 @@ const ProductDetail = () => {
               {displayDescription || 'Descripción no disponible'}
             </Typography>
 
-            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', fontSize: 'clamp(1.5rem, 2vw, 2.5rem)', mb: 3, textDecoration: 'underline' }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', fontSize: 'clamp(1.5rem, 2vw, 2.5rem)', mb: 3 }}>
               ${displayPrice}
             </Typography>
 
