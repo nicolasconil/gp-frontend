@@ -1,5 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Box, InputBase, ClickAwayListener, useMediaQuery, Card, CardMedia, CardContent, Tooltip, Typography } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Box,
+  InputBase,
+  ClickAwayListener,
+  useMediaQuery,
+  Card,
+  CardMedia,
+  CardContent,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -41,9 +54,16 @@ const Header = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  const goToProduct = (id) => {
+    // redirige a la ruta del producto
+    window.location.href = `/producto/${id}`;
+  };
+
   const renderSearchResults = () => {
     if (searchTerm.length <= 0 || filteredResults.length === 0) return null;
+
     if (isMobile) {
+      // inline results (no overlay fijo) - se muestran debajo del input en mobile
       return (
         <Box
           sx={{
@@ -72,6 +92,8 @@ const Header = () => {
           {filteredResults.map((product) => (
             <Card
               key={product._id}
+              onClick={() => goToProduct(product._id)}
+              role="button"
               sx={{
                 border: '2px solid white',
                 overflow: 'hidden',
@@ -81,8 +103,8 @@ const Header = () => {
                 width: '100%',
                 height: '100%',
                 position: 'relative',
+                cursor: 'pointer',
               }}
-              onClick={() => { window.location.href = `/producto/${product._id}` }}
             >
               <CardMedia
                 component="img"
@@ -99,12 +121,12 @@ const Header = () => {
                 }}
               />
             </Card>
-          ))
-          }
-        </Box >
+          ))}
+        </Box>
       );
     }
 
+    // desktop (comportamiento original) - con cards clickeables
     return (
       <Box
         sx={{
@@ -127,9 +149,11 @@ const Header = () => {
           '&::-webkit-scrollbar-thumb': { backgroundColor: 'black', borderRadius: 3 },
         }}
       >
-        {filteredResults.map(product => (
+        {filteredResults.map((product) => (
           <Card
             key={product._id}
+            onClick={() => goToProduct(product._id)}
+            role="button"
             sx={{
               border: '2px solid white',
               position: 'relative',
@@ -144,6 +168,7 @@ const Header = () => {
               '&:hover': {
                 transform: 'translateY(-4px)',
               },
+              cursor: 'pointer',
             }}
           >
             <CardMedia
@@ -224,7 +249,6 @@ const Header = () => {
                     borderRadius: '2px',
                   }}
                 />
-                onClick={() => { window.location.href = `/producto/${product._id}` }}
               </Box>
             </CardContent>
           </Card>
