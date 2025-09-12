@@ -378,13 +378,14 @@ const ProductDetail = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <Typography
                 variant="h3"
-                sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, mb: 0, textTransform: 'uppercase', letterSpacing: '-2px' }}
+                sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, fontSize: 'clamp(2rem, 3.75vw, 4rem)', mb: 0, textTransform: 'uppercase', letterSpacing: '-2px' }}
               >
                 {displayName}
               </Typography>
             </Box>
+
             {product?.gender && (
-              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box
                   component="span"
                   sx={{
