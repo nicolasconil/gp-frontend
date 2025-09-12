@@ -1,22 +1,24 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../context/CartContext.jsx'
-import { getAllProducts } from '../api/public.api.js';
+import { getAllProducts, getProductById } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL;
-const PLACEHOLDER = '/logo.svg'; 
+const PLACEHOLDER = '/logo.svg';
 
 const ProductDetail = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams();
 
-  const { product } = location.state ?? { product: {} };
+  const productFromState = location.state?.product || null;
+  const [product, setProduct] = useState(productFromState || {});
   const variations = product.variations || [];
   const isOutOfStock = product.stock === 0;
   const allSizes = Array.from({ length: 9 }, (_, i) => 36 + i);
@@ -26,12 +28,24 @@ const ProductDetail = () => {
   const [selectedVariation, setSelectedVariation] = useState(null);
 
   useEffect(() => {
-    const newProduct = location.state?.product || {};
-    const newVariations = newProduct.variations || [];
+    const newVariations = product?.variations || [];
     const newColors = [...new Set(newVariations.map(v => v.color))];
     setSelectedColor(newColors[0] || null);
     setSelectedVariation(null);
-  }, [location.state?.product]);
+  }, [product]);
+
+  useQuery({
+    queryKey: ['product', id],
+    queryFn: () => getProductById(id),
+    enabled: !productFromState && !!id, 
+    onSuccess: (res) => {
+      const fetched = res?.data || res;
+      if (fetched) setProduct(fetched);
+    },
+    onError: (err) => {
+      console.error('Error fetching product by id', err);
+    }
+  });
 
   const images = useMemo(() => {
     if (Array.isArray(product.images) && product.images.length) return product.images;
@@ -393,7 +407,7 @@ const ProductDetail = () => {
                 justifyContent: 'left',
                 mt: 3,
                 overflowX: 'auto',
-                flexWrap: 'nowrap', 
+                flexWrap: 'nowrap',
               }}
             >
               {images.map((img, idx) => {
@@ -410,7 +424,7 @@ const ProductDetail = () => {
                       width: { xs: 64, sm: 80, md: 80 },
                       height: { xs: 64, sm: 80, md: 80 },
                       position: 'relative',
-                      flex: '0 0 auto', 
+                      flex: '0 0 auto',
                     }}
                   >
                     <img
