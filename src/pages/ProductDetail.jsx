@@ -31,7 +31,6 @@ const ProductDetail = () => {
   const productFromState = location.state?.product || null;
   const [product, setProduct] = useState(productFromState || null);
 
-  // helper to normalize responses (used in useQuery and manual fetch)
   const normalizeResponseToProduct = (res) => {
     let candidate = null;
     try {
@@ -102,7 +101,6 @@ const ProductDetail = () => {
     },
   });
 
-  // manual fetch fallback: si después de useQuery no hay product, intentamos de nuevo y logeamos la respuesta completa
   useEffect(() => {
     if (product && (product._id || product.id)) return;
     if (!resolvedId) return;
@@ -208,7 +206,6 @@ const ProductDetail = () => {
     e.currentTarget.src = PLACEHOLDER;
   };
 
-  // friendly getters with fallbacks for UI fields
   const displayName = product?.name || product?.title || product?.productName || product?.nombre || '';
   const displayDescription = product?.description || product?.desc || product?.detalle || '';
   const displayPrice = (() => {
@@ -375,7 +372,6 @@ const ProductDetail = () => {
               ))}
             </Box>
 
-            {/* ... el resto del UI queda igual que tenías ... */}
             <Typography variant="caption" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
               Talles:
             </Typography>
