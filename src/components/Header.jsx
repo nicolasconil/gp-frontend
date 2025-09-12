@@ -29,6 +29,21 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const shouldBlock = isMobile && searchTerm.length > 0;
+    if (shouldBlock) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobile, searchTerm]);
+
   const { data: productsData } = useQuery({
     queryKey: ['products'],
     queryFn: getAllProducts,
@@ -47,58 +62,70 @@ const Header = () => {
       return (
         <Box
           sx={{
-            width: '110%',
-            maxWidth: '600px',
-            mt: 2,
-            maxHeight: '70vh',
-            overflowY: 'auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 2,
-            backgroundColor: 'white',
-            zIndex: 10,
-            pb: 2,
-            px: 1,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100vh',
+            zIndex: 1400,
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            pt: { xs: '72px', sm: '80px' }, 
             boxSizing: 'border-box',
-            borderBottom: '1px solid #ccc',
-            '&::-webkit-scrollbar': {
-              width: 2,
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'white',
-            },
+            overflow: 'hidden',
           }}
         >
-          {filteredResults.map((product) => (
-            <Card
-              key={product._id}
-              sx={{
-                border: '2px solid white',
-                overflow: 'hidden',
-                backgroundColor: 'white',
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100%',
-                height: '100%',
-                position: 'relative',
-              }}
-            >
-              <CardMedia
-                component="img"
-                src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
-                alt={product.name}
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: 600,
+              px: 2,
+              boxSizing: 'border-box',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              height: 'calc(100vh - 72px)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 8,
+              pb: 4,
+            }}
+          >
+            {filteredResults.map((product) => (
+              <Card
+                key={product._id}
                 sx={{
-                  height: 160,
-                  objectFit: 'contain',
+                  border: '2px solid white',
+                  overflow: 'hidden',
+                  backgroundColor: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   width: '100%',
-                  transition: 'transform 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                  },
+                  height: 120,
+                  position: 'relative',
+                  cursor: 'pointer',
                 }}
-              />
-            </Card>
-          ))}
+                onClick={() => { window.location.href = `/producto/${product._id}` }}
+              >
+                <CardMedia
+                  component="img"
+                  src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
+                  alt={product.name}
+                  sx={{
+                    height: '100%',
+                    width: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.25s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
+                  }}
+                />
+              </Card>
+            ))}
+          </Box>
         </Box>
       );
     }
