@@ -378,14 +378,14 @@ const ProductDetail = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <Typography
                 variant="h3"
-                sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, fontSize: 'clamp(2rem, 3.75vw, 4rem)', mb: 0, textTransform: 'uppercase', letterSpacing: '-2px' }}
+                sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 900, fontSize: 'clamp(2.5rem, 3.75vw, 4.2rem)', mb: 0, textTransform: 'uppercase', letterSpacing: '-2px' }}
               >
                 {displayName}
               </Typography>
             </Box>
 
             {product?.gender && (
-              <Box sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ mt: 1, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box
                   component="span"
                   sx={{
@@ -742,7 +742,7 @@ const ProductDetail = () => {
                     }
                     alt={item.name}
                     onError={handleImgError}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </Box>
 
