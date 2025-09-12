@@ -439,7 +439,7 @@ const ProductDetail = () => {
               {displayDescription || 'Descripción no disponible'}
             </Typography>
 
-            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 1.7vw, 2rem)', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 'bold', fontSize: 'clamp(1.5rem, 2vw, 2.5rem)', mb: 3, textDecoration: 'underline' }}>
               ${displayPrice}
             </Typography>
 
