@@ -97,61 +97,6 @@ const Header = () => {
                   },
                 }}
               />
-              <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
-                <Box
-                  sx={{
-                    display: 'inline-block',
-                    border: '2px solid black',
-                    px: 1.5,
-                    py: 1,
-                    position: 'relative',
-                    borderRadius: '4px',
-                    width: '100%',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontFamily: '"Archivo Black", sans-serif',
-                      fontSize: '0.9rem',
-                      fontWeight: 900,
-                      textTransform: 'uppercase',
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      '&:hover': {
-                        color: 'primary.main',
-                      },
-                    }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: 4,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: '2px',
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: '103%',
-                      backgroundColor: 'black',
-                      borderRadius: '2px',
-                    }}
-                  />
-                </Box>
-              </CardContent>
             </Card>
           ))}
         </Box>
