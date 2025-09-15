@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container, Chip } from '@mui/material';
+import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -92,43 +92,33 @@ const ProductDetail = () => {
   }, [product]);
 
   const {
+    data: fetchedProduct,
     isLoading: isFetchingProduct,
     isError: productFetchError,
   } = useQuery({
     queryKey: ['product', resolvedId],
     queryFn: () => getProductById(resolvedId),
-    enabled: !productFromState && !!resolvedId,
-    onSuccess: (res) => {
-      const candidate = normalizeResponseToProduct(res);
-      if (candidate) setProduct(candidate);
-      else setProduct(null);
-    },
-    onError: (err) => {
-      setProduct(null);
-    },
+    enabled: !!resolvedId,
+    staleTime: 0,
   });
 
   useEffect(() => {
-    if (product && (product._id || product.id)) return;
-    if (!resolvedId) return;
-
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await getProductById(resolvedId);
-        const candidate = normalizeResponseToProduct(res);
-        if (mounted) setProduct(candidate || null);
-      } catch (err) {
-        if (mounted) setProduct(null);
-      }
-    })();
-
-    return () => { mounted = false; };
-  }, [resolvedId]);
+    if (fetchedProduct) {
+      const candidate = normalizeResponseToProduct(fetchedProduct);
+      setProduct(candidate || null);
+    }
+  }, [fetchedProduct]);
 
   useEffect(() => {
-    if (productFromState) setProduct(productFromState);
-  }, [productFromState]);
+    if (productFromState && (productFromState._id === resolvedId || productFromState.id === resolvedId)) {
+      setProduct(productFromState);
+      return;
+    }
+    // If the current product doesn't match the resolvedId, clear it so the query can populate
+    if (product && !(product._id === resolvedId || product.id === resolvedId)) {
+      setProduct(null);
+    }
+  }, [productFromState, resolvedId]);
 
   const images = useMemo(() => {
     const imgs = product?.images || product?.photos || (product?.image ? [product.image] : []);
@@ -296,8 +286,8 @@ const ProductDetail = () => {
           <Box
             sx={{
               position: 'absolute',
-              bottom: -5,
-              left: 6,
+              bottom: -5.5,
+              left: 4,
               width: '98%',
               height: '6px',
               backgroundColor: 'black',
