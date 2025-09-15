@@ -139,28 +139,6 @@ const Header = () => {
                   <Typography variant="body2" sx={{ mt: 0.5 }}>${Number(product.price).toLocaleString('es-AR')}</Typography>
                 )}
               </CardContent>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: -4,
-                  left: 3,
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: 'black',
-                  borderRadius: '2px',
-                }}
-              />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 2,
-                  right: -4,
-                  width: '4px',
-                  height: '103%',
-                  backgroundColor: 'black',
-                  borderRadius: '2px',
-                }}
-              />
             </Card>
           ))}
         </Box>
