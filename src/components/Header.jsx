@@ -22,7 +22,7 @@ import Cart from "./Cart.jsx";
 import { getAllProducts } from "../api/public.api.js";
 import { useQuery } from "@tanstack/react-query";
 import { ensureArray } from "../utils/array.js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,9 +52,9 @@ const Header = () => {
 
   const productsArr = ensureArray(productsData);
 
-  const filteredResults = productsArr.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredResults = (searchTerm && productsArr.length)
+    ? productsArr.filter((product) => (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
 
   const goToProduct = (id) => {
     navigate(`/producto/${id}`);
@@ -67,60 +67,83 @@ const Header = () => {
       return (
         <Box
           sx={{
-            width: '110%',
+            width: '100%',
             maxWidth: '600px',
             mt: 2,
             maxHeight: '70vh',
             overflowY: 'auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            gridTemplateColumns: 'repeat(1, 1fr)', 
             gap: 2,
             backgroundColor: 'white',
-            zIndex: 10,
+            zIndex: 1400,
             pb: 2,
             px: 1,
             boxSizing: 'border-box',
             borderBottom: '1px solid #ccc',
             '&::-webkit-scrollbar': {
-              width: 2,
+              width: 6,
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'white',
+              backgroundColor: '#ddd',
+              borderRadius: 3,
             },
           }}
         >
           {filteredResults.map((product) => (
             <Card
               key={product._id}
-              onClick={() => goToProduct(product._id)}
+              component={RouterLink}
+              to={`/producto/${product._id}`}
               sx={{
                 border: '2px solid white',
                 overflow: 'hidden',
                 backgroundColor: 'white',
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
+                alignItems: 'center',
                 width: '100%',
-                height: '100%',
+                height: 'auto',
                 position: 'relative',
                 cursor: 'pointer',
+                textDecoration: 'none',
+                color: 'inherit',
+                padding: 1,
               }}
             >
               <CardMedia
                 component="img"
                 src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
                 alt={product.name}
-                onClick={() => goToProduct(product._id)}
                 sx={{
-                  height: 160,
+                  width: 120,
+                  height: 120,
                   objectFit: 'contain',
-                  width: '100%',
-                  cursor: 'pointer',
-                  transition: 'transform 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                  },
+                  flex: '0 0 120px',
                 }}
               />
+
+              <CardContent sx={{ flex: '1 1 auto', py: 1, px: 2 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontFamily: '"Archivo Black", sans-serif',
+                    fontSize: '1rem',
+                    letterSpacing: '-1px',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {product.name}
+                </Typography>
+                {product.price != null && (
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>${Number(product.price).toLocaleString('es-AR')}</Typography>
+                )}
+              </CardContent>
             </Card>
           ))}
         </Box>
@@ -152,7 +175,8 @@ const Header = () => {
         {filteredResults.map((product) => (
           <Card
             key={product._id}
-            onClick={() => goToProduct(product._id)}
+            component={RouterLink}
+            to={`/producto/${product._id}`}
             role="button"
             sx={{
               border: '2px solid white',
@@ -169,18 +193,18 @@ const Header = () => {
                 transform: 'translateY(-4px)',
               },
               cursor: 'pointer',
+              textDecoration: 'none',
+              color: 'inherit',
             }}
           >
             <CardMedia
               component="img"
               src={product.image?.startsWith('/uploads') ? `${baseURL}${product.image}` : product.image}
               alt={product.name}
-              onClick={() => goToProduct(product._id)}
               sx={{
                 width: '100%',
                 height: 180,
                 objectFit: 'contain',
-                cursor: 'pointer',
                 transition: 'transform 0.4s ease-in-out',
                 '&:hover': {
                   transform: 'scale(1.05)',
@@ -205,10 +229,11 @@ const Header = () => {
                   position: 'relative',
                   borderRadius: '4px',
                   width: '100%',
+                  textDecoration: 'none',
+                  color: 'inherit',
                 }}
               >
                 <Typography
-                  onClick={() => goToProduct(product._id)}
                   sx={{
                     fontFamily: '"Archivo Black", sans-serif',
                     fontSize: '0.9rem',
@@ -219,10 +244,8 @@ const Header = () => {
                     lineHeight: 1.2,
                     overflow: 'hidden',
                     display: '-webkit-box',
-                    cursor: 'pointer',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
-                    cursor: 'pointer',
                     '&:hover': {
                       color: 'primary.main',
                     },
