@@ -57,6 +57,7 @@ const Header = () => {
     : [];
 
   const goToProduct = (id) => {
+    setSearchTerm(''); 
     navigate(`/producto/${id}`);
   };
 
@@ -73,7 +74,7 @@ const Header = () => {
             maxHeight: '70vh',
             overflowY: 'auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(1, 1fr)', 
+            gridTemplateColumns: 'repeat(1, 1fr)', // single column mobile
             gap: 2,
             backgroundColor: 'white',
             zIndex: 1400,
@@ -81,13 +82,8 @@ const Header = () => {
             px: 1,
             boxSizing: 'border-box',
             borderBottom: '1px solid #ccc',
-            '&::-webkit-scrollbar': {
-              width: 6,
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#ddd',
-              borderRadius: 3,
-            },
+            '&::-webkit-scrollbar': { width: 6, height: 6 },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: '#ddd', borderRadius: 3 },
           }}
         >
           {filteredResults.map((product) => (
@@ -95,6 +91,7 @@ const Header = () => {
               key={product._id}
               component={RouterLink}
               to={`/producto/${product._id}`}
+              onClick={() => setSearchTerm('')}
               sx={{
                 border: '2px solid white',
                 overflow: 'hidden',
@@ -177,6 +174,7 @@ const Header = () => {
             key={product._id}
             component={RouterLink}
             to={`/producto/${product._id}`}
+            onClick={() => setSearchTerm('')}
             role="button"
             sx={{
               border: '2px solid white',
@@ -411,8 +409,8 @@ const Header = () => {
       </AppBar>
 
       {isMobile && (
-        <Box sx={{ px: 2, py: 2, display: 'flex', backgroundColor: 'white', flexDirection: 'column', alignItems: 'center' }}>
-          <ClickAwayListener onClickAway={() => setSearchTerm('')}>
+        <ClickAwayListener onClickAway={() => setSearchTerm('')}>
+          <Box sx={{ px: 2, py: 2, display: 'flex', backgroundColor: 'white', flexDirection: 'column', alignItems: 'center', zIndex: 1400 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -455,6 +453,7 @@ const Header = () => {
                 fullWidth
                 placeholder="Buscar"
                 value={searchTerm}
+                inputRef={inputRef}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{ fontSize: '15px', pl: 4.5, pr: 4, height: 32 }}
               />
@@ -464,9 +463,10 @@ const Header = () => {
                 </IconButton>
               )}
             </Box>
-          </ClickAwayListener>
-          {renderSearchResults()}
-        </Box>
+
+            {renderSearchResults()}
+          </Box>
+        </ClickAwayListener>
       )}
     </>
   );
