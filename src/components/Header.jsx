@@ -57,7 +57,7 @@ const Header = () => {
     : [];
 
   const goToProduct = (id) => {
-    setSearchTerm(''); 
+    setSearchTerm('');
     navigate(`/producto/${id}`);
   };
 
@@ -74,7 +74,7 @@ const Header = () => {
             maxHeight: '70vh',
             overflowY: 'auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(1, 1fr)', // single column mobile
+            gridTemplateColumns: 'repeat(1, 1fr)',
             gap: 2,
             backgroundColor: 'white',
             zIndex: 1400,
@@ -82,8 +82,6 @@ const Header = () => {
             px: 1,
             boxSizing: 'border-box',
             borderBottom: '1px solid #ccc',
-            '&::-webkit-scrollbar': { width: 6, height: 6 },
-            '&::-webkit-scrollbar-thumb': { backgroundColor: '#ddd', borderRadius: 3 },
           }}
         >
           {filteredResults.map((product) => (
@@ -143,6 +141,28 @@ const Header = () => {
               </CardContent>
             </Card>
           ))}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -4,
+              left: 3,
+              width: '100%',
+              height: '4px',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 2,
+              right: -4,
+              width: '4px',
+              height: '103%',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
         </Box>
       );
     }
