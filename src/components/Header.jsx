@@ -69,10 +69,11 @@ const Header = () => {
         <Box
           sx={{
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '500px',
             mt: 2,
             maxHeight: '70vh',
             overflowY: 'auto',
+            overflowX: 'hidden',
             display: 'grid',
             gridTemplateColumns: 'repeat(1, 1fr)',
             gap: 2,
