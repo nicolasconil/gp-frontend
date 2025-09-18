@@ -219,7 +219,7 @@ const Feed = ({ products = [], onClick }) => {
                       }
                     }}
                   >
-                    {isOutOfStock ? 'Agotado' : 'Ver más'}
+                    {isOutOfStock ? 'Agotado' : 'Comprar'}
                   </Button>
                   <Box
                     sx={{
