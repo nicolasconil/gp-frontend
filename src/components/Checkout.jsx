@@ -183,7 +183,6 @@ const Checkout = () => {
                     onChange={handleChange}
                     fullWidth
                     margin="normal"
-                    required
                     sx={customInputStyles}
                 />
                 <TextField
@@ -193,7 +192,6 @@ const Checkout = () => {
                     onChange={handleChange}
                     fullWidth
                     margin="normal"
-                    required
                     sx={customInputStyles}
                 />
                 <TextField
