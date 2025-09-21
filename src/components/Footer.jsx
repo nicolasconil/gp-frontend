@@ -286,7 +286,7 @@ const Footer = () => {
                 textAlign: 'center',
                 width: '100%',
                 m: 0,
-                letterSpacing: '-1vw'
+                letterSpacing: '-1.3vw'
               }}
             >
               GP&nbsp;FOOTWEAR
