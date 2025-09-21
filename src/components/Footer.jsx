@@ -279,7 +279,7 @@ const Footer = () => {
             <Typography
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
-                fontSize: '15vw',
+                fontSize: '13vw',
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 lineHeight: 1,
