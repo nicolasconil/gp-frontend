@@ -279,14 +279,14 @@ const Footer = () => {
             <Typography
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
-                fontSize: '13vw',
+                fontSize: '13.2vw',
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 lineHeight: 1,
                 textAlign: 'center',
                 width: '100%',
                 m: 0,
-                letterSpacing: '-1.3vw'
+                letterSpacing: '-1.5vw'
               }}
             >
               GP&nbsp;FOOTWEAR
