@@ -33,26 +33,30 @@ const Feed = ({ products = [], onClick }) => {
         };
 
         return (
-          <Box key={product._id} onClick={onClick} sx={{ cursor: 'pointer' }}>
+          <Box key={product._id} onClick={onClick} sx={{ cursor: 'pointer', width: '100%' }}>
             <Card
               sx={{
-                border: '3px solid white',
+                // softened border + subtle shadow for a cleaner, more professional look
+                border: '1px solid rgba(0,0,0,0.06)',
+                boxShadow: '0 6px 18px rgba(2,6,23,0.06)',
                 borderRadius: '10px',
                 marginTop: { xs: 1, md: 2 },
                 position: 'relative',
                 overflow: 'hidden',
-                height: 500,
+                // make cards fluid so the Grid can control sizing/centering
+                height: '100%',
                 maxHeight: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                transition: 'transform 0.3s ease',
-                width: 350,
+                transition: 'transform 0.3s ease, box-shadow 0.25s ease',
+                width: '100%',
                 maxWidth: '100%',
                 mx: 'auto',
                 backgroundColor: 'transparent',
                 pointerEvents: isOutOfStock ? 'none' : 'auto',
                 '&:hover': {
                   transform: isOutOfStock ? 'none' : 'translateY(-4px)',
+                  boxShadow: isOutOfStock ? 'none' : '0 12px 30px rgba(2,6,23,0.08)',
                 },
               }}
             >
@@ -73,12 +77,13 @@ const Feed = ({ products = [], onClick }) => {
                   alt={product.name}
                   onError={handleImgError}
                   sx={{
-                    width: '100%',
-                    height: '100%',
+                    // use max constraints so image stays centered and doesn't distort grid
+                    maxWidth: '100%',
+                    maxHeight: '100%',
                     objectFit: 'contain',
                     transition: 'transform 0.4s ease-in-out',
                     '&:hover': {
-                      transform: 'scale(1.1)',
+                      transform: 'scale(1.06)',
                     },
                   }}
                 />
@@ -90,14 +95,14 @@ const Feed = ({ products = [], onClick }) => {
                   gap: 2,
                   flexGrow: 1,
                   justifyContent: 'space-between',
-                  px: 3,
-                  py: 3,
+                  px: { xs: 2.5, sm: 3 },
+                  py: { xs: 2, sm: 3 },
                 }}
               >
                 <Box
                   sx={{
                     display: 'inline-block',
-                    border: isOutOfStock ? '3px solid grey' : '3px solid black',
+                    border: isOutOfStock ? '2px solid rgba(0,0,0,0.15)' : '2px solid rgba(0,0,0,0.9)',
                     px: 2,
                     py: 1,
                     position: 'relative',
@@ -125,7 +130,7 @@ const Feed = ({ products = [], onClick }) => {
                       '&:hover': {
                         color: '#222',
                       },
-                      color: isOutOfStock ? "#4448" : 'black',
+                      color: isOutOfStock ? "rgba(0,0,0,0.45)" : 'black',
                     }}
                   >
                     {product.name}
@@ -156,7 +161,7 @@ const Feed = ({ products = [], onClick }) => {
                 <Box
                   sx={{
                     display: 'inline-block',
-                    border: isOutOfStock ? '3px solid grey' : '3px solid black',
+                    border: isOutOfStock ? '2px solid rgba(0,0,0,0.15)' : '2px solid rgba(0,0,0,0.9)',
                     px: 2,
                     py: 1,
                     position: 'relative',
@@ -165,7 +170,7 @@ const Feed = ({ products = [], onClick }) => {
                     marginTop: '-10px'
                   }}
                 >
-                  <Typography sx={{ fontWeight: 600, fontSize: 18, color: isOutOfStock ? '#4448' : 'black' }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 18, color: isOutOfStock ? 'rgba(0,0,0,0.45)' : 'black' }}>
                     ${product.price?.toLocaleString('es-AR')}
                   </Typography>
                   <Box
@@ -195,7 +200,7 @@ const Feed = ({ products = [], onClick }) => {
                   sx={{
                     display: 'inline-block',
                     position: 'relative',
-                    border: isOutOfStock ? '3px solid grey' : '3px solid black',
+                    border: isOutOfStock ? '2px solid rgba(0,0,0,0.15)' : '2px solid rgba(0,0,0,0.9)',
                     borderRadius: '4px',
                     mx: 'auto',
                     width: '100%',
