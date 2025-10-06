@@ -1,17 +1,24 @@
 import { Box, Typography } from '@mui/material';
 
 const ShippingPolicyPage = () => (
-  <Box sx={{ p: 4, maxWidth: '100vw', mx: 'auto' }}>
+  <Box
+    sx={{
+      px: { xs: 2, sm: 4 },
+      py: { xs: 3, sm: 6 },
+      maxWidth: 1280,
+      mx: 'auto',
+      textAlign: 'center',
+    }}
+  >
     <Typography
       variant="h1"
       gutterBottom
       sx={{
         fontSize: { xs: '3rem', sm: '4rem' },
         fontFamily: '"Archivo Black", sans-serif',
-        letterSpacing: { xs: '-0.35rem', sm: '-0.5rem', md: '-0.4rem' },
+        letterSpacing: { xs: '-0.35rem', sm: '-0.45rem' },
         textTransform: 'uppercase',
-        mb: 4,
-        textAlign: 'center',
+        mb: { xs: 3, sm: 4 },
         textDecoration: 'underline',
       }}
     >
@@ -19,10 +26,10 @@ const ShippingPolicyPage = () => (
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
+        lineHeight: 1.7,
         mb: 3,
         letterSpacing: '-0.05rem',
       }}
@@ -31,10 +38,10 @@ const ShippingPolicyPage = () => (
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
+        lineHeight: 1.7,
         mb: 3,
         letterSpacing: '-0.05rem',
       }}
@@ -43,11 +50,10 @@ const ShippingPolicyPage = () => (
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
-        mb: 3,
+        lineHeight: 1.7,
         letterSpacing: '-0.05rem',
       }}
     >

@@ -1,17 +1,24 @@
 import { Box, Typography } from '@mui/material';
 
 const TermsOfServicePage = () => (
-  <Box sx={{ p: 4, maxWidth: '100vw', mx: 'auto' }}>
+  <Box
+    sx={{
+      px: { xs: 2, sm: 4 },
+      py: { xs: 3, sm: 6 },
+      maxWidth: 1280,
+      mx: 'auto',
+      textAlign: 'center',
+    }}
+  >
     <Typography
       variant="h1"
       gutterBottom
       sx={{
         fontSize: { xs: '3rem', sm: '4rem' },
         fontFamily: '"Archivo Black", sans-serif',
-        letterSpacing: { xs: '-0.35rem', sm: '-0.5rem', md: '-0.4rem' },
+        letterSpacing: { xs: '-0.35rem', sm: '-0.45rem' },
         textTransform: 'uppercase',
-        mb: 4,
-        textAlign: 'center',
+        mb: { xs: 3, sm: 4 },
         textDecoration: 'underline',
       }}
     >
@@ -19,27 +26,28 @@ const TermsOfServicePage = () => (
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
+        lineHeight: 1.7,
         mb: 3,
         letterSpacing: '-0.05rem',
       }}
     >
-      En nuestra web, elegí un producto, hace click en "Ver más" dónde vas a acceder a la información detallada del producto seleccionado. Luego de elegido el talle y el color, hace click en "Agregar al carrito". A continuación, desde el carrito, si estás por finalizar tu pedido, hace click en "Finalizar compra", lo cual automáticamente te enviará al Checkout dónde completarás tus datos personales y de envíos para poder dirigirte al pago.
+      En nuestra web, elegí un producto y hacé click en “Ver más” para acceder a la información detallada del producto seleccionado. Luego, elegí el talle y color, y hacé click en “Agregar al carrito”.  
+      Desde el carrito, si estás por finalizar tu pedido, hacé click en “Finalizar compra” para completar tus datos personales y de envío antes de realizar el pago.
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
-        mb: 3,
+        lineHeight: 1.7,
+        mb: { xs: 4, sm: 6 },
         letterSpacing: '-0.05rem',
       }}
     >
-      Una vez confirmado el pedido, te estaremos enviando un correo electrónico con toda la información y gestión del envío para tu tranquilidad.
+      Una vez confirmado el pedido, te enviaremos un correo electrónico con toda la información y gestión del envío para tu tranquilidad.
     </Typography>
 
     <Typography
@@ -48,11 +56,9 @@ const TermsOfServicePage = () => (
       sx={{
         fontSize: { xs: '3rem', sm: '4rem' },
         fontFamily: '"Archivo Black", sans-serif',
-        letterSpacing: { xs: '-0.35rem', sm: '-0.5rem', md: '-0.4rem' },
+        letterSpacing: { xs: '-0.35rem', sm: '-0.45rem' },
         textTransform: 'uppercase',
-        mt: 6,
-        mb: 4,
-        textAlign: 'center',
+        mb: { xs: 3, sm: 4 },
         textDecoration: 'underline',
       }}
     >
@@ -60,23 +66,23 @@ const TermsOfServicePage = () => (
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
+        lineHeight: 1.7,
         mb: 3,
         letterSpacing: '-0.05rem',
       }}
     >
-      Aceptamos pagos en <strong>efectivo</strong> desde sus puntos de pago proporcionados por Mercado Pago, <strong>transferencia</strong> a través de Mercado Pago y tanto <strong>tarjetas de débito</strong> como <strong>tarjetas de crédito</strong> también proporcionadas por Mercado Pago.
+      Aceptamos pagos en <strong>efectivo</strong> desde los puntos de pago de Mercado Pago,  
+      <strong>transferencia</strong> a través de Mercado Pago, y también <strong>tarjetas de débito</strong> y <strong>crédito</strong> proporcionadas por esta plataforma.
     </Typography>
 
     <Typography
-      variant="h4"
+      variant="h5"
       sx={{
         fontFamily: '"Archivo Black", sans-serif',
-        lineHeight: 1.8,
-        mb: 3,
+        lineHeight: 1.7,
         letterSpacing: '-0.05rem',
       }}
     >
