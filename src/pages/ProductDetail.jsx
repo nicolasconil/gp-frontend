@@ -427,7 +427,7 @@ const ProductDetail = () => {
               </Box>
             )}
 
-            <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.7rem, 1.2vw, 1rem)', color: '#555', mb: 2, mt: 2 }}>
+            <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: 'clamp(0.7rem, 1.2vw, 1rem)', color: '#555', mb: 2, mt: 2, whiteSpace: 'pre-line', lineHeight: 1.4 }}>
               {displayDescription || 'Descripción no disponible'}
             </Typography>
 
