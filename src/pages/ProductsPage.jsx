@@ -72,6 +72,7 @@ const ProductsPage = () => {
     { field: "stock", headerName: "Stock", type: "number", width: 100 },
     { field: "brand", headerName: "Marca", width: 130 },
     { field: "gender", headerName: "Género", width: 120 },
+    { field: "category", headerName: "Categoría", width: 150 }, // NUEVO: mostrar categoría en el grid
     {
       field: "actions",
       type: "actions",
@@ -149,9 +150,10 @@ const ProductsPage = () => {
                 price: "",
                 description: "",
                 gender: "hombre",
+                category: "", // NUEVO: inicializamos category para el dialog
                 catalog: "",
                 isActive: true,
-                images: [], 
+                images: [],
               },
               onSubmit: handleCreateProduct,
             })

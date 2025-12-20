@@ -25,6 +25,17 @@ const genderOptions = [
   { value: "unisex", label: "Unisex" },
 ];
 
+const categoryOptions = [
+  { value: "calzado", label: "Calzado" },
+  { value: "indumentaria", label: "Indumentaria" },
+];
+
+// Talles por categoría
+const clothingSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+const footwearSizes = [
+  "30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45"
+];
+
 const customInputStyles = {
   fontFamily: '"Archivo Black", sans-serif',
   "& label": {
@@ -69,9 +80,9 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   const thumbSize = isMobile ? 64 : 96;
 
   const [form, setForm] = useState({});
-  const [newFiles, setNewFiles] = useState([]); 
-  const [existingImages, setExistingImages] = useState([]); 
-  const [imagesToKeep, setImagesToKeep] = useState([]); 
+  const [newFiles, setNewFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [imagesToKeep, setImagesToKeep] = useState([]);
   const [error, setError] = useState("");
 
   const [variations, setVariations] = useState([]);
@@ -88,6 +99,7 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
       price: initial.price || 0,
       description: initial.description || "",
       gender: initial.gender || "hombre",
+      category: initial.category || "",
       catalog: initial.catalog || "",
       isActive: initial.isActive ?? true,
     });
@@ -140,24 +152,38 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
     );
   };
 
+  // addVariation ahora soporta talles por categoría (string para indumentaria, number para calzado)
   const addVariation = () => {
     if (!currentSize || !currentColor || !currentStock) {
       setError("Completá talle, color y stock para agregar la combinación.");
       return;
     }
 
-    const exists = variations.some(
-      (v) =>
-        v.size === Number(currentSize) &&
-        v.color.toLowerCase() === currentColor.toLowerCase()
-    );
+    // Determinar tamaño normalizado según categoría
+    const isClothing = String(form.category).toLowerCase() === "indumentaria";
+
+    const sizeValue = isClothing
+      ? String(currentSize).trim().toUpperCase() // e.g. "M"
+      : (() => {
+          // intentar convertir a número para calzado
+          const asNum = Number(String(currentSize).trim());
+          return Number.isFinite(asNum) ? asNum : String(currentSize).trim();
+        })();
+
+    const exists = variations.some((v) => {
+      const vSize = v.size;
+      const sameSize = String(vSize).toLowerCase() === String(sizeValue).toLowerCase();
+      const sameColor = String(v.color).toLowerCase() === String(currentColor).toLowerCase();
+      return sameSize && sameColor;
+    });
+
     if (exists) {
       setError("Esa combinación ya fue agregada.");
       return;
     }
 
     const newVar = {
-      size: Number(currentSize),
+      size: sizeValue,
       color: currentColor.trim().toLowerCase(),
       stock: Number(currentStock),
       product: initial._id,
@@ -174,6 +200,11 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
   };
 
   const submit = () => {
+    if (!form.category) {
+      setError("Debes seleccionar una categoría.");
+      return;
+    }
+
     if ((imagesToKeep.length === 0) && newFiles.length === 0) {
       setError("Debes seleccionar al menos una imagen (subir nueva o conservar alguna existente).");
       return;
@@ -260,6 +291,23 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
               sx={customInputStyles}
             >
               {genderOptions.map((o) => (
+                <MenuItem key={o.value} value={o.value}>
+                  {o.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              label="Categoría"
+              select
+              fullWidth
+              value={form.category}
+              onChange={handleChange("category")}
+              sx={customInputStyles}
+            >
+              {categoryOptions.map((o) => (
                 <MenuItem key={o.value} value={o.value}>
                   {o.label}
                 </MenuItem>
@@ -390,16 +438,34 @@ const ProductDialog = ({ open, onClose, onSubmit, initial = {}, title }) => {
             />
           </Grid>
 
+          {/* TALLE: condicional según categoría */}
           <Grid item xs={12}>
-            <TextField
-              label="Talle"
-              type="number"
-              fullWidth
-              value={currentSize}
-              onChange={(e) => setCurrentSize(e.target.value)}
-              sx={customInputStyles}
-              inputProps={{ min: 0 }}
-            />
+            {String(form.category).toLowerCase() === "indumentaria" ? (
+              <TextField
+                label="Talle"
+                select
+                fullWidth
+                value={currentSize}
+                onChange={(e) => setCurrentSize(e.target.value)}
+                sx={customInputStyles}
+              >
+                {clothingSizes.map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {s}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <TextField
+                label="Talle"
+                type="number"
+                fullWidth
+                value={currentSize}
+                onChange={(e) => setCurrentSize(e.target.value)}
+                sx={customInputStyles}
+                inputProps={{ min: 20 }}
+              />
+            )}
           </Grid>
 
           <Grid item xs={12}>

@@ -92,9 +92,9 @@ const Header = () => {
     setDrawerOpen(false);
     setSearchTerm('');
     const params = new URLSearchParams();
-    if (category) params.set('categoria', category);
-    if (gender) params.set('genero', gender);
-    navigate(`/productos?${params.toString()}`);
+    if (category) params.set('category', category);
+    if (gender) params.set('gender', gender);
+    navigate(`/products?${params.toString()}`);
   };
 
   const renderSearchResults = () => {

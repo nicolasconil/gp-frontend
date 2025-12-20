@@ -78,17 +78,50 @@ const ProductDetail = () => {
 
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
-  const allSizes = Array.from({ length: 12 }, (_, i) => 34 + i);
+
+  // default numeric sizes fallback (same as before)
+  const defaultNumericSizes = Array.from({ length: 12 }, (_, i) => 34 + i);
+
+  // derive available sizes based on category:
+  // - if 'indumentaria' => letter sizes
+  // - else => numeric sizes (from variations if available, otherwise default)
+  const sizeOptions = useMemo(() => {
+    const cat = String(product?.category || '').toLowerCase();
+    if (cat === 'indumentaria') {
+      // choose the set you requested: S, M, L, XL, XXL
+      return ['S', 'M', 'L', 'XL', 'XXL'];
+    }
+    // for calzado (or other), try to extract numeric sizes from variations
+    const numericSizes = Array.from(new Set(
+      (variations || [])
+        .map(v => {
+          const parsed = Number(v.size);
+          return Number.isFinite(parsed) ? parsed : null;
+        })
+        .filter(Boolean)
+    )).sort((a, b) => a - b);
+
+    return numericSizes.length ? numericSizes : defaultNumericSizes;
+  }, [product?.category, variations]);
+
   const allColors = useMemo(() => [...new Set((variations || []).map(v => v.color).filter(Boolean))], [variations]);
 
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
 
+  // When product changes, pick first color and first available variation for that color (if any)
   useEffect(() => {
     const newVariations = product?.variations || [];
     const newColors = [...new Set(newVariations.map(v => v.color).filter(Boolean))];
-    setSelectedColor(newColors[0] || null);
-    setSelectedVariation(null);
+    const firstColor = newColors[0] || null;
+    setSelectedColor(firstColor);
+
+    if (firstColor) {
+      const firstAvailable = newVariations.find(v => v.color === firstColor && v.stock > 0) || null;
+      setSelectedVariation(firstAvailable);
+    } else {
+      setSelectedVariation(null);
+    }
   }, [product]);
 
   const {
@@ -163,6 +196,16 @@ const ProductDetail = () => {
     return () => window.removeEventListener('keydown', handler);
   }, [images.length]);
 
+  useEffect(() => {
+    // when selectedColor changes, auto-select first available variation for that color (if any)
+    if (!selectedColor) {
+      setSelectedVariation(null);
+      return;
+    }
+    const firstAvailable = variations.find(v => v.color === selectedColor && v.stock > 0) || null;
+    setSelectedVariation(firstAvailable);
+  }, [selectedColor, variations]);
+
   const displayImage = useMemo(() => {
     if (images.length) {
       const img = images[mainIndex];
@@ -173,11 +216,14 @@ const ProductDetail = () => {
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
+  // utilities: comparisons must be type-insensitive because sizes can be number or string
+  const sizeEquals = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+
   const isSizeAvailable = (size) =>
-    variations.some(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    variations.some(v => v.color === selectedColor && sizeEquals(v.size, size) && v.stock > 0);
 
   const getVariationForSize = (size) =>
-    variations.find(v => v.color === selectedColor && v.size === size && v.stock > 0);
+    variations.find(v => v.color === selectedColor && sizeEquals(v.size, size) && v.stock > 0);
 
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts', product?.gender],
@@ -448,7 +494,7 @@ const ProductDetail = () => {
                   key={color}
                   onClick={() => {
                     setSelectedColor(color);
-                    setSelectedVariation(null);
+                    // selectedVariation will be auto-set by effect that listens selectedColor
                     if (images.length) {
                       const idx = images.findIndex(img => {
                         if (typeof img !== 'string') return false;
@@ -514,12 +560,12 @@ const ProductDetail = () => {
                 justifyContent: { xs: 'center', md: 'flex-start' }
               }}
             >
-              {allSizes.map((size) => {
+              {sizeOptions.map((size) => {
                 const available = isSizeAvailable(size);
-                const isSelected = selectedVariation && selectedVariation.size === size;
+                const isSelected = selectedVariation && sizeEquals(selectedVariation.size, size);
                 return (
                   <Button
-                    key={size}
+                    key={String(size)}
                     onClick={() => available && setSelectedVariation(getVariationForSize(size))}
                     variant="outlined"
                     sx={{
