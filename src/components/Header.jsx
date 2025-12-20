@@ -12,11 +12,22 @@ import {
   CardContent,
   Tooltip,
   Typography,
+  Drawer,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItemButton,
+  ListItemText,
+  Divider,
+  Button
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuth } from "../context/AuthContext.jsx";
 import Cart from "./Cart.jsx";
 import { getAllProducts } from "../api/public.api.js";
@@ -24,12 +35,26 @@ import { useQuery } from "@tanstack/react-query";
 import { ensureArray } from "../utils/array.js";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 
+const CATEGORIES = [
+  { key: "indumentaria", label: "Indumentaria" },
+  { key: "calzado", label: "Calzado" },
+  // puedes agregar más categorías aquí si las necesitás
+];
+
+const GENDERS = [
+  { key: "hombre", label: "Hombres" },
+  { key: "mujer", label: "Mujeres" },
+  { key: "niños", label: "Niños" },
+  { key: "unisex", label: "Unisex" },
+];
+
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useMediaQuery('(max-width:1024px)');
   const isXs = useMediaQuery('(max-width:600px)');
   const inputRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +84,17 @@ const Header = () => {
   const goToProduct = (id) => {
     setSearchTerm('');
     navigate(`/producto/${id}`);
+  };
+
+  // navegación desde el drawer/menu: category y optional gender
+  const goToProducts = (category, gender) => {
+    // cerrar drawer y limpiar búsqueda
+    setDrawerOpen(false);
+    setSearchTerm('');
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (gender) params.set('gender', gender);
+    navigate(`/products?${params.toString()}`);
   };
 
   const renderSearchResults = () => {
@@ -285,6 +321,21 @@ const Header = () => {
     <>
       <AppBar position="sticky" elevation={0} sx={{ backgroundColor: 'white', color: 'black', borderBottom: '1px solid #eee' }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, md: 4 }, py: { xs: 0.5, md: 1 } }}>
+          {/* Menu button - left side */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open menu"
+              onClick={() => setDrawerOpen(true)}
+              size="large"
+              sx={{ color: 'black' }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+
+          {/* Center logo - kept absolute centered */}
           <Box
             component="a"
             href="/"
@@ -326,6 +377,7 @@ const Header = () => {
             />
           </Box>
 
+          {/* Right side icons / search */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto', mr: { sm: 1, md: 2 } }}>
             {!isMobile && (
               <ClickAwayListener onClickAway={() => setSearchTerm('')}>
@@ -407,6 +459,7 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
+      {/* Mobile search area */}
       {isMobile && (
         <ClickAwayListener onClickAway={() => setSearchTerm('')}>
           <Box sx={{ px: 2, py: 2, display: 'flex', backgroundColor: 'white', flexDirection: 'column', alignItems: 'center', zIndex: 1400 }}>
@@ -467,6 +520,48 @@ const Header = () => {
           </Box>
         </ClickAwayListener>
       )}
+
+      {/* Drawer: menú hamburguesa */}
+      <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <Box sx={{ width: 280 }} role="presentation">
+          <Box sx={{ px: 2, py: 2 }}>
+            <Typography variant="h6">Categorías</Typography>
+          </Box>
+          <Divider />
+          <Box sx={{ px: 1 }}>
+            {CATEGORIES.map(cat => (
+              <Accordion key={cat.key} disableGutters>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography fontWeight={500}>{cat.label}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: 0 }}>
+                  <List disablePadding>
+                    <ListItemButton onClick={() => goToProducts(cat.key)}>
+                      <ListItemText primary="Ver todo" />
+                    </ListItemButton>
+                    {GENDERS.map(g => (
+                      <ListItemButton key={g.key} onClick={() => goToProducts(cat.key, g.key)}>
+                        <ListItemText primary={g.label} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Box>
+
+          <Divider sx={{ my: 1 }} />
+
+          <List>
+            <ListItemButton onClick={() => goToProducts(null, null)}>
+              <ListItemText primary="Todos los productos" />
+            </ListItemButton>
+            <ListItemButton component={Button} onClick={() => { setDrawerOpen(false); navigate('/panel'); }}>
+              <ListItemText primary="Panel" />
+            </ListItemButton>
+          </List>
+        </Box>
+      </Drawer>
     </>
   );
 };
