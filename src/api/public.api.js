@@ -37,8 +37,8 @@ export default api;
 
 // autenticación 
 export const login = async (credentials) => {
-    await fetchCsrfToken();
-    return api.post('/auth/login', credentials);
+  await fetchCsrfToken();
+  return api.post('/auth/login', credentials);
 };
 
 export const refreshToken = () => api.post('/auth/refresh-token');
@@ -47,7 +47,9 @@ export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const logout = async () => api.post('/auth/logout');
 
 // productos
-export const getAllProducts = () => api.get('/products');
+export const getAllProducts = (params = {}) => {
+  return api.get('/products', { params });
+};
 export const getProductById = (id) => api.get(`/products/${id}`);
 
 // catálogos 
