@@ -197,7 +197,6 @@ const ProductDetail = () => {
   }, [images.length]);
 
   useEffect(() => {
-    // when selectedColor changes, auto-select first available variation for that color (if any)
     if (!selectedColor) {
       setSelectedVariation(null);
       return;
@@ -216,7 +215,6 @@ const ProductDetail = () => {
     return fallback && typeof fallback === 'string' && fallback.startsWith('/uploads') ? `${baseURL}${fallback}` : fallback;
   }, [images, mainIndex, selectedColor, product, variations]);
 
-  // utilities: comparisons must be type-insensitive because sizes can be number or string
   const sizeEquals = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
 
   const isSizeAvailable = (size) =>
@@ -227,7 +225,8 @@ const ProductDetail = () => {
 
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts', product?.gender],
-    queryFn: getAllProducts,
+    queryFn: () => getAllProducts({ gender: product?.gender }),
+    enabled: !!product, 
     select: data => {
       const items = ensureArray(data?.data).filter(p => p._id !== product?._id);
       if (product?.gender) {
@@ -494,7 +493,6 @@ const ProductDetail = () => {
                   key={color}
                   onClick={() => {
                     setSelectedColor(color);
-                    // selectedVariation will be auto-set by effect that listens selectedColor
                     if (images.length) {
                       const idx = images.findIndex(img => {
                         if (typeof img !== 'string') return false;

@@ -1,7 +1,7 @@
 import { Grid, Box, Typography, useMediaQuery, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Feed from '../components/Feed.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAllProducts } from '../api/public.api.js';
 
@@ -9,13 +9,20 @@ const ProductPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const category = searchParams.get('category') || undefined;
+  const gender = searchParams.get('gender') || undefined;
+  const name = searchParams.get('name') || undefined;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['products'],
-    queryFn: getAllProducts,
+
+    queryKey: ['products', { category, gender, name }],
+    queryFn: () => getAllProducts({ category, gender, name }),
+    keepPreviousData: true,
   });
 
-  const products = data?.data || []
+  const products = data?.data ?? data ?? [];
   const limit = isMobile ? 4 : 8;
   const visibleProducts = products.slice(0, limit);
   const showSeeAll = products.length > limit;
