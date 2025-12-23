@@ -38,7 +38,7 @@ import { useNavigate, Link as RouterLink } from "react-router-dom";
 const CATEGORIES = [
   { key: "indumentaria", label: "Indumentaria" },
   { key: "calzado", label: "Calzado" },
-  // puedes agregar más categorías aquí si las necesitás
+  { key: "contacto", label: "Contacto" }
 ];
 
 const GENDERS = [
@@ -521,10 +521,19 @@ const Header = () => {
         </ClickAwayListener>
       )}
 
-      {/* Drawer: menú hamburguesa */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 280, fontFamily: '"Archivo Black", sans-serif' }} role="presentation">
-          <Box sx={{ px: 1 }}>
+        <Box
+          sx={{
+            width: 280,
+            height: '100%',
+            fontFamily: '"Archivo Black", sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center', // centra verticalmente el menú
+          }}
+          role="presentation"
+        >
+          <Box sx={{ px: 1, py: 2 }}>
             {CATEGORIES.map(cat => (
               <Accordion
                 key={cat.key}
@@ -532,7 +541,6 @@ const Header = () => {
                 sx={{
                   boxShadow: 'none',
                   '&:not(:last-of-type)': { borderBottom: '1px solid rgba(0,0,0,0.06)' },
-                  // Mantener background blanco y bordes limpios
                   backgroundColor: 'white',
                 }}
               >
@@ -542,7 +550,6 @@ const Header = () => {
                     px: 2,
                     py: 1.2,
                     '& .MuiAccordionSummary-content': { alignItems: 'center' },
-                    // Estilos de la etiqueta (subrayado animado)
                     '& .categoryLabel': {
                       fontFamily: '"Archivo Black", sans-serif',
                       fontSize: 16,
@@ -550,7 +557,6 @@ const Header = () => {
                       position: 'relative',
                       color: 'text.primary',
                       transition: 'color 0.18s ease',
-                      // pseudo-elemento para subrayado animado
                       '&:after': {
                         content: '""',
                         position: 'absolute',
@@ -563,11 +569,9 @@ const Header = () => {
                         transition: 'width 220ms ease',
                       },
                     },
-                    // al pasar el mouse agranda el subrayado
                     '&:hover .categoryLabel:after': {
                       width: '100%',
                     },
-                    // cuando está expandido también mostrar subrayado completo
                     '&.Mui-expanded .categoryLabel:after': {
                       width: '100%',
                     },
@@ -585,7 +589,6 @@ const Header = () => {
                       sx={{
                         px: 3,
                         py: 1.2,
-                        // 'Ver todo' distinta jerarquía y efecto
                         '& .MuiListItemText-primary': {
                           fontFamily: '"Archivo Black", sans-serif',
                           fontSize: 14,
@@ -603,7 +606,6 @@ const Header = () => {
                       <ListItemText primary="Ver todo" />
                     </ListItemButton>
 
-                    {/* opciones de género: minimalistas y profesionales */}
                     {GENDERS.map(g => (
                       <ListItemButton
                         key={g.key}
@@ -611,18 +613,15 @@ const Header = () => {
                         sx={{
                           px: 3,
                           py: 0.9,
-                          // texto más ligero que el título
                           '& .MuiListItemText-primary': {
                             fontFamily: '"Archivo Black", sans-serif',
                             fontWeight: 700,
                             fontSize: 13,
                             textTransform: 'none',
                           },
-                          // efecto sutil en hover / active
                           '&:hover': {
                             backgroundColor: 'rgba(0,0,0,0.03)',
                             transform: 'translateX(6px)',
-                            // leve elevación
                             boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
                           },
                           '&:active': {
@@ -640,6 +639,29 @@ const Header = () => {
                 </AccordionDetails>
               </Accordion>
             ))}
+          </Box>
+
+          {/* Imagen de marca (marca de agua) al final del drawer */}
+          <Box
+            sx={{
+              mt: 'auto',
+              pb: 3,
+              display: 'flex',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <Box
+              component="img"
+              src="/logo1.svg"
+              alt="Brand watermark"
+              sx={{
+                width: '70%',
+                opacity: 0.06,          // casi transparente
+                filter: 'grayscale(100%)',
+                userSelect: 'none',
+              }}
+            />
           </Box>
         </Box>
       </Drawer>
