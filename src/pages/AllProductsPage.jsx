@@ -55,7 +55,7 @@ const AllProductsPage = () => {
     if (category) {
       return category.charAt(0).toUpperCase() + category.slice(1);
     }
-    return "PRODUCTS"; // keep uppercase like SHOP
+    return "INDUMENTARIA"; // like your screenshots, uppercase
   };
 
   const title = buildTitle();
@@ -107,25 +107,30 @@ const AllProductsPage = () => {
   return (
     <Box component="main" sx={{ px: { xs: 2, md: 4 }, py: 4 }}>
       <Box sx={{ maxWidth: 1280, mx: "auto" }}>
-        {/* Title area styled similarly to ProductPage SHOP */}
+        {/* Responsive title area: centered, max-width, allows wrapping */}
         <Box sx={{ textAlign: "center", mt: { xs: 2, md: 6 }, mb: 6 }}>
           <Box
             sx={{
               display: "inline-block",
-              px: { xs: 3, md: 4 },
-              py: { xs: 1, md: 2 },
+              px: { xs: 2, md: 4 },
+              py: { xs: 0.5, md: 1 },
               position: "relative",
               mb: 2,
               borderRadius: "5px",
               alignItems: "center",
+              maxWidth: "95vw",
+              width: "100%",
             }}
           >
             <Typography
               component="h1"
+              aria-label={title}
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
-                fontSize: { xs: "5rem", sm: "7rem", md: "9rem" },
-                letterSpacing: { xs: "-11.5px", sm: "-12px", md: "-19.5px" },
+                // single clamp that adapts smoothly from mobile to desktop
+                fontSize: "clamp(2.4rem, 8.5vw, 8.5rem)",
+                // letterSpacing tuned per breakpoint so text doesn't overlap when small
+                letterSpacing: { xs: "-1px", sm: "-6px", md: "-12px" },
                 fontWeight: 900,
                 textTransform: "uppercase",
                 lineHeight: 1,
@@ -133,26 +138,38 @@ const AllProductsPage = () => {
                 position: "relative",
                 mt: { xs: 1, md: 4 },
                 mb: { xs: 1, md: 4 },
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                // subtle hover only on non-touch devices
+                cursor: "default",
+                // Allow wrapping so the text doesn't overflow the viewport
+                whiteSpace: "normal",
+                overflowWrap: "break-word",
+                wordBreak: "break-word",
+                // ensure the title stays centered and doesn't push beyond screen
+                display: "inline-block",
+                maxWidth: "100%",
+                textAlign: "center",
+                // subtle hover on desktop only
                 '&:hover': {
-                  transform: isMobile ? undefined : "scale(1.05)",
-                  transition: "transform 0.25s ease",
-                },
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -6,
-                  left: 0,
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: 'black',
+                  transform: isMobile ? undefined : "translateY(-2px)",
+                  transition: "transform 200ms ease",
                 },
               }}
             >
               {title}
             </Typography>
+
+            {/* Underline — separate element so it centers and adapts to wrapped text */}
+            <Box
+              sx={{
+                height: 4,
+                borderRadius: 2,
+                mt: 1.25,
+                width: "min(92%, 1200px)",
+                // make underline visually aligned with title width by using auto margins
+                mx: "auto",
+                backgroundColor: "black",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+              }}
+            />
           </Box>
         </Box>
 
