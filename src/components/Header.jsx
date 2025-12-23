@@ -549,17 +549,7 @@ const Header = () => {
               </Accordion>
             ))}
           </Box>
-
           <Divider sx={{ my: 1 }} />
-
-          <List>
-            <ListItemButton onClick={() => goToProducts(null, null)}>
-              <ListItemText primary="Todos los productos" />
-            </ListItemButton>
-            <ListItemButton component={Button} onClick={() => { setDrawerOpen(false); navigate('/panel'); }}>
-              <ListItemText primary="Panel" />
-            </ListItemButton>
-          </List>
         </Box>
       </Drawer>
     </>
