@@ -19,8 +19,6 @@ import {
   List,
   ListItemButton,
   ListItemText,
-  Divider,
-  Button
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
@@ -325,7 +323,7 @@ const Header = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               edge="start"
-              color="inherit"
+              color="transparent"
               aria-label="open menu"
               onClick={() => setDrawerOpen(true)}
               size="large"
@@ -533,7 +531,7 @@ const Header = () => {
           }}
           role="presentation"
         >
-          <Box sx={{ px: 1, py: 5 }}>
+          <Box sx={{ px: 1, py: 7 }}>
             {CATEGORIES.map(cat => (
               <Accordion
                 key={cat.key}
@@ -555,7 +553,7 @@ const Header = () => {
                       fontSize: 16,
                       lineHeight: 1,
                       position: 'relative',
-                      color: 'text.primary',
+                      color: 'black',
                       transition: 'color 0.18s ease',
                       '&:after': {
                         content: '""',
@@ -635,7 +633,6 @@ const Header = () => {
                       </ListItemButton>
                     ))}
                   </List>
-                  <Divider sx={{ my: 0.5 }} />
                 </AccordionDetails>
               </Accordion>
             ))}
@@ -656,7 +653,7 @@ const Header = () => {
               src="/logo1.svg"
               alt="Brand watermark"
               sx={{
-                width: '40%',
+                width: '25%',
                 opacity: 0.06,          // casi transparente
                 filter: 'grayscale(100%)',
                 userSelect: 'none',
