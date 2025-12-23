@@ -523,33 +523,124 @@ const Header = () => {
 
       {/* Drawer: menú hamburguesa */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 280 }} role="presentation">
-          <Box sx={{ px: 2, py: 2 }}>
-            <Typography variant="h6">Categorías</Typography>
-          </Box>
-          <Divider />
+        <Box sx={{ width: 280, fontFamily: '"Archivo Black", sans-serif' }} role="presentation">
           <Box sx={{ px: 1 }}>
             {CATEGORIES.map(cat => (
-              <Accordion key={cat.key} disableGutters>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography fontWeight={500}>{cat.label}</Typography>
+              <Accordion
+                key={cat.key}
+                disableGutters
+                sx={{
+                  boxShadow: 'none',
+                  '&:not(:last-of-type)': { borderBottom: '1px solid rgba(0,0,0,0.06)' },
+                  // Mantener background blanco y bordes limpios
+                  backgroundColor: 'white',
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    px: 2,
+                    py: 1.2,
+                    '& .MuiAccordionSummary-content': { alignItems: 'center' },
+                    // Estilos de la etiqueta (subrayado animado)
+                    '& .categoryLabel': {
+                      fontFamily: '"Archivo Black", sans-serif',
+                      fontSize: 16,
+                      lineHeight: 1,
+                      position: 'relative',
+                      color: 'text.primary',
+                      transition: 'color 0.18s ease',
+                      // pseudo-elemento para subrayado animado
+                      '&:after': {
+                        content: '""',
+                        position: 'absolute',
+                        left: 0,
+                        bottom: -8,
+                        height: 3,
+                        width: '0%',
+                        backgroundColor: 'black',
+                        borderRadius: 2,
+                        transition: 'width 220ms ease',
+                      },
+                    },
+                    // al pasar el mouse agranda el subrayado
+                    '&:hover .categoryLabel:after': {
+                      width: '100%',
+                    },
+                    // cuando está expandido también mostrar subrayado completo
+                    '&.Mui-expanded .categoryLabel:after': {
+                      width: '100%',
+                    },
+                  }}
+                >
+                  <Typography className="categoryLabel" fontWeight={500}>
+                    {cat.label}
+                  </Typography>
                 </AccordionSummary>
+
                 <AccordionDetails sx={{ p: 0 }}>
                   <List disablePadding>
-                    <ListItemButton onClick={() => goToProducts(cat.key)}>
+                    <ListItemButton
+                      onClick={() => goToProducts(cat.key)}
+                      sx={{
+                        px: 3,
+                        py: 1.2,
+                        // 'Ver todo' distinta jerarquía y efecto
+                        '& .MuiListItemText-primary': {
+                          fontFamily: '"Archivo Black", sans-serif',
+                          fontSize: 14,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.6px',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(0,0,0,0.04)',
+                          transform: 'translateX(6px)',
+                        },
+                        '&:active': { transform: 'translateX(3px)' },
+                        transition: 'transform 180ms ease, background-color 180ms ease',
+                      }}
+                    >
                       <ListItemText primary="Ver todo" />
                     </ListItemButton>
+
+                    {/* opciones de género: minimalistas y profesionales */}
                     {GENDERS.map(g => (
-                      <ListItemButton key={g.key} onClick={() => goToProducts(cat.key, g.key)}>
+                      <ListItemButton
+                        key={g.key}
+                        onClick={() => goToProducts(cat.key, g.key)}
+                        sx={{
+                          px: 3,
+                          py: 0.9,
+                          // texto más ligero que el título
+                          '& .MuiListItemText-primary': {
+                            fontFamily: '"Archivo Black", sans-serif',
+                            fontWeight: 700,
+                            fontSize: 13,
+                            textTransform: 'none',
+                          },
+                          // efecto sutil en hover / active
+                          '&:hover': {
+                            backgroundColor: 'rgba(0,0,0,0.03)',
+                            transform: 'translateX(6px)',
+                            // leve elevación
+                            boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+                          },
+                          '&:active': {
+                            transform: 'translateX(3px)',
+                            backgroundColor: 'rgba(0,0,0,0.06)',
+                          },
+                          transition: 'transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease',
+                        }}
+                      >
                         <ListItemText primary={g.label} />
                       </ListItemButton>
                     ))}
                   </List>
+                  <Divider sx={{ my: 0.5 }} />
                 </AccordionDetails>
               </Accordion>
             ))}
           </Box>
-          <Divider sx={{ my: 1 }} />
         </Box>
       </Drawer>
     </>
