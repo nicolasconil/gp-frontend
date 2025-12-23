@@ -533,7 +533,7 @@ const Header = () => {
           }}
           role="presentation"
         >
-          <Box sx={{ px: 1, py: 2 }}>
+          <Box sx={{ px: 1, py: 5 }}>
             {CATEGORIES.map(cat => (
               <Accordion
                 key={cat.key}
@@ -656,7 +656,7 @@ const Header = () => {
               src="/logo1.svg"
               alt="Brand watermark"
               sx={{
-                width: '70%',
+                width: '40%',
                 opacity: 0.06,          // casi transparente
                 filter: 'grayscale(100%)',
                 userSelect: 'none',
