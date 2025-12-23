@@ -36,7 +36,7 @@ import { useNavigate, Link as RouterLink } from "react-router-dom";
 const CATEGORIES = [
   { key: "indumentaria", label: "Indumentaria" },
   { key: "calzado", label: "Calzado" },
-  { key: "contacto", label: "Contacto" }
+  // { key: "contacto", label: "Contacto" }
 ];
 
 const GENDERS = [
@@ -323,11 +323,22 @@ const Header = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               edge="start"
-              color="transparent"
               aria-label="open menu"
               onClick={() => setDrawerOpen(true)}
               size="large"
-              sx={{ color: 'black' }}
+              disableRipple // quita el efecto ripple
+              sx={{
+                color: 'black',
+                backgroundColor: 'transparent',
+                // elimina el círculo gris en hover/active
+                '&:hover': { backgroundColor: 'transparent' },
+                '&:active': { backgroundColor: 'transparent' },
+                // opcional: mantener un foco visible accesible (te recomiendo no quitarlo)
+                '&.Mui-focusVisible': {
+                  outline: '2px solid rgba(0,0,0,0.12)',
+                  outlineOffset: 2,
+                },
+              }}
             >
               <MenuIcon />
             </IconButton>
