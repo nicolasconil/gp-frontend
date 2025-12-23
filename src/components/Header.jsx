@@ -79,22 +79,14 @@ const Header = () => {
     ? productsArr.filter((product) => (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()))
     : [];
 
-  const goToProduct = (id) => {
-    setSearchTerm('');
-    navigate(`/producto/${id}`);
-  };
-
-  // navegación desde el drawer/menu: category y optional gender
   const goToProducts = (category, gender) => {
-    // cerrar drawer y limpiar búsqueda
     setDrawerOpen(false);
     setSearchTerm('');
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (gender) params.set('gender', gender);
-    navigate(`/products?${params.toString()}`);
+    navigate(`/productos?${params.toString()}`);
   };
-
   const renderSearchResults = () => {
     if (searchTerm.length <= 0 || filteredResults.length === 0) return null;
 

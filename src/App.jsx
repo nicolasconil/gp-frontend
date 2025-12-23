@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { fetchCsrfToken } from "./api/csrf.api.js";
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
@@ -25,17 +25,23 @@ import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
 
 function App() {
-    useEffect(() => {
-      fetchCsrfToken();
-    }, []);
-    
+  useEffect(() => {
+    fetchCsrfToken();
+  }, []);
+
+  const RedirectProductsToProductos = () => {
+    const location = useLocation();
+    return <Navigate to={`/productos${location.search}`} replace />;
+  };
+
   return (
     <>
       <ScrollToTop />
       <Header />
       <Routes>
         <Route path='/' element={<HomePage />} />
-        <Route path='/' element={<ProductPage />} />
+
+        <Route path='/products' element={<RedirectProductsToProductos />} />
         <Route path='/producto/:id' element={<ProductDetail />} />
         <Route path='/productos' element={<AllProductsPage />} />
         <Route path='/login' element={<LoginPage />} />
@@ -56,7 +62,7 @@ function App() {
           <Route path='users' element={<UsersPage />} />
           <Route path='catalogs' element={<CatalogsPage />} />
           <Route path='orders' element={<OrdersPage />} />
-          <Route path='shippings'element={<ShippingsPage />} />
+          <Route path='shippings' element={<ShippingsPage />} />
         </Route>
 
       </Routes>
