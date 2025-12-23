@@ -8,7 +8,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { motion } from "framer-motion";
 import Feed from "../components/Feed.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -56,7 +55,7 @@ const AllProductsPage = () => {
     if (category) {
       return category.charAt(0).toUpperCase() + category.slice(1);
     }
-    return "Productos";
+    return "PRODUCTS"; // keep uppercase like SHOP
   };
 
   const title = buildTitle();
@@ -73,7 +72,7 @@ const AllProductsPage = () => {
         }}
       >
         <CircularProgress />
-        <Typography sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif' }}>
+        <Typography sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
           Cargando productos...
         </Typography>
       </Box>
@@ -91,7 +90,7 @@ const AllProductsPage = () => {
           flexDirection: "column",
         }}
       >
-        <Typography sx={{ fontFamily: '"Archivo Black", sans-serif' }}>
+        <Typography sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
           Error cargando los productos.
         </Typography>
         <Button
@@ -108,86 +107,53 @@ const AllProductsPage = () => {
   return (
     <Box component="main" sx={{ px: { xs: 2, md: 4 }, py: 4 }}>
       <Box sx={{ maxWidth: 1280, mx: "auto" }}>
-        {/* Title wrapper: inline-block so underline and clipping match text width */}
-        <Box
-          sx={{
-            display: "inline-block",
-            px: { xs: 3, md: 4 },
-            py: { xs: 1, md: 2 },
-            mb: 6,
-            // subtle backdrop for legibility on varied backgrounds
-            bgcolor: "transparent",
-            position: "relative",
-          }}
-        >
-          {/* Motion container provides a tasteful entrance animation */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            style={{ display: "inline-block" }}
-            aria-hidden={false}
+        {/* Title area styled similarly to ProductPage SHOP */}
+        <Box sx={{ textAlign: "center", mt: { xs: 2, md: 6 }, mb: 6 }}>
+          <Box
+            sx={{
+              display: "inline-block",
+              px: { xs: 3, md: 4 },
+              py: { xs: 1, md: 2 },
+              position: "relative",
+              mb: 2,
+              borderRadius: "5px",
+              alignItems: "center",
+            }}
           >
             <Typography
               component="h1"
               sx={{
-                // Archivo Black is kept as preferred; fallback to sans-serif
                 fontFamily: '"Archivo Black", sans-serif',
-                // Responsive type sizing using clamp: keeps sizes proportional on any screen
-                fontSize: {
-                  xs: "clamp(2rem, 9vw, 3.5rem)",
-                  sm: "clamp(3.5rem, 14vw, 6rem)",
-                  md: "clamp(5rem, 10vw, 8rem)",
-                },
-                lineHeight: 1,
+                fontSize: { xs: "5rem", sm: "7rem", md: "9rem" },
+                letterSpacing: { xs: "-11.5px", sm: "-12px", md: "-19.5px" },
                 fontWeight: 900,
                 textTransform: "uppercase",
-                // letterSpacing tight on large screens, slightly looser on mobile
-                letterSpacing: { xs: "-1px", sm: "-8px", md: "-12px" },
-                // gradient text (minimalist) + smooth clipping
-                background: `linear-gradient(90deg, ${theme.palette.mode === 'dark' ? '#ffffff' : '#000000'} 0%, ${theme.palette.primary.main} 55%)`,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                // soft lift shadow for depth — keep it subtle
-                textShadow: "0 8px 24px rgba(0,0,0,0.18)",
-                // slight transform for crisp pixel rendering on some devices
-                transform: "translateZ(0)",
-                // accessibility: ensure the heading doesn't collapse on very small screens
+                lineHeight: 1,
+                zIndex: 2,
+                position: "relative",
+                mt: { xs: 1, md: 4 },
+                mb: { xs: 1, md: 4 },
+                cursor: "pointer",
                 whiteSpace: "nowrap",
-                // keep spacing consistent
-                mt: { xs: 2, md: 4 },
-                mb: { xs: 2, md: 4 },
-                // hover: a tiny scale to feel interactive on desktop (no effect on mobile)
-                "&:hover": {
-                  transform: isMobile ? undefined : "translateY(-2px) scale(1.01)",
-                  transition: "transform 220ms ease",
+                // subtle hover only on non-touch devices
+                '&:hover': {
+                  transform: isMobile ? undefined : "scale(1.05)",
+                  transition: "transform 0.25s ease",
+                },
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -6,
+                  left: 0,
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: 'black',
                 },
               }}
             >
               {title}
             </Typography>
-
-            {/* Animated underline / accent bar using ::after pseudo or a sibling bar. Here we use a small bar that animates in. */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
-              style={{
-                transformOrigin: "left",
-                height: 6,
-                borderRadius: 6,
-                marginTop: 10,
-                // the bar width adjusts with text — using inline-block makes it fit the content width
-                display: "inline-block",
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary ? theme.palette.secondary.main : '#888'})`,
-                boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
-              }}
-              aria-hidden
-            />
-          </motion.div>
-
-          {/* A visually-hidden accessible label (for screen-readers) could be added here if necessary */}
+          </Box>
         </Box>
 
         <Grid
