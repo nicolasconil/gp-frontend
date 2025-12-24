@@ -36,7 +36,7 @@ const genderLabel = (g) => {
   return map[String(g).toLowerCase()] || String(g);
 };
 
-const MAX_SCALE = 2.0;
+const MAX_SCALE = 2.0; 
 const MIN_SCALE = 1.0; 
 
 const ProductDetail = () => {
@@ -346,7 +346,6 @@ const ProductDetail = () => {
     setTranslate({ x: 0, y: 0 });
   };
 
-  // mouse pan
   const onMouseDownZoom = (e) => {
     if (scale <= 1) return; 
     e.preventDefault();
@@ -616,6 +615,7 @@ const ProductDetail = () => {
                   }}
                 >
                   {genderLabel(product.gender)}
+
                   <Box
                     sx={{
                       position: 'absolute',
@@ -625,6 +625,17 @@ const ProductDetail = () => {
                       height: '4px',
                       backgroundColor: 'black',
                       borderRadius: 4,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
                     }}
                   />
                 </Box>
@@ -679,6 +690,29 @@ const ProductDetail = () => {
                   }}
                 >
                   {color}
+
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: 4,
+                      width: '100%',
+                      height: '4px',
+                      backgroundColor: 'black',
+                      borderRadius: 4,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      right: -4,
+                      width: '4px',
+                      height: { xs: '102%', md: '103%' },
+                      backgroundColor: 'black',
+                      borderRadius: 1,
+                    }}
+                  />
                 </Button>
               ))}
             </Box>
@@ -727,6 +761,29 @@ const ProductDetail = () => {
                     }}
                   >
                     {size}
+
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: -4,
+                        left: 4,
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: available ? 'black' : '#777',
+                        borderRadius: 4,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: -4,
+                        width: '4px',
+                        height: { xs: '102%', md: '103%' },
+                        backgroundColor: available ? 'black' : '#777',
+                        borderRadius: 1,
+                      }}
+                    />
                   </Button>
                 );
               })}
@@ -753,10 +810,34 @@ const ProductDetail = () => {
                     : isOutOfStock || !variations.length
                       ? '#777'
                       : 'black',
+                  position: 'relative',
                 }}
                 onClick={handleAddToCart}
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -5.5,
+                    left: 4,
+                    width: '100%',
+                    height: '4px',
+                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
+                    borderRadius: 4,
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 2,
+                    right: -5.5,
+                    width: '4px',
+                    height: { xs: '108%', md: '109%' },
+                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
+                    borderRadius: 1,
+                  }}
+                />
               </Button>
             </Box>
 
@@ -831,30 +912,39 @@ const ProductDetail = () => {
               >
                 <Box sx={{ height: '70%', overflow: 'hidden' }}>
                   <img
-                    src={ item.image?.startsWith('/uploads') ? `${baseURL}${item.image}` : item.image || PLACEHOLDER }
+                    src={
+                      item.image?.startsWith('/uploads')
+                        ? `${baseURL}${item.image}`
+                        : item.image || PLACEHOLDER
+                    }
                     alt={item.name}
                     onError={handleImgError}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </Box>
 
-                <Box sx={{
-                  position: 'relative',
-                  border: '3px solid black',
-                  borderRadius: 1,
-                  mx: { xs: 6, sm: 1.5, md: 1.5 },
-                  mb: 1,
-                  px: { xs: 0.5, md: 1 },
-                  py: { xs: 0.2, md: 0.5 },
-                  minHeight: 40,
-                  backgroundColor: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    border: '3px solid black',
+                    borderRadius: 1,
+                    mx: { xs: 6, sm: 1.5, md: 1.5 },
+                    mb: 1,
+                    px: { xs: 0.5, md: 1 },
+                    py: { xs: 0.2, md: 0.5 },
+                    minHeight: 40,
+                    backgroundColor: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
+
+                  <Box sx={{ position: 'absolute', bottom: -6, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
+                  <Box sx={{ position: 'absolute', top: 3.5, right: -6, width: '5px', height: '100%', backgroundColor: 'black', borderRadius: '2px' }} />
                 </Box>
               </Box>
             </Grid>
