@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useLocation, Link } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -9,7 +12,9 @@ function useQuery() {
 
 export default function OrderSuccessPage() {
   const query = useQuery();
-  const orderId = query.get("orderId");
+
+  const orderId = query.get("external_reference");
+  const mpStatus = query.get("status"); 
 
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("loading");
@@ -27,13 +32,10 @@ export default function OrderSuccessPage() {
 
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`/api/orders/public/${orderId}`, {
-          withCredentials: true,
-        });
-
+        const res = await axios.get(`/api/orders/public/${orderId}`);
         const o = res.data;
-        setOrder(o);
 
+        setOrder(o);
         const payStatus = o.payment?.status;
 
         if (payStatus === "aprobado") {
@@ -69,7 +71,6 @@ export default function OrderSuccessPage() {
     };
   }, [orderId]);
 
-
   const Wrapper = ({ children }) => (
     <Box
       sx={{
@@ -80,13 +81,7 @@ export default function OrderSuccessPage() {
         px: 2,
       }}
     >
-      <Box
-        sx={{
-          maxWidth: 520,
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
+      <Box sx={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
         {children}
       </Box>
     </Box>
@@ -112,34 +107,14 @@ export default function OrderSuccessPage() {
     </Typography>
   );
 
+
   if (status === "loading") {
     return (
       <Wrapper>
-        <Box
-          component="img"
-          src="/logo1.svg"
-          alt="Procesando pago"
-          sx={{
-            width: 120,
-            opacity: 0.5,
-            animation: "pulseOpacity 2s infinite ease-in-out",
-          }}
-        />
+        <HourglassBottomIcon sx={{ fontSize: 60, opacity: 0.6 }} />
         <Title>Procesando pago</Title>
-        <Text>
-          Gracias por tu compra. Estamos verificando tu pago.
-        </Text>
+        <Text>Gracias por tu compra. Estamos verificando tu pago.</Text>
         <Text>No cierres esta ventana.</Text>
-
-        <style>
-          {`
-            @keyframes pulseOpacity {
-              0% { opacity: 0.2; }
-              50% { opacity: 1; }
-              100% { opacity: 0.2; }
-            }
-          `}
-        </style>
       </Wrapper>
     );
   }
@@ -173,14 +148,15 @@ export default function OrderSuccessPage() {
   if (status === "pending") {
     return (
       <Wrapper>
-        <Title>Pago en revisión</Title>
+        <HourglassBottomIcon color="warning" sx={{ fontSize: 60 }} />
+        <Title>Pago pendiente</Title>
         <Text>
-          Tu pago está en estado <strong>pendiente</strong>.
+          Tu pago está siendo revisado por MercadoPago.
         </Text>
         <Text>
-          Te avisaremos por email cuando cambie su estado.
+          Te avisaremos por email cuando se confirme.
         </Text>
-        <Text>soporte@gpfootwear.com</Text>
+        <Text>gpkickslab@gmail.com</Text>
       </Wrapper>
     );
   }
@@ -188,9 +164,10 @@ export default function OrderSuccessPage() {
   if (status === "rejected") {
     return (
       <Wrapper>
+        <CancelIcon color="error" sx={{ fontSize: 60 }} />
         <Title>Pago rechazado</Title>
         <Text>
-          Sentimos que tu pago haya sido rechazado.
+          El pago no pudo completarse.
         </Text>
         <Text>
           Podés intentarlo nuevamente o contactarnos.
@@ -220,14 +197,17 @@ export default function OrderSuccessPage() {
     );
   }
 
+
   return (
     <Wrapper>
-      <Title>Pago confirmado 🎉</Title>
+      <CheckCircleIcon color="success" sx={{ fontSize: 70 }} />
+      <Title>Pago confirmado</Title>
+
       <Text>
         Gracias por tu compra. Tu pago fue aprobado correctamente.
       </Text>
       <Text>
-        En breve recibirás un email con el comprobante y los datos de envío.
+        Te enviamos un email con el comprobante y los datos de envío.
       </Text>
 
       {order && (
@@ -236,7 +216,8 @@ export default function OrderSuccessPage() {
             <strong>Orden:</strong> {order._id}
           </Text>
           <Text>
-            <strong>Total:</strong> ${order.totalAmount}
+            <strong>Total:</strong>{" "}
+            ${Number(order.totalAmount).toLocaleString("es-AR")} ARS
           </Text>
         </Box>
       )}
