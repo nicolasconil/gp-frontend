@@ -23,7 +23,7 @@ export default function OrderSuccessPage() {
         }
         const fetchOrder = async () => {
             try {
-                const res = await axios.get(`/api/orders/${orderId}`, { withCredentials: true });
+                const res = await axios.get(`/api/orders/public/${orderId}`, { withCredentials: true });
                 const o = res.data;
                 setOrder(o);
                 const payStatus = o.payment?.status;
