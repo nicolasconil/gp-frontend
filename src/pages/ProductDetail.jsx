@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -35,6 +35,9 @@ const genderLabel = (g) => {
   };
   return map[String(g).toLowerCase()] || String(g);
 };
+
+const MAX_SCALE = 2.0;
+const MIN_SCALE = 1.0; 
 
 const ProductDetail = () => {
   const theme = useTheme();
@@ -172,7 +175,6 @@ const ProductDetail = () => {
 
   const touchStartX = useRef(null);
   const touchDelta = useRef(0);
-
   const onTouchStart = (e) => {
     touchStartX.current = e.touches?.[0]?.clientX ?? null;
     touchDelta.current = 0;
@@ -266,17 +268,21 @@ const ProductDetail = () => {
   })();
 
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [scale, setScale] = useState(1); // 1..4
+  const [scale, setScale] = useState(1); 
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0 });
   const translateStartRef = useRef({ x: 0, y: 0 });
+
   const pinchStartDistanceRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
 
+  const containerRef = useRef(null);
+  const imgRef = useRef(null);
+
   const openZoom = () => {
     setZoomOpen(true);
-    setScale(1);
+    setScale(1); 
     setTranslate({ x: 0, y: 0 });
   };
   const closeZoom = () => {
@@ -289,24 +295,60 @@ const ProductDetail = () => {
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
+  const clampTranslate = useCallback((tx, ty, currentScale = scale) => {
+    const container = containerRef.current;
+    const img = imgRef.current;
+    if (!container || !img) return { x: tx, y: ty };
+
+    const containerRect = container.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+
+    const baseW = imgRect.width;
+    const baseH = imgRect.height;
+
+    const effW = baseW * currentScale;
+    const effH = baseH * currentScale;
+
+    const maxX = Math.max(0, (effW - containerRect.width) / 2);
+    const maxY = Math.max(0, (effH - containerRect.height) / 2);
+
+    const clampedX = clamp(tx, -maxX, maxX);
+    const clampedY = clamp(ty, -maxY, maxY);
+    return { x: clampedX, y: clampedY };
+  }, [scale]);
+
   const handleWheel = (e) => {
     e.preventDefault();
-    const delta = e.deltaY;
-    const factor = delta < 0 ? 1.12 : 1 / 1.12;
+    const factor = e.deltaY < 0 ? 1.08 : 1 / 1.08;
     setScale(prev => {
-      const next = clamp(prev * factor, 1, 4);
+      const next = clamp(prev * factor, MIN_SCALE, MAX_SCALE);
+      setTranslate(t => clampTranslate(t.x, t.y, next));
       return next;
     });
   };
 
-  const handleZoomIn = () => setScale(prev => clamp(prev * 1.25, 1, 4));
-  const handleZoomOut = () => setScale(prev => clamp(prev / 1.25, 1, 4));
+  const handleZoomIn = () => {
+    setScale(prev => {
+      const next = clamp(prev + 0.15, MIN_SCALE, MAX_SCALE);
+      setTranslate(t => clampTranslate(t.x, t.y, next));
+      return next;
+    });
+  };
+  const handleZoomOut = () => {
+    setScale(prev => {
+      const next = clamp(prev - 0.15, MIN_SCALE, MAX_SCALE);
+      setTranslate(t => clampTranslate(t.x, t.y, next));
+      return next;
+    });
+  };
   const handleResetZoom = () => {
     setScale(1);
     setTranslate({ x: 0, y: 0 });
   };
 
+  // mouse pan
   const onMouseDownZoom = (e) => {
+    if (scale <= 1) return; 
     e.preventDefault();
     isPanningRef.current = true;
     panStartRef.current = { x: e.clientX, y: e.clientY };
@@ -317,12 +359,16 @@ const ProductDetail = () => {
     e.preventDefault();
     const dx = e.clientX - panStartRef.current.x;
     const dy = e.clientY - panStartRef.current.y;
-    setTranslate({
+    const candidate = {
       x: translateStartRef.current.x + dx,
       y: translateStartRef.current.y + dy,
+    };
+    setTranslate(prev => {
+      const clamped = clampTranslate(candidate.x, candidate.y, scale);
+      return clamped;
     });
   };
-  const onMouseUpZoom = (e) => {
+  const onMouseUpZoom = () => {
     if (!isPanningRef.current) return;
     isPanningRef.current = false;
   };
@@ -334,7 +380,7 @@ const ProductDetail = () => {
   };
 
   const onTouchStartZoom = (e) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && scale > 1) {
       const t = e.touches[0];
       isPanningRef.current = true;
       panStartRef.current = { x: t.clientX, y: t.clientY };
@@ -346,19 +392,24 @@ const ProductDetail = () => {
   };
 
   const onTouchMoveZoom = (e) => {
-    if (e.touches.length === 1 && isPanningRef.current) {
+    if (e.touches.length === 1 && isPanningRef.current && scale > 1) {
       const t = e.touches[0];
       const dx = t.clientX - panStartRef.current.x;
       const dy = t.clientY - panStartRef.current.y;
-      setTranslate({
+      const candidate = {
         x: translateStartRef.current.x + dx,
         y: translateStartRef.current.y + dy,
+      };
+      setTranslate(prev => {
+        const clamped = clampTranslate(candidate.x, candidate.y, scale);
+        return clamped;
       });
     } else if (e.touches.length === 2 && pinchStartDistanceRef.current) {
       const dist = getDistance(e.touches[0], e.touches[1]);
       const ratio = dist / pinchStartDistanceRef.current;
-      const newScale = clamp(pinchStartScaleRef.current * ratio, 1, 4);
+      const newScale = clamp(pinchStartScaleRef.current * ratio, MIN_SCALE, MAX_SCALE);
       setScale(newScale);
+      setTranslate(t => clampTranslate(t.x, t.y, newScale));
     }
   };
 
@@ -368,14 +419,36 @@ const ProductDetail = () => {
       pinchStartDistanceRef.current = null;
       pinchStartScaleRef.current = scale;
     } else if (e.touches.length === 1) {
-      isPanningRef.current = true;
-      const t = e.touches[0];
-      panStartRef.current = { x: t.clientX, y: t.clientY };
-      translateStartRef.current = { ...translate };
+      isPanningRef.current = false;
+      pinchStartDistanceRef.current = null;
+      pinchStartScaleRef.current = scale;
     }
   };
 
   const preventImgDrag = (e) => e.preventDefault();
+
+  const onDoubleClick = () => {
+    const mid = 1.5;
+    if (Math.abs(scale - 1) < 0.05) {
+      const next = Math.min(mid, MAX_SCALE);
+      setScale(next);
+      setTranslate({ x: 0, y: 0 });
+    } else {
+      handleResetZoom();
+    }
+  };
+
+  useEffect(() => {
+    setTranslate(prev => clampTranslate(prev.x, prev.y, scale));
+  }, [scale]);
+
+  const sliderValue = Math.round(((scale - 1) / (MAX_SCALE - 1)) * 100);
+
+  const onSliderChange = (e, v) => {
+    const newScale = clamp(1 + (v / 100) * (MAX_SCALE - 1), MIN_SCALE, MAX_SCALE);
+    setScale(newScale);
+    setTranslate(t => clampTranslate(t.x, t.y, newScale));
+  };
 
   if (isFetchingProduct) {
     return (
@@ -446,28 +519,6 @@ const ProductDetail = () => {
           sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', borderRadius: '4px', backgroundColor: 'black', color: 'white' }}
         >
           Reintentar
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -5.5,
-              left: 4,
-              width: '98%',
-              height: '6px',
-              backgroundColor: 'black',
-              borderRadius: '2px',
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 6,
-              right: -5,
-              width: '6px',
-              height: { xs: '95%', md: '97%' },
-              backgroundColor: 'black',
-              borderRadius: '2px',
-            }}
-          />
         </Button>
       </Box>
     );
@@ -496,8 +547,8 @@ const ProductDetail = () => {
                 ? {}
                 : {
                   '&:hover img': {
-                    transform: 'scale(1.07)',
-                    transition: 'transform 0.3s ease',
+                    transform: 'scale(1.03)',
+                    transition: 'transform 0.2s ease',
                   },
                 }),
             }}
@@ -518,7 +569,7 @@ const ProductDetail = () => {
                 height: 'auto',
                 objectFit: 'contain',
                 display: 'block',
-                transition: 'transform 0.3s ease',
+                transition: 'transform 0.2s ease',
               }}
             />
           </Box>
@@ -565,7 +616,6 @@ const ProductDetail = () => {
                   }}
                 >
                   {genderLabel(product.gender)}
-
                   <Box
                     sx={{
                       position: 'absolute',
@@ -575,17 +625,6 @@ const ProductDetail = () => {
                       height: '4px',
                       backgroundColor: 'black',
                       borderRadius: 4,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: { xs: '102%', md: '103%' },
-                      backgroundColor: 'black',
-                      borderRadius: 1,
                     }}
                   />
                 </Box>
@@ -640,28 +679,6 @@ const ProductDetail = () => {
                   }}
                 >
                   {color}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: 4,
-                      width: '100%',
-                      height: '4px',
-                      backgroundColor: 'black',
-                      borderRadius: 4,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 2,
-                      right: -4,
-                      width: '4px',
-                      height: { xs: '102%', md: '103%' },
-                      backgroundColor: 'black',
-                      borderRadius: 1,
-                    }}
-                  />
                 </Button>
               ))}
             </Box>
@@ -710,28 +727,6 @@ const ProductDetail = () => {
                     }}
                   >
                     {size}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: -4,
-                        left: 4,
-                        width: '100%',
-                        height: '4px',
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 4,
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 2,
-                        right: -4,
-                        width: '4px',
-                        height: { xs: '102%', md: '103%' },
-                        backgroundColor: available ? 'black' : '#777',
-                        borderRadius: 1,
-                      }}
-                    />
                   </Button>
                 );
               })}
@@ -758,82 +753,28 @@ const ProductDetail = () => {
                     : isOutOfStock || !variations.length
                       ? '#777'
                       : 'black',
-                  '&:hover': {
-                    backgroundColor: selectedVariation
-                      ? 'black'
-                      : isOutOfStock || !variations.length
-                        ? '#d1d1d1'
-                        : '#f0f0f0',
-                  },
-                  position: 'relative',
                 }}
                 onClick={handleAddToCart}
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
-
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: -5.5,
-                    left: 4,
-                    width: '100%',
-                    height: '4px',
-                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
-                    borderRadius: 4,
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 2,
-                    right: -5.5,
-                    width: '4px',
-                    height: { xs: '108%', md: '109%' },
-                    backgroundColor: selectedVariation ? 'black' : (isOutOfStock || !variations.length ? '#777' : 'black'),
-                    borderRadius: 1,
-                  }}
-                />
               </Button>
             </Box>
 
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 1,
-                justifyContent: 'left',
-                mt: 3,
-                overflowX: 'auto',
-                flexWrap: 'nowrap',
-              }}
-            >
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'left', mt: 3, overflowX: 'auto', flexWrap: 'nowrap' }}>
               {images.map((img, idx) => {
                 const src = img?.startsWith?.('/uploads') ? `${baseURL}${img}` : img || PLACEHOLDER;
                 return (
-                  <Box
-                    key={idx}
-                    onClick={() => setMainIndex(idx)}
-                    sx={{
-                      cursor: 'pointer',
-                      border: '2px solid #f1f1f1ff',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      width: { xs: 64, sm: 80, md: 80 },
-                      height: { xs: 64, sm: 80, md: 80 },
-                      position: 'relative',
-                      flex: '0 0 auto',
-                    }}
-                  >
-                    <img
-                      src={src}
-                      alt={`thumb-${idx}`}
-                      onError={handleImgError}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        display: 'block',
-                      }}
-                    />
+                  <Box key={idx} onClick={() => setMainIndex(idx)} sx={{
+                    cursor: 'pointer',
+                    border: '2px solid #f1f1f1ff',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    width: { xs: 64, sm: 80, md: 80 },
+                    height: { xs: 64, sm: 80, md: 80 },
+                    position: 'relative',
+                    flex: '0 0 auto',
+                  }}>
+                    <img src={src} alt={`thumb-${idx}`} onError={handleImgError} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                   </Box>
                 );
               })}
@@ -890,38 +831,30 @@ const ProductDetail = () => {
               >
                 <Box sx={{ height: '70%', overflow: 'hidden' }}>
                   <img
-                    src={
-                      item.image?.startsWith('/uploads')
-                        ? `${baseURL}${item.image}`
-                        : item.image || PLACEHOLDER
-                    }
+                    src={ item.image?.startsWith('/uploads') ? `${baseURL}${item.image}` : item.image || PLACEHOLDER }
                     alt={item.name}
                     onError={handleImgError}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </Box>
 
-                <Box
-                  sx={{
-                    position: 'relative',
-                    border: '3px solid black',
-                    borderRadius: 1,
-                    mx: { xs: 6, sm: 1.5, md: 1.5 },
-                    mb: 1,
-                    px: { xs: 0.5, md: 1 },
-                    py: { xs: 0.2, md: 0.5 },
-                    minHeight: 40,
-                    backgroundColor: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+                <Box sx={{
+                  position: 'relative',
+                  border: '3px solid black',
+                  borderRadius: 1,
+                  mx: { xs: 6, sm: 1.5, md: 1.5 },
+                  mb: 1,
+                  px: { xs: 0.5, md: 1 },
+                  py: { xs: 0.2, md: 0.5 },
+                  minHeight: 40,
+                  backgroundColor: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
                   <Typography variant="h6" sx={{ fontFamily: '"Archivo Black", sans-serif', fontWeight: 600, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem', textAlign: 'center' }, textTransform: 'uppercase' }}>
                     {item.name}
                   </Typography>
-                  <Box sx={{ position: 'absolute', bottom: -6, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
-                  <Box sx={{ position: 'absolute', top: 3.5, right: -6, width: '5px', height: '100%', backgroundColor: 'black', borderRadius: '2px' }} />
                 </Box>
               </Box>
             </Grid>
@@ -933,11 +866,10 @@ const ProductDetail = () => {
         open={zoomOpen}
         onClose={closeZoom}
         fullScreen
-        PaperProps={{
-          sx: { backgroundColor: 'rgba(0,0,0,0.95)' }
-        }}
+        PaperProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.95)' } }}
       >
         <Box
+          ref={containerRef}
           sx={{
             position: 'relative',
             height: '100%',
@@ -959,11 +891,7 @@ const ProductDetail = () => {
           onTouchMove={onTouchMoveZoom}
           onTouchEnd={onTouchEndZoom}
         >
-          <IconButton
-            onClick={closeZoom}
-            sx={{ position: 'absolute', top: 16, right: 16, color: 'white', zIndex: 20 }}
-            aria-label="Cerrar"
-          >
+          <IconButton onClick={closeZoom} sx={{ position: 'absolute', top: 16, right: 16, color: 'white', zIndex: 20 }} aria-label="Cerrar">
             <CloseIcon />
           </IconButton>
 
@@ -985,49 +913,46 @@ const ProductDetail = () => {
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 20,
-            width: { xs: '70%', md: '40%' },
+            width: { xs: '85%', md: '40%' },
             display: 'flex',
             alignItems: 'center',
             gap: 2,
           }}>
-            <Typography sx={{ color: 'white', fontSize: 12 }}>{Math.round(scale * 100)}%</Typography>
+            <Typography sx={{ color: 'white', fontSize: 12 }}>{Math.round(((scale - 1) / (MAX_SCALE - 1)) * 100)}%</Typography>
             <Slider
-              value={(scale - 1) / 3 * 100}
-              onChange={(e, v) => {
-                const newScale = clamp(1 + (v / 100) * 3, 1, 4);
-                setScale(newScale);
-              }}
+              value={sliderValue}
+              onChange={onSliderChange}
               sx={{ color: 'white' }}
             />
           </Box>
 
-          <Box
-            sx={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              width: '100%',
-              height: '100%',
-            }}
-          >
+          <Box sx={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            width: '100%',
+            height: '100%',
+          }}>
             <img
+              ref={imgRef}
               src={displayImage || PLACEHOLDER}
               alt={displayName}
               onError={handleImgError}
               onDragStart={preventImgDrag}
+              onDoubleClick={onDoubleClick}
               style={{
                 transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
                 transition: isPanningRef.current ? 'none' : 'transform 0.08s linear',
-                maxWidth: 'none',
-                maxHeight: 'none',
+                maxWidth: '90%',
+                maxHeight: '85%',
                 width: 'auto',
                 height: 'auto',
                 userSelect: 'none',
                 touchAction: 'none',
-                cursor: scale > 1 ? 'grab' : 'zoom-out',
+                cursor: scale > 1 ? (isPanningRef.current ? 'grabbing' : 'grab') : 'zoom-out',
                 display: 'block',
                 objectFit: 'contain',
               }}
