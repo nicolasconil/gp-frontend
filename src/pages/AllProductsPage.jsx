@@ -49,15 +49,18 @@ const AllProductsPage = () => {
   });
 
   const buildTitle = () => {
+    const path = location.pathname.replace(/\/+$/, "");
+    if (path === "/productos" && !category && !gender) {
+      return "TODOS LOS PRODUCTOS";
+    }
     if (category && gender) {
       return `${category.charAt(0).toUpperCase() + category.slice(1)} · ${gender}`;
     }
     if (category) {
       return category.charAt(0).toUpperCase() + category.slice(1);
     }
-    return "INDUMENTARIA"; // fallback
+    return "INDUMENTARIA";
   };
-
   const title = buildTitle();
 
   if (isLoading) {
