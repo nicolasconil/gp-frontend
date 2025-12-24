@@ -110,7 +110,7 @@ const AllProductsPage = () => {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "center", 
+            justifyContent: "center",
             mt: { xs: 2, md: 6 },
             mb: 6,
             px: { xs: 0, md: 2 },
@@ -122,7 +122,7 @@ const AllProductsPage = () => {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              width: "fit-content", 
+              width: "fit-content",
               maxWidth: "95vw",
               mx: "auto",
               px: { xs: 1, md: 4 },
@@ -137,10 +137,10 @@ const AllProductsPage = () => {
                 letterSpacing: { xs: "-0.5px", sm: "-4px", md: "-10px" },
                 fontWeight: 900,
                 textTransform: "uppercase",
-                lineHeight: 1,
+                lineHeight: 0.95,
                 zIndex: 2,
-                mt: { xs: 1, md: 4 },
-                mb: { xs: 1, md: 4 },
+                mt: { xs: 0.5, md: 2 },
+                mb: { xs: 0.5, md: 2 },
                 cursor: "default",
                 whiteSpace: "normal",
                 overflowWrap: "break-word",
@@ -159,10 +159,10 @@ const AllProductsPage = () => {
 
             <Box
               sx={{
-                height: 4,
+                height: 3,
                 borderRadius: 2,
-                mt: 1.25,
-                width: "100%", 
+                mt: 0.75,
+                width: "100%",
                 maxWidth: "900px",
                 backgroundColor: "black",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
