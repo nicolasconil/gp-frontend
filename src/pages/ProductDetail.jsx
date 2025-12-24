@@ -841,7 +841,7 @@ const ProductDetail = () => {
                 <Box
                   sx={{
                     position: 'absolute',
-                    bottom: -6,
+                    bottom: -5.7,
                     left: 4,
                     width: '100%',
                     height: '4px',
