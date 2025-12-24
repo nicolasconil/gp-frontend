@@ -15,6 +15,15 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
+function formatProductName(str) {
+  if (!str || typeof str !== "string") return str || "";
+  const s = str.trim().toLowerCase();
+  return s.replace(/\b\w+/g, (w) => {
+    if (w.length === 1) return w.toUpperCase();
+    return w[0].toUpperCase() + w.slice(1);
+  });
+}
+
 export default function OrderSuccessPage() {
   const query = useQuery();
   const orderId = query.get("external_reference");
@@ -81,7 +90,6 @@ export default function OrderSuccessPage() {
       }
 
       attemptsRef.current++;
-
       if (attemptsRef.current >= 15) {
         if (isMountedRef.current && (status === "loading" || status === "pending")) {
           setStatus("timeout");
@@ -97,7 +105,7 @@ export default function OrderSuccessPage() {
       if (pollingRef.current) clearInterval(pollingRef.current);
       cancelTokenSource.cancel("Component unmounted");
     };
-  }, [orderId]); 
+  }, [orderId]);
 
   const Wrapper = ({ children }) => (
     <Box
@@ -225,6 +233,7 @@ export default function OrderSuccessPage() {
 
   const computeTotal = (order) => {
     if (!order) return 0;
+
     const tCandidates = [
       order?.totalAmount,
       order?.total?.amount,
@@ -283,8 +292,10 @@ export default function OrderSuccessPage() {
 
           {order.products.map((item, idx) => {
             const prod = item?.product || item || {};
-            const name =
+            const rawName =
               prod?.name || prod?.title || item?.name || "Producto";
+            const name = formatProductName(rawName);
+
             const price = Number(
               prod?.price ?? prod?.unitPrice ?? item?.price ?? 0
             ) || 0;
