@@ -1,9 +1,23 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Box, Button, Typography, Grid, useMediaQuery, useTheme, Container } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  Grid,
+  useMediaQuery,
+  useTheme,
+  Container,
+  Dialog,
+  IconButton,
+  Slider,
+} from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useCart } from '../context/CartContext.jsx'
+import { useCart } from '../context/CartContext.jsx';
 import { getAllProducts, getProductById } from '../api/public.api.js';
 import { ensureArray } from '../utils/array.js';
 
@@ -79,19 +93,13 @@ const ProductDetail = () => {
   const variations = product?.variations || [];
   const isOutOfStock = product?.stock === 0;
 
-  // default numeric sizes fallback (same as before)
   const defaultNumericSizes = Array.from({ length: 12 }, (_, i) => 34 + i);
 
-  // derive available sizes based on category:
-  // - if 'indumentaria' => letter sizes
-  // - else => numeric sizes (from variations if available, otherwise default)
   const sizeOptions = useMemo(() => {
     const cat = String(product?.category || '').toLowerCase();
     if (cat === 'indumentaria') {
-      // choose the set you requested: S, M, L, XL, XXL
       return ['S', 'M', 'L', 'XL', 'XXL'];
     }
-    // for calzado (or other), try to extract numeric sizes from variations
     const numericSizes = Array.from(new Set(
       (variations || [])
         .map(v => {
@@ -109,7 +117,6 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState(allColors[0] || null);
   const [selectedVariation, setSelectedVariation] = useState(null);
 
-  // When product changes, pick first color and first available variation for that color (if any)
   useEffect(() => {
     const newVariations = product?.variations || [];
     const newColors = [...new Set(newVariations.map(v => v.color).filter(Boolean))];
@@ -147,7 +154,6 @@ const ProductDetail = () => {
       setProduct(productFromState);
       return;
     }
-    // If the current product doesn't match the resolvedId, clear it so the query can populate
     if (product && !(product._id === resolvedId || product.id === resolvedId)) {
       setProduct(null);
     }
@@ -226,7 +232,7 @@ const ProductDetail = () => {
   const { data: productsData } = useQuery({
     queryKey: ['randomProducts', product?.gender],
     queryFn: () => getAllProducts({ gender: product?.gender }),
-    enabled: !!product, 
+    enabled: !!product,
     select: data => {
       const items = ensureArray(data?.data).filter(p => p._id !== product?._id);
       if (product?.gender) {
@@ -258,6 +264,118 @@ const ProductDetail = () => {
     const n = typeof p === 'number' ? p : Number(p) || 0;
     try { return n.toLocaleString('es-AR'); } catch { return String(n); }
   })();
+
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [scale, setScale] = useState(1); // 1..4
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const translateStartRef = useRef({ x: 0, y: 0 });
+  const pinchStartDistanceRef = useRef(null);
+  const pinchStartScaleRef = useRef(1);
+
+  const openZoom = () => {
+    setZoomOpen(true);
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+  };
+  const closeZoom = () => {
+    setZoomOpen(false);
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+    pinchStartDistanceRef.current = null;
+    pinchStartScaleRef.current = 1;
+  };
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY;
+    const factor = delta < 0 ? 1.12 : 1 / 1.12;
+    setScale(prev => {
+      const next = clamp(prev * factor, 1, 4);
+      return next;
+    });
+  };
+
+  const handleZoomIn = () => setScale(prev => clamp(prev * 1.25, 1, 4));
+  const handleZoomOut = () => setScale(prev => clamp(prev / 1.25, 1, 4));
+  const handleResetZoom = () => {
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+  };
+
+  const onMouseDownZoom = (e) => {
+    e.preventDefault();
+    isPanningRef.current = true;
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    translateStartRef.current = { ...translate };
+  };
+  const onMouseMoveZoom = (e) => {
+    if (!isPanningRef.current) return;
+    e.preventDefault();
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    setTranslate({
+      x: translateStartRef.current.x + dx,
+      y: translateStartRef.current.y + dy,
+    });
+  };
+  const onMouseUpZoom = (e) => {
+    if (!isPanningRef.current) return;
+    isPanningRef.current = false;
+  };
+
+  const getDistance = (t1, t2) => {
+    const dx = t2.clientX - t1.clientX;
+    const dy = t2.clientY - t1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const onTouchStartZoom = (e) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      isPanningRef.current = true;
+      panStartRef.current = { x: t.clientX, y: t.clientY };
+      translateStartRef.current = { ...translate };
+    } else if (e.touches.length === 2) {
+      pinchStartDistanceRef.current = getDistance(e.touches[0], e.touches[1]);
+      pinchStartScaleRef.current = scale || 1;
+    }
+  };
+
+  const onTouchMoveZoom = (e) => {
+    if (e.touches.length === 1 && isPanningRef.current) {
+      const t = e.touches[0];
+      const dx = t.clientX - panStartRef.current.x;
+      const dy = t.clientY - panStartRef.current.y;
+      setTranslate({
+        x: translateStartRef.current.x + dx,
+        y: translateStartRef.current.y + dy,
+      });
+    } else if (e.touches.length === 2 && pinchStartDistanceRef.current) {
+      const dist = getDistance(e.touches[0], e.touches[1]);
+      const ratio = dist / pinchStartDistanceRef.current;
+      const newScale = clamp(pinchStartScaleRef.current * ratio, 1, 4);
+      setScale(newScale);
+    }
+  };
+
+  const onTouchEndZoom = (e) => {
+    if (e.touches.length === 0) {
+      isPanningRef.current = false;
+      pinchStartDistanceRef.current = null;
+      pinchStartScaleRef.current = scale;
+    } else if (e.touches.length === 1) {
+      isPanningRef.current = true;
+      const t = e.touches[0];
+      panStartRef.current = { x: t.clientX, y: t.clientY };
+      translateStartRef.current = { ...translate };
+    }
+  };
+
+  const preventImgDrag = (e) => e.preventDefault();
 
   if (isFetchingProduct) {
     return (
@@ -373,6 +491,7 @@ const ProductDetail = () => {
               borderRadius: 2,
               maxWidth: { xs: '90%', md: 500 },
               minHeight: { md: 600 },
+              cursor: 'zoom-in',
               ...(isMobile
                 ? {}
                 : {
@@ -387,18 +506,19 @@ const ProductDetail = () => {
             onTouchEnd={onTouchEnd}
             role="region"
             aria-label={`Galería de imágenes del producto ${displayName}`}
+            onClick={(e) => { e.preventDefault(); openZoom(); }}
           >
             <img
               src={displayImage}
               alt={displayName}
               onError={handleImgError}
+              onDragStart={preventImgDrag}
               style={{
                 width: '100%',
                 height: 'auto',
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'transform 0.3s ease',
-                borderRadius: 'none'
               }}
             />
           </Box>
@@ -808,6 +928,113 @@ const ProductDetail = () => {
           ))}
         </Grid>
       </Box>
+
+      <Dialog
+        open={zoomOpen}
+        onClose={closeZoom}
+        fullScreen
+        PaperProps={{
+          sx: { backgroundColor: 'rgba(0,0,0,0.95)' }
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            p: 2,
+            touchAction: 'none',
+          }}
+          onWheel={handleWheel}
+          onMouseDown={onMouseDownZoom}
+          onMouseMove={onMouseMoveZoom}
+          onMouseUp={onMouseUpZoom}
+          onMouseLeave={onMouseUpZoom}
+          onTouchStart={onTouchStartZoom}
+          onTouchMove={onTouchMoveZoom}
+          onTouchEnd={onTouchEndZoom}
+        >
+          <IconButton
+            onClick={closeZoom}
+            sx={{ position: 'absolute', top: 16, right: 16, color: 'white', zIndex: 20 }}
+            aria-label="Cerrar"
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 20, display: 'flex', gap: 1, alignItems: 'center' }}>
+            <IconButton onClick={handleZoomOut} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="zoom out">
+              <ZoomOutIcon />
+            </IconButton>
+            <IconButton onClick={handleResetZoom} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="fit">
+              <Typography sx={{ fontSize: 12 }}>Fit</Typography>
+            </IconButton>
+            <IconButton onClick={handleZoomIn} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="zoom in">
+              <ZoomInIcon />
+            </IconButton>
+          </Box>
+
+          <Box sx={{
+            position: 'absolute',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 20,
+            width: { xs: '70%', md: '40%' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+          }}>
+            <Typography sx={{ color: 'white', fontSize: 12 }}>{Math.round(scale * 100)}%</Typography>
+            <Slider
+              value={(scale - 1) / 3 * 100}
+              onChange={(e, v) => {
+                const newScale = clamp(1 + (v / 100) * 3, 1, 4);
+                setScale(newScale);
+              }}
+              sx={{ color: 'white' }}
+            />
+          </Box>
+
+          <Box
+            sx={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <img
+              src={displayImage || PLACEHOLDER}
+              alt={displayName}
+              onError={handleImgError}
+              onDragStart={preventImgDrag}
+              style={{
+                transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+                transition: isPanningRef.current ? 'none' : 'transform 0.08s linear',
+                maxWidth: 'none',
+                maxHeight: 'none',
+                width: 'auto',
+                height: 'auto',
+                userSelect: 'none',
+                touchAction: 'none',
+                cursor: scale > 1 ? 'grab' : 'zoom-out',
+                display: 'block',
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
+        </Box>
+      </Dialog>
     </Container>
   );
 };
