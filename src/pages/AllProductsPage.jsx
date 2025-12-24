@@ -107,19 +107,17 @@ const AllProductsPage = () => {
   return (
     <Box component="main" sx={{ px: { xs: 2, md: 4 }, py: 4 }}>
       <Box sx={{ maxWidth: 1280, mx: "auto" }}>
-        {/* Responsive title area: centered, max-width, allows wrapping */}
         <Box sx={{ textAlign: "center", mt: { xs: 2, md: 6 }, mb: 6 }}>
           <Box
             sx={{
-              display: "inline-block",
-              px: { xs: 2, md: 4 },
-              py: { xs: 0.5, md: 1 },
-              position: "relative",
-              mb: 2,
-              borderRadius: "5px",
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              maxWidth: "95vw",
+              justifyContent: "center",
+              px: { xs: 1, md: 4 },
               width: "100%",
+              maxWidth: "95vw",
+              mx: "auto",
             }}
           >
             <Typography
@@ -127,10 +125,8 @@ const AllProductsPage = () => {
               aria-label={title}
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
-                // single clamp that adapts smoothly from mobile to desktop
-                fontSize: "clamp(2.4rem, 8.5vw, 8.5rem)",
-                // letterSpacing tuned per breakpoint so text doesn't overlap when small
-                letterSpacing: { xs: "-1px", sm: "-6px", md: "-12px" },
+                fontSize: "clamp(2.1rem, 8.5vw, 6rem)",
+                letterSpacing: { xs: "-0.5px", sm: "-4px", md: "-10px" },
                 fontWeight: 900,
                 textTransform: "uppercase",
                 lineHeight: 1,
@@ -139,15 +135,13 @@ const AllProductsPage = () => {
                 mt: { xs: 1, md: 4 },
                 mb: { xs: 1, md: 4 },
                 cursor: "default",
-                // Allow wrapping so the text doesn't overflow the viewport
                 whiteSpace: "normal",
                 overflowWrap: "break-word",
                 wordBreak: "break-word",
-                // ensure the title stays centered and doesn't push beyond screen
-                display: "inline-block",
+                display: "block",
                 maxWidth: "100%",
                 textAlign: "center",
-                // subtle hover on desktop only
+                px: { xs: 0, sm: 2 },
                 '&:hover': {
                   transform: isMobile ? undefined : "translateY(-2px)",
                   transition: "transform 200ms ease",
@@ -157,14 +151,12 @@ const AllProductsPage = () => {
               {title}
             </Typography>
 
-            {/* Underline — separate element so it centers and adapts to wrapped text */}
             <Box
               sx={{
                 height: 4,
                 borderRadius: 2,
                 mt: 1.25,
-                width: "min(92%, 1200px)",
-                // make underline visually aligned with title width by using auto margins
+                width: "min(92%, 900px)",
                 mx: "auto",
                 backgroundColor: "black",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
