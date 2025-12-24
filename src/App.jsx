@@ -3,7 +3,7 @@ import { fetchCsrfToken } from "./api/csrf.api.js";
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import HomePage from './pages/HomePage.jsx';
-import ProductPage from './pages/ProductPage.jsx';
+import OrderSuccessPage from './pages/OrderSuccessPage.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
 import AllProductsPage from './pages/AllProductsPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -46,6 +46,11 @@ function App() {
         <Route path='/productos' element={<AllProductsPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/checkout' element={<Checkout />} />
+
+        <Route path='/order/success' element={<OrderSuccessPage />} />
+        <Route path='/order/pending' element={<OrderSuccessPage />} />
+        <Route path='/order/payment-failed' element={<OrderSuccessPage />} />
+
         <Route path='/about-us' element={<AboutUsPage />} />
         <Route path='/terms-of-service' element={<TermsOfServicePage />} />
         <Route path='/shipping-policy' element={<ShippingPolicyPage />} />
