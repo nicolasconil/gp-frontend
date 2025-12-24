@@ -55,7 +55,7 @@ const AllProductsPage = () => {
     if (category) {
       return category.charAt(0).toUpperCase() + category.slice(1);
     }
-    return "INDUMENTARIA"; // like your screenshots, uppercase
+    return "INDUMENTARIA"; // fallback
   };
 
   const title = buildTitle();
@@ -107,17 +107,25 @@ const AllProductsPage = () => {
   return (
     <Box component="main" sx={{ px: { xs: 2, md: 4 }, py: 4 }}>
       <Box sx={{ maxWidth: 1280, mx: "auto" }}>
-        <Box sx={{ textAlign: "center", mt: { xs: 2, md: 6 }, mb: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center", 
+            mt: { xs: 2, md: 6 },
+            mb: 6,
+            px: { xs: 0, md: 2 },
+          }}
+        >
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              px: { xs: 1, md: 4 },
-              width: "100%",
+              width: "fit-content", 
               maxWidth: "95vw",
               mx: "auto",
+              px: { xs: 1, md: 4 },
             }}
           >
             <Typography
@@ -131,7 +139,6 @@ const AllProductsPage = () => {
                 textTransform: "uppercase",
                 lineHeight: 1,
                 zIndex: 2,
-                position: "relative",
                 mt: { xs: 1, md: 4 },
                 mb: { xs: 1, md: 4 },
                 cursor: "default",
@@ -139,7 +146,6 @@ const AllProductsPage = () => {
                 overflowWrap: "break-word",
                 wordBreak: "break-word",
                 display: "block",
-                maxWidth: "100%",
                 textAlign: "center",
                 px: { xs: 0, sm: 2 },
                 '&:hover': {
@@ -156,8 +162,8 @@ const AllProductsPage = () => {
                 height: 4,
                 borderRadius: 2,
                 mt: 1.25,
-                width: "min(92%, 900px)",
-                mx: "auto",
+                width: "100%", 
+                maxWidth: "900px",
                 backgroundColor: "black",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
               }}
