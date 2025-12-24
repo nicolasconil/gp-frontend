@@ -36,8 +36,8 @@ const genderLabel = (g) => {
   return map[String(g).toLowerCase()] || String(g);
 };
 
-const MAX_SCALE = 2.0; 
-const MIN_SCALE = 1.0; 
+const MAX_SCALE = 2.0;
+const MIN_SCALE = 1.0;
 
 const ProductDetail = () => {
   const theme = useTheme();
@@ -268,7 +268,7 @@ const ProductDetail = () => {
   })();
 
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [scale, setScale] = useState(1); 
+  const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0 });
@@ -282,7 +282,7 @@ const ProductDetail = () => {
 
   const openZoom = () => {
     setZoomOpen(true);
-    setScale(1); 
+    setScale(1);
     setTranslate({ x: 0, y: 0 });
   };
   const closeZoom = () => {
@@ -347,7 +347,7 @@ const ProductDetail = () => {
   };
 
   const onMouseDownZoom = (e) => {
-    if (scale <= 1) return; 
+    if (scale <= 1) return;
     e.preventDefault();
     isPanningRef.current = true;
     panStartRef.current = { x: e.clientX, y: e.clientY };
@@ -518,6 +518,28 @@ const ProductDetail = () => {
           sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', border: '3px solid black', borderRadius: '4px', backgroundColor: 'black', color: 'white' }}
         >
           Reintentar
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -5.5,
+              left: 4,
+              width: '98%',
+              height: '6px',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 6,
+              right: -5,
+              width: '6px',
+              height: { xs: '95%', md: '97%' },
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
         </Button>
       </Box>
     );
@@ -819,7 +841,7 @@ const ProductDetail = () => {
                 <Box
                   sx={{
                     position: 'absolute',
-                    bottom: -5.5,
+                    bottom: -6,
                     left: 4,
                     width: '100%',
                     height: '4px',
@@ -943,7 +965,7 @@ const ProductDetail = () => {
                     {item.name}
                   </Typography>
 
-                  <Box sx={{ position: 'absolute', bottom: -6, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
+                  <Box sx={{ position: 'absolute', bottom: -5.5, left: 6, width: '100%', height: '4px', backgroundColor: 'black', borderRadius: '2px' }} />
                   <Box sx={{ position: 'absolute', top: 3.5, right: -6, width: '5px', height: '100%', backgroundColor: 'black', borderRadius: '2px' }} />
                 </Box>
               </Box>
