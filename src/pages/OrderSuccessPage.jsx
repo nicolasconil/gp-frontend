@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useLocation, Link } from "react-router-dom";
-import { Box, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Divider,
+} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
@@ -12,9 +17,7 @@ function useQuery() {
 
 export default function OrderSuccessPage() {
   const query = useQuery();
-
   const orderId = query.get("external_reference");
-  const mpStatus = query.get("status"); 
 
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("loading");
@@ -36,6 +39,7 @@ export default function OrderSuccessPage() {
         const o = res.data;
 
         setOrder(o);
+
         const payStatus = o.payment?.status;
 
         if (payStatus === "aprobado") {
@@ -69,7 +73,7 @@ export default function OrderSuccessPage() {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [orderId]);
+  }, [orderId, status]);
 
   const Wrapper = ({ children }) => (
     <Box
@@ -81,7 +85,7 @@ export default function OrderSuccessPage() {
         px: 2,
       }}
     >
-      <Box sx={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
+      <Box sx={{ maxWidth: 560, width: "100%", textAlign: "center" }}>
         {children}
       </Box>
     </Box>
@@ -107,15 +111,47 @@ export default function OrderSuccessPage() {
     </Typography>
   );
 
-
   if (status === "loading") {
     return (
-      <Wrapper>
-        <HourglassBottomIcon sx={{ fontSize: 60, opacity: 0.6 }} />
-        <Title>Procesando pago</Title>
-        <Text>Gracias por tu compra. Estamos verificando tu pago.</Text>
-        <Text>No cierres esta ventana.</Text>
-      </Wrapper>
+      <Box
+        sx={{
+          height: "60vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <Box
+          component="img"
+          src="/logo1.svg"
+          alt="Procesando pago"
+          sx={{
+            width: 120,
+            opacity: 0.5,
+            animation: "pulseOpacity 2s infinite ease-in-out",
+          }}
+        />
+        <Typography
+          sx={{
+            mt: 2,
+            fontFamily: '"Archivo Black", sans-serif',
+            letterSpacing: "-0.1rem",
+          }}
+        >
+          Procesando pago...
+        </Typography>
+
+        <style>
+          {`
+            @keyframes pulseOpacity {
+              0% { opacity: 0.2; }
+              50% { opacity: 1; }
+              100% { opacity: 0.2; }
+            }
+          `}
+        </style>
+      </Box>
     );
   }
 
@@ -123,22 +159,9 @@ export default function OrderSuccessPage() {
     return (
       <Wrapper>
         <Title>Pago en proceso</Title>
-        <Text>
-          Estamos procesando tu pago. Puede tardar unos segundos más.
-        </Text>
-        <Text>
-          Revisá tu correo o contactanos si no recibís confirmación.
-        </Text>
-        <Button
-          component={Link}
-          to="/"
-          sx={{
-            mt: 3,
-            fontFamily: '"Archivo Black", sans-serif',
-            textDecoration: "underline",
-            color: "black",
-          }}
-        >
+        <Text>Estamos procesando tu pago.</Text>
+        <Text>Revisá tu correo en breve.</Text>
+        <Button component={Link} to="/" sx={{ mt: 3, textDecoration: "underline", color: "black" }}>
           Volver al inicio
         </Button>
       </Wrapper>
@@ -150,13 +173,8 @@ export default function OrderSuccessPage() {
       <Wrapper>
         <HourglassBottomIcon color="warning" sx={{ fontSize: 60 }} />
         <Title>Pago pendiente</Title>
-        <Text>
-          Tu pago está siendo revisado por MercadoPago.
-        </Text>
-        <Text>
-          Te avisaremos por email cuando se confirme.
-        </Text>
-        <Text>gpkickslab@gmail.com</Text>
+        <Text>Tu pago está siendo revisado.</Text>
+        <Text>Te avisaremos por email.</Text>
       </Wrapper>
     );
   }
@@ -166,22 +184,8 @@ export default function OrderSuccessPage() {
       <Wrapper>
         <CancelIcon color="error" sx={{ fontSize: 60 }} />
         <Title>Pago rechazado</Title>
-        <Text>
-          El pago no pudo completarse.
-        </Text>
-        <Text>
-          Podés intentarlo nuevamente o contactarnos.
-        </Text>
-        <Button
-          component={Link}
-          to="/"
-          sx={{
-            mt: 3,
-            fontFamily: '"Archivo Black", sans-serif',
-            textDecoration: "underline",
-            color: "black",
-          }}
-        >
+        <Text>El pago no pudo completarse.</Text>
+        <Button component={Link} to="/" sx={{ mt: 3, textDecoration: "underline", color: "black" }}>
           Volver al inicio
         </Button>
       </Wrapper>
@@ -197,28 +201,92 @@ export default function OrderSuccessPage() {
     );
   }
 
+  const total =
+    Number(order?.totalAmount) ||
+    Number(order?.total?.amount) ||
+    Number(order?.total) ||
+    0;
 
   return (
     <Wrapper>
       <CheckCircleIcon color="success" sx={{ fontSize: 70 }} />
       <Title>Pago confirmado</Title>
 
-      <Text>
-        Gracias por tu compra. Tu pago fue aprobado correctamente.
-      </Text>
-      <Text>
-        Te enviamos un email con el comprobante y los datos de envío.
-      </Text>
+      <Text>Gracias por tu compra.</Text>
+      <Text>Te enviamos un email con los datos del pedido.</Text>
 
-      {order && (
-        <Box sx={{ mt: 3 }}>
-          <Text>
-            <strong>Orden:</strong> {order._id}
-          </Text>
-          <Text>
-            <strong>Total:</strong>{" "}
-            ${Number(order.totalAmount).toLocaleString("es-AR")} ARS
-          </Text>
+      <Box sx={{ mt: 3 }}>
+        <Text>
+          <strong>Orden:</strong> {order?._id}
+        </Text>
+        <Text>
+          <strong>Total:</strong>{" "}
+          ${total.toLocaleString("es-AR")} ARS
+        </Text>
+      </Box>
+
+      {/* PRODUCTOS */}
+      {order?.products?.length > 0 && (
+        <Box sx={{ mt: 4, textAlign: "left" }}>
+          <Divider sx={{ mb: 2 }} />
+          <Typography
+            sx={{
+              fontFamily: '"Archivo Black", sans-serif',
+              textTransform: "uppercase",
+              letterSpacing: "-0.08rem",
+              mb: 2,
+            }}
+          >
+            Productos
+          </Typography>
+
+          {order.products.map((item, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                display: "flex",
+                gap: 2,
+                mb: 2,
+                alignItems: "center",
+              }}
+            >
+              <Box
+                component="img"
+                src={item.image || "https://via.placeholder.com/80"}
+                alt={item.name}
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  border: "1px solid #ddd",
+                }}
+              />
+
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography sx={{ fontWeight: 600 }}>
+                  {item.name}
+                </Typography>
+                <Typography variant="body2">
+                  Cantidad: {item.quantity}
+                </Typography>
+                {item.size && (
+                  <Typography variant="body2">
+                    Talle: {item.size}
+                  </Typography>
+                )}
+                {item.color && (
+                  <Typography variant="body2">
+                    Color: {item.color}
+                  </Typography>
+                )}
+              </Box>
+
+              <Typography sx={{ fontWeight: 600 }}>
+                ${Number(item.price).toLocaleString("es-AR")}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       )}
 
