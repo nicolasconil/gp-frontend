@@ -5,7 +5,6 @@ import {
   Typography,
   useMediaQuery,
   Button,
-  CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Feed from "../components/Feed.jsx";
@@ -29,7 +28,7 @@ const AllProductsPage = () => {
   const perPage = Number(searchParams.get("perPage") || 24);
 
   const {
-    data: products = [],
+    data: productsData,
     isLoading,
     isError,
     refetch,
@@ -47,6 +46,8 @@ const AllProductsPage = () => {
     select: (res) => res.data,
     keepPreviousData: true,
   });
+
+  const products = Array.isArray(productsData) ? productsData : (productsData?.data ?? productsData ?? []);
 
   const buildTitle = () => {
     const path = location.pathname.replace(/\/+$/, "");
@@ -71,13 +72,33 @@ const AllProductsPage = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          backgroundColor: "transparent",
           flexDirection: "column",
         }}
       >
-        <CircularProgress />
+        <Box
+          component="img"
+          src="/logo1.svg"
+          alt="Cargando..."
+          sx={{
+            width: 120,
+            height: "auto",
+            opacity: 0.5,
+            animation: "pulseOpacity 2s infinite ease-in-out",
+          }}
+        />
         <Typography sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
           Cargando productos...
         </Typography>
+        <style>
+          {`
+            @keyframes pulseOpacity {
+              0% { opacity: 0.2; }
+              50% { opacity: 1; }
+              100% { opacity: 0.2; }
+            }
+          `}
+        </style>
       </Box>
     );
   }
@@ -90,18 +111,61 @@ const AllProductsPage = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          backgroundColor: "transparent",
           flexDirection: "column",
+          textAlign: "center",
         }}
       >
-        <Typography sx={{ fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
+        <Box
+          component="img"
+          src="/logo1.svg"
+          alt="Error"
+          sx={{
+            width: 120,
+            height: "auto",
+            opacity: 0.3,
+          }}
+        />
+        <Typography sx={{ mt: 2, fontFamily: '"Archivo Black", sans-serif', letterSpacing: '-0.1rem' }}>
           Error cargando los productos.
         </Typography>
         <Button
           variant="contained"
-          sx={{ mt: 2, backgroundColor: "black" }}
           onClick={() => refetch()}
+          sx={{
+            mt: 2,
+            fontFamily: '"Archivo Black", sans-serif',
+            border: '3px solid black',
+            borderRadius: '4px',
+            backgroundColor: 'black',
+            color: 'white',
+            position: 'relative',
+            overflow: 'visible'
+          }}
         >
           Reintentar
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -5,
+              left: 6,
+              width: '98%',
+              height: '6px',
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 6,
+              right: -5,
+              width: '6px',
+              height: { xs: '95%', md: '97%' },
+              backgroundColor: 'black',
+              borderRadius: '2px',
+            }}
+          />
         </Button>
       </Box>
     );
@@ -159,7 +223,6 @@ const AllProductsPage = () => {
             >
               {title}
             </Typography>
-
             <Box
               sx={{
                 height: 3,
@@ -173,7 +236,6 @@ const AllProductsPage = () => {
             />
           </Box>
         </Box>
-
         <Grid
           container
           spacing={3}
