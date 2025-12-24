@@ -134,10 +134,10 @@ const AllProductsPage = () => {
               sx={{
                 fontFamily: '"Archivo Black", sans-serif',
                 fontSize: "clamp(2.1rem, 8.5vw, 6rem)",
-                letterSpacing: { xs: "-0.5px", sm: "-4px", md: "-10px" },
+                letterSpacing: { xs: "-1px", sm: "-4px", md: "-10px" },
                 fontWeight: 900,
                 textTransform: "uppercase",
-                lineHeight: 0.95,
+                lineHeight: { xs: 0.88, sm: 0.95, md: 1 },
                 zIndex: 2,
                 mt: { xs: 0.5, md: 2 },
                 mb: { xs: 0.5, md: 2 },
