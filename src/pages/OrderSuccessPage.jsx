@@ -20,11 +20,20 @@ export default function OrderSuccessPage() {
   const orderId = query.get("external_reference");
 
   const [order, setOrder] = useState(null);
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState("loading"); 
   const [message, setMessage] = useState("");
 
   const pollingRef = useRef(null);
   const attemptsRef = useRef(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!orderId) {
@@ -33,37 +42,51 @@ export default function OrderSuccessPage() {
       return;
     }
 
+    attemptsRef.current = 0;
+    setStatus("loading");
+
+    let cancelTokenSource = axios.CancelToken.source();
+
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`/api/orders/public/${orderId}`);
+        const res = await axios.get(`/api/orders/public/${orderId}`, {
+          cancelToken: cancelTokenSource.token,
+        });
         const o = res.data;
+
+        if (!isMountedRef.current) return;
 
         setOrder(o);
 
-        const payStatus = o.payment?.status;
+        const payStatus = o?.payment?.status || o?.paymentStatus || o?.status;
 
-        if (payStatus === "aprobado") {
+        if (payStatus === "aprobado" || payStatus === "approved") {
           setStatus("approved");
-          clearInterval(pollingRef.current);
-        } else if (payStatus === "rechazado") {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        } else if (payStatus === "rechazado" || payStatus === "rejected") {
           setStatus("rejected");
-          clearInterval(pollingRef.current);
-        } else if (payStatus === "pendiente") {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        } else if (payStatus === "pendiente" || payStatus === "pending") {
           setStatus("pending");
         } else {
           setStatus("loading");
         }
       } catch (err) {
+        if (axios.isCancel(err)) return;
         console.error("Error fetching order", err);
+        if (!isMountedRef.current) return;
         setStatus("error");
         setMessage("No se pudo recuperar la orden.");
-        clearInterval(pollingRef.current);
+        if (pollingRef.current) clearInterval(pollingRef.current);
       }
 
       attemptsRef.current++;
-      if (attemptsRef.current >= 15 && status === "loading") {
-        setStatus("timeout");
-        clearInterval(pollingRef.current);
+
+      if (attemptsRef.current >= 15) {
+        if (isMountedRef.current && (status === "loading" || status === "pending")) {
+          setStatus("timeout");
+        }
+        if (pollingRef.current) clearInterval(pollingRef.current);
       }
     };
 
@@ -72,8 +95,9 @@ export default function OrderSuccessPage() {
 
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
+      cancelTokenSource.cancel("Component unmounted");
     };
-  }, [orderId, status]);
+  }, [orderId]); 
 
   const Wrapper = ({ children }) => (
     <Box
@@ -85,7 +109,7 @@ export default function OrderSuccessPage() {
         px: 2,
       }}
     >
-      <Box sx={{ maxWidth: 560, width: "100%", textAlign: "center" }}>
+      <Box sx={{ maxWidth: 760, width: "100%", textAlign: "center" }}>
         {children}
       </Box>
     </Box>
@@ -106,9 +130,7 @@ export default function OrderSuccessPage() {
   );
 
   const Text = ({ children }) => (
-    <Typography sx={{ fontSize: "1rem", mb: 1.5 }}>
-      {children}
-    </Typography>
+    <Typography sx={{ fontSize: "1rem", mb: 1.5 }}>{children}</Typography>
   );
 
   if (status === "loading") {
@@ -201,11 +223,32 @@ export default function OrderSuccessPage() {
     );
   }
 
-  const total =
-    Number(order?.totalAmount) ||
-    Number(order?.total?.amount) ||
-    Number(order?.total) ||
-    0;
+  const computeTotal = (order) => {
+    if (!order) return 0;
+    const tCandidates = [
+      order?.totalAmount,
+      order?.total?.amount,
+      order?.total,
+      order?.amount,
+      order?.payment?.amount,
+    ];
+
+    for (const t of tCandidates) {
+      const n = Number(t);
+      if (!Number.isNaN(n) && n > 0) return n;
+    }
+
+    const sum = (order?.products || []).reduce((acc, item) => {
+      const prod = item?.product || item || {};
+      const price = Number(prod?.price ?? prod?.unitPrice ?? item?.price ?? 0) || 0;
+      const qty = Number(item?.quantity ?? item?.qty ?? 1) || 1;
+      return acc + price * qty;
+    }, 0);
+
+    return sum;
+  };
+
+  const total = computeTotal(order);
 
   return (
     <Wrapper>
@@ -217,15 +260,13 @@ export default function OrderSuccessPage() {
 
       <Box sx={{ mt: 3 }}>
         <Text>
-          <strong>Orden:</strong> {order?._id}
+          <strong>Orden:</strong> {order?._id || order?.id || "—"}
         </Text>
         <Text>
-          <strong>Total:</strong>{" "}
-          ${total.toLocaleString("es-AR")} ARS
+          <strong>Total:</strong> ${Number(total || 0).toLocaleString("es-AR")} ARS
         </Text>
       </Box>
 
-      {/* PRODUCTOS */}
       {order?.products?.length > 0 && (
         <Box sx={{ mt: 4, textAlign: "left" }}>
           <Divider sx={{ mb: 2 }} />
@@ -240,53 +281,77 @@ export default function OrderSuccessPage() {
             Productos
           </Typography>
 
-          {order.products.map((item, idx) => (
-            <Box
-              key={idx}
-              sx={{
-                display: "flex",
-                gap: 2,
-                mb: 2,
-                alignItems: "center",
-              }}
-            >
+          {order.products.map((item, idx) => {
+            const prod = item?.product || item || {};
+            const name =
+              prod?.name || prod?.title || item?.name || "Producto";
+            const price = Number(
+              prod?.price ?? prod?.unitPrice ?? item?.price ?? 0
+            ) || 0;
+            const quantity = Number(item?.quantity ?? item?.qty ?? 1) || 1;
+
+            let image =
+              prod?.image ||
+              prod?.images?.[0] ||
+              (Array.isArray(prod?.images) && prod.images?.[0]?.url) ||
+              null;
+
+            if (image && typeof image === "object") {
+              image = image?.url || image?.secure_url || null;
+            }
+
+            if (image && typeof image === "string" && !image.startsWith("http")) {
+              const base = process.env.REACT_APP_API_URL || "";
+              image = base.replace(/\/$/, "") + "/" + image.replace(/^\//, "");
+            }
+
+            const lineTotal = price * quantity;
+
+            return (
               <Box
-                component="img"
-                src={item.image || "https://via.placeholder.com/80"}
-                alt={item.name}
+                key={idx}
                 sx={{
-                  width: 80,
-                  height: 80,
-                  objectFit: "cover",
-                  borderRadius: 1,
-                  border: "1px solid #ddd",
+                  display: "flex",
+                  gap: 2,
+                  mb: 2,
+                  alignItems: "center",
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src={image || "https://via.placeholder.com/80"}
+                  alt={name}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    objectFit: "cover",
+                    borderRadius: 1,
+                    border: "1px solid #ddd",
+                  }}
+                />
 
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography sx={{ fontWeight: 600 }}>
-                  {item.name}
-                </Typography>
-                <Typography variant="body2">
-                  Cantidad: {item.quantity}
-                </Typography>
-                {item.size && (
-                  <Typography variant="body2">
-                    Talle: {item.size}
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
+                  <Typography variant="body2">Cantidad: {quantity}</Typography>
+                  {item?.size && (
+                    <Typography variant="body2">Talle: {item.size}</Typography>
+                  )}
+                  {item?.color && (
+                    <Typography variant="body2">Color: {item.color}</Typography>
+                  )}
+                </Box>
+
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography sx={{ fontWeight: 600 }}>
+                    ${Number(lineTotal).toLocaleString("es-AR")}
                   </Typography>
-                )}
-                {item.color && (
-                  <Typography variant="body2">
-                    Color: {item.color}
+                  <Typography variant="caption" display="block">
+                    (${Number(price).toLocaleString("es-AR")} c/u)
                   </Typography>
-                )}
+                </Box>
               </Box>
-
-              <Typography sx={{ fontWeight: 600 }}>
-                ${Number(item.price).toLocaleString("es-AR")}
-              </Typography>
-            </Box>
-          ))}
+            );
+          })}
         </Box>
       )}
 
