@@ -280,7 +280,15 @@ const ProductDetail = () => {
   const containerRef = useRef(null);
   const imgRef = useRef(null);
 
+  const prevBodyOverflow = useRef(null);
+
   const openZoom = () => {
+    try {
+      prevBodyOverflow.current = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    } catch (err) {
+      prevBodyOverflow.current = null;
+    }
     setZoomOpen(true);
     setScale(1);
     setTranslate({ x: 0, y: 0 });
@@ -293,7 +301,27 @@ const ProductDetail = () => {
     pinchStartScaleRef.current = 1;
     pinchStartMidpointRef.current = { x: 0, y: 0 };
     pinchStartTranslateRef.current = { x: 0, y: 0 };
+
+    try {
+      document.body.style.overflow = prevBodyOverflow.current ?? '';
+      prevBodyOverflow.current = null;
+    } catch (err) {
+
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      try {
+        if (prevBodyOverflow.current !== null) {
+          document.body.style.overflow = prevBodyOverflow.current ?? '';
+          prevBodyOverflow.current = null;
+        }
+      } catch (err) {
+
+      }
+    };
+  }, []);
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -469,6 +497,7 @@ const ProductDetail = () => {
       const newScale = Math.min(1.5, MAX_SCALE);
       const k = newScale / (scale || 1);
       const T0 = { ...translate };
+
       const target = {
         x: T0.x + (1 - k) * (P.x - T0.x),
         y: T0.y + (1 - k) * (P.y - T0.y),
@@ -492,17 +521,6 @@ const ProductDetail = () => {
     setScale(newScale);
     setTranslate(t => clampTranslate(t.x, t.y, newScale));
   };
-
-  useEffect(() => {
-    if (zoomOpen) {
-      const prev = { overflow: document.body.style.overflow };
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prev.overflow || '';
-      };
-    }
-    return undefined;
-  }, [zoomOpen]);
 
   if (isFetchingProduct) {
     return (
@@ -1068,10 +1086,8 @@ const ProductDetail = () => {
               right: { xs: 'env(safe-area-inset-right, 12px)', sm: 16, md: 24, lg: 32 },
               color: 'white',
               zIndex: 1400,
-              bgcolor: 'rgba(255,255,255,0.04)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
-              borderRadius: 1,
-              border: '1px solid rgba(255,255,255,0.06)',
+              bgcolor: 'transparent',
+              p: { xs: 1.2, sm: 0.5 }, 
             }}
             aria-label="Cerrar"
           >
