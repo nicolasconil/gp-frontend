@@ -12,8 +12,6 @@ import {
   Slider,
 } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -276,6 +274,8 @@ const ProductDetail = () => {
 
   const pinchStartDistanceRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
+  const pinchStartMidpointRef = useRef({ x: 0, y: 0 });
+  const pinchStartTranslateRef = useRef({ x: 0, y: 0 });
 
   const containerRef = useRef(null);
   const imgRef = useRef(null);
@@ -291,6 +291,8 @@ const ProductDetail = () => {
     setTranslate({ x: 0, y: 0 });
     pinchStartDistanceRef.current = null;
     pinchStartScaleRef.current = 1;
+    pinchStartMidpointRef.current = { x: 0, y: 0 };
+    pinchStartTranslateRef.current = { x: 0, y: 0 };
   };
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -303,8 +305,9 @@ const ProductDetail = () => {
     const containerRect = container.getBoundingClientRect();
     const imgRect = img.getBoundingClientRect();
 
-    const baseW = imgRect.width;
-    const baseH = imgRect.height;
+    const prevScale = scale || 1;
+    const baseW = imgRect.width / prevScale;
+    const baseH = imgRect.height / prevScale;
 
     const effW = baseW * currentScale;
     const effH = baseH * currentScale;
@@ -378,19 +381,34 @@ const ProductDetail = () => {
     return Math.sqrt(dx * dx + dy * dy);
   };
 
+  const getMidpoint = (t1, t2, containerRect) => {
+    const mx = (t1.clientX + t2.clientX) / 2;
+    const my = (t1.clientY + t2.clientY) / 2;
+    return {
+      x: mx - (containerRect.left + containerRect.width / 2),
+      y: my - (containerRect.top + containerRect.height / 2),
+    };
+  };
+
   const onTouchStartZoom = (e) => {
+    e.preventDefault?.();
     if (e.touches.length === 1 && scale > 1) {
       const t = e.touches[0];
       isPanningRef.current = true;
       panStartRef.current = { x: t.clientX, y: t.clientY };
       translateStartRef.current = { ...translate };
     } else if (e.touches.length === 2) {
+      const container = containerRef.current;
+      const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
       pinchStartDistanceRef.current = getDistance(e.touches[0], e.touches[1]);
       pinchStartScaleRef.current = scale || 1;
+      pinchStartTranslateRef.current = { ...translate };
+      pinchStartMidpointRef.current = getMidpoint(e.touches[0], e.touches[1], containerRect);
     }
   };
 
   const onTouchMoveZoom = (e) => {
+    e.preventDefault?.();
     if (e.touches.length === 1 && isPanningRef.current && scale > 1) {
       const t = e.touches[0];
       const dx = t.clientX - panStartRef.current.x;
@@ -405,10 +423,18 @@ const ProductDetail = () => {
       });
     } else if (e.touches.length === 2 && pinchStartDistanceRef.current) {
       const dist = getDistance(e.touches[0], e.touches[1]);
-      const ratio = dist / pinchStartDistanceRef.current;
-      const newScale = clamp(pinchStartScaleRef.current * ratio, MIN_SCALE, MAX_SCALE);
+      const newScale = clamp(pinchStartScaleRef.current * (dist / pinchStartDistanceRef.current), MIN_SCALE, MAX_SCALE);
+
+      const k = newScale / (pinchStartScaleRef.current || 1);
+      const P = pinchStartMidpointRef.current || { x: 0, y: 0 }; 
+      const T0 = pinchStartTranslateRef.current || { x: 0, y: 0 };
+      const candidate = {
+        x: T0.x + (1 - k) * (P.x - T0.x),
+        y: T0.y + (1 - k) * (P.y - T0.y),
+      };
+      const clamped = clampTranslate(candidate.x, candidate.y, newScale);
       setScale(newScale);
-      setTranslate(t => clampTranslate(t.x, t.y, newScale));
+      setTranslate(clamped);
     }
   };
 
@@ -417,6 +443,8 @@ const ProductDetail = () => {
       isPanningRef.current = false;
       pinchStartDistanceRef.current = null;
       pinchStartScaleRef.current = scale;
+      pinchStartMidpointRef.current = { x: 0, y: 0 };
+      pinchStartTranslateRef.current = { x: 0, y: 0 };
     } else if (e.touches.length === 1) {
       isPanningRef.current = false;
       pinchStartDistanceRef.current = null;
@@ -426,12 +454,28 @@ const ProductDetail = () => {
 
   const preventImgDrag = (e) => e.preventDefault();
 
-  const onDoubleClick = () => {
-    const mid = 1.5;
+  const onDoubleClick = (e) => {
+    const container = containerRef.current;
+    const containerRect = container ? container.getBoundingClientRect() : null;
+    const clientX = e?.clientX ?? (containerRect ? containerRect.left + containerRect.width / 2 : 0);
+    const clientY = e?.clientY ?? (containerRect ? containerRect.top + containerRect.height / 2 : 0);
+
+    const P = containerRect ? {
+      x: clientX - (containerRect.left + containerRect.width / 2),
+      y: clientY - (containerRect.top + containerRect.height / 2),
+    } : { x: 0, y: 0 };
+
     if (Math.abs(scale - 1) < 0.05) {
-      const next = Math.min(mid, MAX_SCALE);
-      setScale(next);
-      setTranslate({ x: 0, y: 0 });
+      const newScale = Math.min(1.5, MAX_SCALE);
+      const k = newScale / (scale || 1);
+      const T0 = { ...translate };
+      const target = {
+        x: T0.x + (1 - k) * (P.x - T0.x),
+        y: T0.y + (1 - k) * (P.y - T0.y),
+      };
+      const clamped = clampTranslate(target.x, target.y, newScale);
+      setScale(newScale);
+      setTranslate(clamped);
     } else {
       handleResetZoom();
     }
@@ -448,6 +492,17 @@ const ProductDetail = () => {
     setScale(newScale);
     setTranslate(t => clampTranslate(t.x, t.y, newScale));
   };
+
+  useEffect(() => {
+    if (zoomOpen) {
+      const prev = { overflow: document.body.style.overflow };
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev.overflow || '';
+      };
+    }
+    return undefined;
+  }, [zoomOpen]);
 
   if (isFetchingProduct) {
     return (
@@ -978,7 +1033,7 @@ const ProductDetail = () => {
         open={zoomOpen}
         onClose={closeZoom}
         fullScreen
-        PaperProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.95)' } }}
+        PaperProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.95)', overflow: 'hidden' } }}
       >
         <Box
           ref={containerRef}
@@ -993,6 +1048,7 @@ const ProductDetail = () => {
             overflow: 'hidden',
             p: 2,
             touchAction: 'none',
+            overscrollBehavior: 'none',
           }}
           onWheel={handleWheel}
           onMouseDown={onMouseDownZoom}
@@ -1007,36 +1063,26 @@ const ProductDetail = () => {
             <CloseIcon />
           </IconButton>
 
-          <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 20, display: 'flex', gap: 1, alignItems: 'center' }}>
-            <IconButton onClick={handleZoomOut} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="zoom out">
-              <ZoomOutIcon />
-            </IconButton>
-            <IconButton onClick={handleResetZoom} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="fit">
-              <Typography sx={{ fontSize: 12 }}>Fit</Typography>
-            </IconButton>
-            <IconButton onClick={handleZoomIn} sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: 'white' }} aria-label="zoom in">
-              <ZoomInIcon />
-            </IconButton>
-          </Box>
-
-          <Box sx={{
-            position: 'absolute',
-            bottom: 24,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 20,
-            width: { xs: '85%', md: '40%' },
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-          }}>
-            <Typography sx={{ color: 'white', fontSize: 12 }}>{Math.round(((scale - 1) / (MAX_SCALE - 1)) * 100)}%</Typography>
-            <Slider
-              value={sliderValue}
-              onChange={onSliderChange}
-              sx={{ color: 'white' }}
-            />
-          </Box>
+          {!isMobile && (
+            <Box sx={{
+              position: 'absolute',
+              bottom: 24,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 20,
+              width: { xs: '85%', md: '40%' },
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}>
+              <Typography sx={{ color: 'white', fontSize: 12 }}>{Math.round(((scale - 1) / (MAX_SCALE - 1)) * 100)}%</Typography>
+              <Slider
+                value={sliderValue}
+                onChange={onSliderChange}
+                sx={{ color: 'white' }}
+              />
+            </Box>
+          )}
 
           <Box sx={{
             maxWidth: '100%',
@@ -1057,6 +1103,7 @@ const ProductDetail = () => {
               onDoubleClick={onDoubleClick}
               style={{
                 transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+                transformOrigin: 'center center',
                 transition: isPanningRef.current ? 'none' : 'transform 0.08s linear',
                 maxWidth: '90%',
                 maxHeight: '85%',
