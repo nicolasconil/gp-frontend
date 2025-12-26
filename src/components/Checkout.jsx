@@ -227,10 +227,10 @@ const Checkout = () => {
                 <Button
                     type="submit"
                     variant="contained"
-                    sx={{ mt: 3, mb: 3, width: '100%', color: 'white', backgroundColor: 'black', fontFamily: '"Archivo Black", sans-serif', fontWeight: 300, fontSize: '1rem' }}
+                    sx={{ mt: 3, mb: 3, width: '100%', color: 'white', backgroundColor: 'black', fontFamily: '"Archivo Black", sans-serif', fontWeight: 300, fontSize: '1rem', position: 'relative' }}
                     disabled={loading}
                 >
-                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Ir a pagar'}
+                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Finalizar compra'}
                     <Box
                         sx={{
                             position: 'absolute',
@@ -254,6 +254,11 @@ const Checkout = () => {
                         }}
                     />
                 </Button>
+
+                <Typography variant="body2" align="center" sx={{ mt: 1, mb: 2, fontFamily: '"Archivo Black", sans-serif', fontSize: '0.85rem' }}>
+                    Al hacer click en <strong>"Finalizar compra"</strong> serás redirigido a Mercado Pago para completar el pago.
+                </Typography>
+
             </form>
         </Box >
     );
