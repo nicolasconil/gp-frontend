@@ -1059,7 +1059,22 @@ const ProductDetail = () => {
           onTouchMove={onTouchMoveZoom}
           onTouchEnd={onTouchEndZoom}
         >
-          <IconButton onClick={closeZoom} sx={{ position: 'absolute', top: 16, right: 16, color: 'white', zIndex: 20 }} aria-label="Cerrar">
+          <IconButton
+            onClick={closeZoom}
+            size={isMobile ? 'large' : 'medium'}
+            sx={{
+              position: 'fixed',
+              top: { xs: 'env(safe-area-inset-top, 10px)', sm: 16 },
+              right: { xs: 'env(safe-area-inset-right, 12px)', sm: 16, md: 24, lg: 32 },
+              color: 'white',
+              zIndex: 1400,
+              bgcolor: 'rgba(255,255,255,0.04)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+              borderRadius: 1,
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+            aria-label="Cerrar"
+          >
             <CloseIcon />
           </IconButton>
 
