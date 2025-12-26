@@ -280,15 +280,7 @@ const ProductDetail = () => {
   const containerRef = useRef(null);
   const imgRef = useRef(null);
 
-  const prevBodyOverflow = useRef(null);
-
   const openZoom = () => {
-    try {
-      prevBodyOverflow.current = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-    } catch (err) {
-      prevBodyOverflow.current = null;
-    }
     setZoomOpen(true);
     setScale(1);
     setTranslate({ x: 0, y: 0 });
@@ -301,27 +293,7 @@ const ProductDetail = () => {
     pinchStartScaleRef.current = 1;
     pinchStartMidpointRef.current = { x: 0, y: 0 };
     pinchStartTranslateRef.current = { x: 0, y: 0 };
-
-    try {
-      document.body.style.overflow = prevBodyOverflow.current ?? '';
-      prevBodyOverflow.current = null;
-    } catch (err) {
-
-    }
   };
-
-  useEffect(() => {
-    return () => {
-      try {
-        if (prevBodyOverflow.current !== null) {
-          document.body.style.overflow = prevBodyOverflow.current ?? '';
-          prevBodyOverflow.current = null;
-        }
-      } catch (err) {
-
-      }
-    };
-  }, []);
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -1051,6 +1023,7 @@ const ProductDetail = () => {
         open={zoomOpen}
         onClose={closeZoom}
         fullScreen
+        disableScrollLock={false}
         PaperProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.95)', overflow: 'hidden' } }}
       >
         <Box
