@@ -34,7 +34,7 @@ const HomePage = () => {
       )}
       {isMobile && (
         <img
-          src="/gp.svg"
+          src="/celu.jpg"
           alt="GP Footwear"
           style={{
             position: "absolute",
