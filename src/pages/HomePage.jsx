@@ -93,7 +93,7 @@ const HomePage = () => {
                 sx={{
                   position: "absolute",
                   bottom: -5, 
-                  left: "50%",
+                  left: "51%",
                   transform: "translateX(-50%)",
                   width: "100%", 
                   height: "5px",
@@ -108,7 +108,7 @@ const HomePage = () => {
                 sx={{
                   position: "absolute",
                   top: 8,
-                  right: -4.5, 
+                  right: -4, 
                   width: "5px",
                   height: "calc(100% - 5px)", 
                   backgroundColor: "black",
