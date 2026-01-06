@@ -1,58 +1,48 @@
+import React from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import ProductPage from "./ProductPage.jsx";
 
 const HomePage = () => {
   const isMobile = useMediaQuery("(max-width: 900px)");
+
   return (
     <>
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        height: "100vh",
-        overflow: "hidden",
-      }}
-    >
-      {!isMobile && (
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: isMobile ? "100vh" : "75vh", 
+          overflow: "hidden",
+        }}
+      >
+        { !isMobile ? (
+          <video autoPlay muted loop playsInline style={{
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
-          }}
-        >
-          <source src="/video.mp4" type="video/mp4" />
-          Tu navegador no soporta la etiqueta de video.
-        </video>
-      )}
-      {isMobile && (
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
+          }}>
+            <source src="/video.mp4" type="video/mp4" />
+          </video>
+        ) : (
+          <video autoPlay muted loop playsInline style={{
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
             objectFit: "contain",
-          }}
-        >
-          <source src="/IMG_5013.mp4" type="video/mp4"/>
-          Tu navegadopr no soporta la etiqueta de video.
-        </video>
-      )}
-    </Box>
-    <ProductPage />
+          }}>
+            <source src="/IMG_5013.mp4" type="video/mp4"/>
+          </video>
+        )}
+      </Box>
+
+      <Box sx={{ position: "relative", zIndex: 1 }}>
+        <ProductPage />
+      </Box>
     </>
   );
 };
