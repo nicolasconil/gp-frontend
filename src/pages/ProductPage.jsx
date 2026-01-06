@@ -123,7 +123,7 @@ const ProductPage = () => {
   };
 
   return (
-    <Box sx={{ textAlign: 'center', marginTop: { xs: '-375px', sm: '0' }, borderTop: '1px solid #e0e0e0', width: '100%', mt: '150px' }}>
+    <Box sx={{ textAlign: 'center', marginTop: { xs: '-350px', sm: '0' }, borderTop: '1px solid #e0e0e0', width: '100%', mt: '150px' }}>
       <Box
         sx={{
           display: 'inline-block',
