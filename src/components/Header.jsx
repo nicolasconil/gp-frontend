@@ -311,21 +311,18 @@ const Header = () => {
     <>
       <AppBar position="sticky" elevation={0} sx={{ backgroundColor: 'white', color: 'black', borderBottom: '1px solid #eee' }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, md: 4 }, py: { xs: 0.5, md: 1 } }}>
-          {/* Menu button - left side */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               edge="start"
               aria-label="open menu"
               onClick={() => setDrawerOpen(true)}
               size="large"
-              disableRipple // quita el efecto ripple
+              disableRipple 
               sx={{
                 color: 'black',
                 backgroundColor: 'transparent',
-                // elimina el círculo gris en hover/active
                 '&:hover': { backgroundColor: 'transparent' },
                 '&:active': { backgroundColor: 'transparent' },
-                // opcional: mantener un foco visible accesible (te recomiendo no quitarlo)
                 '&.Mui-focusVisible': {
                   outline: '2px solid rgba(0,0,0,0.12)',
                   outlineOffset: 2,
@@ -336,7 +333,6 @@ const Header = () => {
             </IconButton>
           </Box>
 
-          {/* Center logo - kept absolute centered */}
           <Box
             component="a"
             href="/"
@@ -378,7 +374,6 @@ const Header = () => {
             />
           </Box>
 
-          {/* Right side icons / search */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto', mr: { sm: 1, md: 2 } }}>
             {!isMobile && (
               <ClickAwayListener onClickAway={() => setSearchTerm('')}>
@@ -460,7 +455,6 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Mobile search area */}
       {isMobile && (
         <ClickAwayListener onClickAway={() => setSearchTerm('')}>
           <Box sx={{ px: 2, py: 2, display: 'flex', backgroundColor: 'white', flexDirection: 'column', alignItems: 'center', zIndex: 1400 }}>
@@ -530,7 +524,7 @@ const Header = () => {
             fontFamily: '"Archivo Black", sans-serif',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // centra verticalmente el menú
+            justifyContent: 'center', 
           }}
           role="presentation"
         >
@@ -641,7 +635,6 @@ const Header = () => {
             ))}
           </Box>
 
-          {/* Imagen de marca (marca de agua) al final del drawer */}
           <Box
             sx={{
               mt: 'auto',
@@ -657,7 +650,7 @@ const Header = () => {
               alt="Brand watermark"
               sx={{
                 width: '25%',
-                opacity: 0.06,          // casi transparente
+                opacity: 0.06,          
                 filter: 'grayscale(100%)',
                 userSelect: 'none',
               }}

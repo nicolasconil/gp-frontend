@@ -64,7 +64,7 @@ const HomePage = () => {
                 maxHeight: "100dvh",
                 objectFit: "contain",
                 boxSizing: "border-box",
-                border: "3px solid black", 
+                border: "2px solid black", 
                 borderRadius: 1,
                 zIndex: 1,
                 display: "block",
@@ -77,10 +77,10 @@ const HomePage = () => {
             <Box
               sx={{
                 position: "absolute",
-                bottom: 6,           
-                left: 12,            
+                bottom: 1,           
+                left: 13,            
                 width: "calc(100% - 24px)", 
-                height: "6px",       
+                height: "3px",       
                 backgroundColor: "black",
                 borderRadius: "4px",
                 zIndex: 10,
@@ -90,9 +90,9 @@ const HomePage = () => {
             <Box
               sx={{
                 position: "absolute",
-                top: 12,                       
-                right: 6,                      
-                width: "6px",                  
+                top: 6,                       
+                right: 7,                      
+                width: "7px",                  
                 height: "calc(100% - 24px)",   
                 backgroundColor: "black",
                 borderRadius: "2px",
