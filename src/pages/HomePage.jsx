@@ -33,9 +33,11 @@ const HomePage = () => {
         </video>
       )}
       {isMobile && (
-        <img
-          src="/celu.jpg"
-          alt="GP Footwear"
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
           style={{
             position: "absolute",
             top: '25%',
@@ -45,7 +47,10 @@ const HomePage = () => {
             objectFit: "contain",
             transform: 'translateY(-50%)'
           }}
-        />
+        >
+          <source src="/IMG_5013.mp4" type="video/mp4"/>
+          Tu navegadopr no soporta la etiqueta de video.
+        </video>
       )}
     </Box>
     <ProductPage />
