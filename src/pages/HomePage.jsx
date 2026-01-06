@@ -92,11 +92,11 @@ const HomePage = () => {
               <Box
                 sx={{
                   position: "absolute",
-                  bottom: -6, 
+                  bottom: -5.5, 
                   left: "52%",
                   transform: "translateX(-50%)",
-                  width: "103%", 
-                  height: "6px",
+                  width: "100%", 
+                  height: "4px",
                   backgroundColor: "black",
                   borderRadius: "4px",
                   zIndex: 20,
@@ -108,12 +108,12 @@ const HomePage = () => {
                 sx={{
                   position: "absolute",
                   top: 8,
-                  right: -6, 
-                  width: "6px",
-                  height: "calc(100% - 9px)", 
+                  right: -7, 
+                  width: "4px",
+                  height: "calc(100% - 7px)", 
                   backgroundColor: "black",
                   borderRadius: "4px",
-                  zIndex: 25,
+                  zIndex: 20,
                   pointerEvents: "none",
                 }}
               />
