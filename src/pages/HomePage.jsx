@@ -92,7 +92,7 @@ const HomePage = () => {
               <Box
                 sx={{
                   position: "absolute",
-                  bottom: -5, 
+                  bottom: -4, 
                   left: "51%",
                   transform: "translateX(-50%)",
                   width: "100%", 
