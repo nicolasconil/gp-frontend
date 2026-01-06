@@ -27,7 +27,7 @@ const HomePage = () => {
           position: "relative",
           width: "100%",
           minHeight: "100dvh",
-          overflow: "hidden",
+          overflow: isMobile ? "visible" : "hidden",
         }}
       >
         {!isMobile && (
@@ -93,9 +93,9 @@ const HomePage = () => {
                 sx={{
                   position: "absolute",
                   bottom: -6, 
-                  left: "53%",
+                  left: "52%",
                   transform: "translateX(-50%)",
-                  width: "100%", 
+                  width: "103%", 
                   height: "6px",
                   backgroundColor: "black",
                   borderRadius: "4px",
@@ -113,7 +113,7 @@ const HomePage = () => {
                   height: "calc(100% - 9px)", 
                   backgroundColor: "black",
                   borderRadius: "4px",
-                  zIndex: 20,
+                  zIndex: 25,
                   pointerEvents: "none",
                 }}
               />
