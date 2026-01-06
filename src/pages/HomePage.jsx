@@ -14,8 +14,7 @@ const HomePage = () => {
         v.currentTime = 0.05;
         const p = v.play();
         if (p && p.catch) p.catch(() => {});
-      } catch (e) {
-      }
+      } catch (e) {}
     };
     v.addEventListener("ended", handleEnded);
     return () => v.removeEventListener("ended", handleEnded);
@@ -52,25 +51,58 @@ const HomePage = () => {
         )}
 
         {isMobile && (
-          <video
-            ref={mobileVideoRef}
-            autoPlay
-            muted
-            loop={false}
-            playsInline
-            preload="auto"
-            style={{
-              width: "100%",
-              maxHeight: "100dvh",
-              objectFit: "contain",
-            }}
-          >
-            <source src="/IMG_5013.mp4" type="video/mp4" />
-            Tu navegador no soporta la etiqueta de video.
-          </video>
+          <>
+            <video
+              ref={mobileVideoRef}
+              autoPlay
+              muted
+              loop={false}
+              playsInline
+              preload="auto"
+              style={{
+                width: "100%",
+                maxHeight: "100dvh",
+                objectFit: "contain",
+                boxSizing: "border-box",
+                border: "3px solid black", 
+                borderRadius: 1,
+                zIndex: 1,
+                display: "block",
+                margin: "0 auto",
+              }}
+            >
+              <source src="/IMG_5013.mp4" type="video/mp4" />
+              Tu navegador no soporta la etiqueta de video.
+            </video>
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 6,           
+                left: 12,            
+                width: "calc(100% - 24px)", 
+                height: "6px",       
+                backgroundColor: "black",
+                borderRadius: "4px",
+                zIndex: 10,
+                pointerEvents: "none",
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                top: 12,                       
+                right: 6,                      
+                width: "6px",                  
+                height: "calc(100% - 24px)",   
+                backgroundColor: "black",
+                borderRadius: "2px",
+                zIndex: 10,
+                pointerEvents: "none",
+              }}
+            />
+          </>
         )}
       </Box>
-
       <ProductPage />
     </>
   );
