@@ -92,8 +92,8 @@ const HomePage = () => {
               <Box
                 sx={{
                   position: "absolute",
-                  bottom: -7, 
-                  left: "50%",
+                  bottom: -6, 
+                  left: "53%",
                   transform: "translateX(-50%)",
                   width: "100%", 
                   height: "6px",
@@ -108,7 +108,7 @@ const HomePage = () => {
                 sx={{
                   position: "absolute",
                   top: 8,
-                  right: -4, 
+                  right: -6, 
                   width: "6px",
                   height: "calc(100% - 9px)", 
                   backgroundColor: "black",
