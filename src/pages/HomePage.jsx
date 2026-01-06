@@ -63,7 +63,7 @@ const HomePage = () => {
             >
               <Box
                 sx={{
-                  border: "2.5px solid black",
+                  border: "3px solid black",
                   borderRadius: 1.5,
                   overflow: "hidden",
                   boxSizing: "border-box",
@@ -92,7 +92,7 @@ const HomePage = () => {
           </>
         )}
       </Box>
-
+      
       <ProductPage />
     </>
   );
