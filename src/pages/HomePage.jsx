@@ -44,8 +44,7 @@ const HomePage = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            objectFit: "cover",
-            transform: 'translateY(-50%)'
+            objectFit: "contain",
           }}
         >
           <source src="/IMG_5013.mp4" type="video/mp4"/>
