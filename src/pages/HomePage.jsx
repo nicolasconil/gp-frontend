@@ -88,33 +88,6 @@ const HomePage = () => {
                   Tu navegador no soporta la etiqueta de video.
                 </video>
               </Box>
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: -6, 
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "100%", 
-                  height: "6px",
-                  backgroundColor: "black",
-                  borderRadius: "2px",
-                  zIndex: 20,
-                  pointerEvents: "none",
-                }}
-              />
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  right: 1, 
-                  width: "4px",
-                  height: "calc(100% - 8px)", 
-                  backgroundColor: "black",
-                  borderRadius: "2px",
-                  zIndex: 20,
-                  pointerEvents: "none",
-                }}
-              />
             </Box>
           </>
         )}
