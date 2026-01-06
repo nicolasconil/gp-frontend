@@ -52,57 +52,74 @@ const HomePage = () => {
 
         {isMobile && (
           <>
-            <video
-              ref={mobileVideoRef}
-              autoPlay
-              muted
-              loop={false}
-              playsInline
-              preload="auto"
-              style={{
+            <Box
+              sx={{
+                position: "relative",
                 width: "100%",
-                maxHeight: "100dvh",
-                objectFit: "contain",
-                boxSizing: "border-box",
-                border: "2px solid black", 
-                borderRadius: 1,
+                maxWidth: 520, 
+                margin: "12px auto",
                 zIndex: 1,
-                display: "block",
-                margin: "0 auto",
               }}
             >
-              <source src="/IMG_5013.mp4" type="video/mp4" />
-              Tu navegador no soporta la etiqueta de video.
-            </video>
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 1,           
-                left: 13,            
-                width: "calc(100% - 24px)", 
-                height: "3px",       
-                backgroundColor: "black",
-                borderRadius: "4px",
-                zIndex: 10,
-                pointerEvents: "none",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                top: 6,                       
-                right: 7,                      
-                width: "7px",                  
-                height: "calc(100% - 24px)",   
-                backgroundColor: "black",
-                borderRadius: "2px",
-                zIndex: 10,
-                pointerEvents: "none",
-              }}
-            />
+              <Box
+                sx={{
+                  border: "2.5px solid black",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  boxSizing: "border-box",
+                }}
+              >
+                <video
+                  ref={mobileVideoRef}
+                  autoPlay
+                  muted
+                  loop={false}
+                  playsInline
+                  preload="auto"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "70vh",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                >
+                  <source src="/IMG_5013.mp4" type="video/mp4" />
+                  Tu navegador no soporta la etiqueta de video.
+                </video>
+              </Box>
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: -12, // justo por debajo del borde
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "60%", 
+                  height: "6px",
+                  backgroundColor: "black",
+                  borderRadius: "4px",
+                  zIndex: 20,
+                  pointerEvents: "none",
+                }}
+              />
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 6, 
+                  width: "6px",
+                  height: "calc(100% - 16px)", 
+                  backgroundColor: "black",
+                  borderRadius: "2px",
+                  zIndex: 20,
+                  pointerEvents: "none",
+                }}
+              />
+            </Box>
           </>
         )}
       </Box>
+
       <ProductPage />
     </>
   );
